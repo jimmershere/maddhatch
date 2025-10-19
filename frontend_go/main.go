@@ -8,44 +8,48 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"time"
 	"strings"
+	"time"
 
 	"github.com/gorilla/mux"
-	"github.com/streadway/amqp"
 	_ "github.com/lib/pq"
+	"github.com/streadway/amqp"
 )
 
+// Order represents a customer order submitted through the frontend.
 type Order struct {
-	ID          string      `json:"id"`
-	CreatedAt   time.Time   `json:"created_at"`
-	Customer    Customer    `json:"customer"`
-	Items       []OrderItem `json:"items"`
-	Notes       string      `json:"notes"`
-	Channel     string      `json:"channel"` // "web", "phone", etc.
+	ID        string      `json:"id"`
+	CreatedAt time.Time   `json:"created_at"`
+	Customer  Customer    `json:"customer"`
+	Items     []OrderItem `json:"items"`
+	Notes     string      `json:"notes"`
+	Channel   string      `json:"channel"`
 }
 
+// Customer holds identifying information for an order customer.
 type Customer struct {
 	Email string `json:"email"`
 	Name  string `json:"name"`
 	Phone string `json:"phone"`
 }
 
+// OrderItem represents a single line item in an order.
 type OrderItem struct {
-	SKU      string  `json:"sku"`
-	Name     string  `json:"name"`
-	Qty      int     `json:"qty"`
+	SKU       string `json:"sku"`
+	Name      string `json:"name"`
+	Qty       int    `json:"qty"`
 	UnitCents int    `json:"unit_cents"`
 }
 
-
-// --- auth helpers ---
+// groupsFromHeader parses the X-User-Groups header into a lookup map.
 func groupsFromHeader(r *http.Request) map[string]bool {
 	gs := map[string]bool{}
-	for _, g := range http.Header.Get(r.Header)["X-User-Groups"] {
+	for _, g := range r.Header.Values("X-User-Groups") {
 		for _, part := range strings.Split(g, ",") {
 			trim := strings.ToLower(strings.TrimSpace(part))
-			if trim != "" { gs[trim] = true }
+			if trim != "" {
+				gs[trim] = true
+			}
 		}
 	}
 	return gs
@@ -62,7 +66,6 @@ func requireAdmin(next http.Handler) http.Handler {
 	})
 }
 
-
 func env(key, def string) string {
 	if v := os.Getenv(key); v != "" {
 		return v
@@ -73,7 +76,7 @@ func env(key, def string) string {
 func health(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte(`{"ok":true}`))
+	_, _ = w.Write([]byte(`{"ok":true}`))
 }
 
 func publishOrder(ch *amqp.Channel, exchange string, order Order) error {
@@ -83,10 +86,10 @@ func publishOrder(ch *amqp.Channel, exchange string, order Order) error {
 		"order.created",
 		false, false,
 		amqp.Publishing{
-			ContentType: "application/json",
-			Body:        body,
+			ContentType:  "application/json",
+			Body:         body,
 			DeliveryMode: amqp.Persistent,
-			Timestamp:   time.Now(),
+			Timestamp:    time.Now(),
 		},
 	)
 }
@@ -111,72 +114,115 @@ func orderHandler(ch *amqp.Channel) http.HandlerFunc {
 		}
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusAccepted)
-		json.NewEncoder(w).Encode(map[string]any{"status": "queued", "id": o.ID})
+		if err := json.NewEncoder(w).Encode(map[string]any{"status": "queued", "id": o.ID}); err != nil {
+			log.Printf("orderHandler encode: %v", err)
+		}
 	}
 }
 
-
-// --- admin API ---
 func adminListOrders(db *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		rows, err := db.Query(` + "`" + `
-			SELECT o.id, o.status, o.created_at, c.name, c.email, COALESCE(ot.subtotal_cents,0)
-			FROM orders o 
-			JOIN customers c ON c.id=o.customer_id
-			LEFT JOIN order_totals ot ON ot.order_id=o.id
-			ORDER BY o.created_at DESC LIMIT 200
-		` + "`" + `)
-		if err != nil { http.Error(w, "db error", 500); return }
-		defer rows.Close()
-		type row struct {
-			ID string ` + "`json:\"id\"`" + `; Status string ` + "`json:\"status\"`" + `; CreatedAt time.Time ` + "`json:\"created_at\"`" + `
-			Name string ` + "`json:\"name\"`" + `; Email string ` + "`json:\"email\"`" + `; Subtotal int ` + "`json:\"subtotal_cents\"`" + `
+		rows, err := db.Query(`
+            SELECT o.id, o.status, o.created_at, c.name, c.email, COALESCE(ot.subtotal_cents, 0)
+            FROM orders o
+            JOIN customers c ON c.id = o.customer_id
+            LEFT JOIN order_totals ot ON ot.order_id = o.id
+            ORDER BY o.created_at DESC
+            LIMIT 200
+        `)
+		if err != nil {
+			http.Error(w, "db error", http.StatusInternalServerError)
+			return
 		}
+		defer rows.Close()
+
+		type row struct {
+			ID        string    `json:"id"`
+			Status    string    `json:"status"`
+			CreatedAt time.Time `json:"created_at"`
+			Name      string    `json:"name"`
+			Email     string    `json:"email"`
+			Subtotal  int       `json:"subtotal_cents"`
+		}
+
 		var out []row
 		for rows.Next() {
 			var r row
-			rows.Scan(&r.ID,&r.Status,&r.CreatedAt,&r.Name,&r.Email,&r.Subtotal)
+			if err := rows.Scan(&r.ID, &r.Status, &r.CreatedAt, &r.Name, &r.Email, &r.Subtotal); err != nil {
+				http.Error(w, "db scan error", http.StatusInternalServerError)
+				return
+			}
 			out = append(out, r)
 		}
-		w.Header().Set("Content-Type","application/json")
-		json.NewEncoder(w).Encode(out)
+
+		w.Header().Set("Content-Type", "application/json")
+		if err := json.NewEncoder(w).Encode(out); err != nil {
+			log.Printf("adminListOrders encode: %v", err)
+		}
 	}
 }
 
 func adminListInvoices(db *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		rows, err := db.Query(` + "`" + `
-			SELECT id, order_id, total_cents, tax_cents, status, created_at
-			FROM invoices ORDER BY created_at DESC LIMIT 200
-		` + "`" + `)
-		if err != nil { http.Error(w, "db error", 500); return }
-		defer rows.Close()
-		type row struct {
-			ID string ` + "`json:\"id\"`" + `; OrderID string ` + "`json:\"order_id\"`" + `; Total int ` + "`json:\"total_cents\"`" + `; Tax int ` + "`json:\"tax_cents\"`" + `; Status string ` + "`json:\"status\"`" + `; CreatedAt time.Time ` + "`json:\"created_at\"`" + `
+		rows, err := db.Query(`
+            SELECT id, order_id, total_cents, tax_cents, status, created_at
+            FROM invoices
+            ORDER BY created_at DESC
+            LIMIT 200
+        `)
+		if err != nil {
+			http.Error(w, "db error", http.StatusInternalServerError)
+			return
 		}
+		defer rows.Close()
+
+		type row struct {
+			ID        string    `json:"id"`
+			OrderID   string    `json:"order_id"`
+			Total     int       `json:"total_cents"`
+			Tax       int       `json:"tax_cents"`
+			Status    string    `json:"status"`
+			CreatedAt time.Time `json:"created_at"`
+		}
+
 		var out []row
 		for rows.Next() {
 			var r row
-			rows.Scan(&r.ID,&r.OrderID,&r.Total,&r.Tax,&r.Status,&r.CreatedAt)
+			if err := rows.Scan(&r.ID, &r.OrderID, &r.Total, &r.Tax, &r.Status, &r.CreatedAt); err != nil {
+				http.Error(w, "db scan error", http.StatusInternalServerError)
+				return
+			}
 			out = append(out, r)
 		}
-		w.Header().Set("Content-Type","application/json")
-		json.NewEncoder(w).Encode(out)
+
+		w.Header().Set("Content-Type", "application/json")
+		if err := json.NewEncoder(w).Encode(out); err != nil {
+			log.Printf("adminListInvoices encode: %v", err)
+		}
 	}
 }
 
 func adminInvoiceCreate(db *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		var in struct{ OrderID string ` + "`json:\"order_id\"`" + `}
-		if err := json.NewDecoder(r.Body).Decode(&in); err != nil { http.Error(w,"bad json",400); return }
-		var id string
-		if err := db.QueryRow(` + "`" + `SELECT create_invoice($1)` + "`" + `, in.OrderID).Scan(&id); err != nil {
-			http.Error(w, "create_invoice error", 500); return
+		var in struct {
+			OrderID string `json:"order_id"`
 		}
-		json.NewEncoder(w).Encode(map[string]any{"invoice_id":id})
+		if err := json.NewDecoder(r.Body).Decode(&in); err != nil {
+			http.Error(w, "bad json", http.StatusBadRequest)
+			return
+		}
+
+		var id string
+		if err := db.QueryRow(`SELECT create_invoice($1)`, in.OrderID).Scan(&id); err != nil {
+			http.Error(w, "create_invoice error", http.StatusInternalServerError)
+			return
+		}
+
+		if err := json.NewEncoder(w).Encode(map[string]any{"invoice_id": id}); err != nil {
+			log.Printf("adminInvoiceCreate encode: %v", err)
+		}
 	}
 }
-
 
 func main() {
 	// AMQP
@@ -194,8 +240,7 @@ func main() {
 
 	// Optionally ensure exchange is present
 	exchange := env("RMQ_EXCHANGE", "orders.direct")
-	err = ch.ExchangeDeclare(exchange, "direct", true, false, false, false, nil)
-	if err != nil {
+	if err = ch.ExchangeDeclare(exchange, "direct", true, false, false, false, nil); err != nil {
 		log.Printf("exchange declare skipped/failed: %v", err)
 	}
 
@@ -214,13 +259,14 @@ func main() {
 	r.HandleFunc("/healthz", health).Methods("GET")
 	r.HandleFunc("/api/order", orderHandler(ch)).Methods("POST")
 
-	// Serve static site
+	// Admin API
 	admin := r.PathPrefix("/admin").Subrouter()
 	admin.Use(requireAdmin)
 	admin.HandleFunc("/orders", adminListOrders(db)).Methods("GET")
 	admin.HandleFunc("/invoices", adminListInvoices(db)).Methods("GET")
 	admin.HandleFunc("/invoice/create", adminInvoiceCreate(db)).Methods("POST")
 
+	// Serve static site
 	r.PathPrefix("/").Handler(http.FileServer(http.Dir("./public")))
 
 	addr := env("HTTP_ADDR", ":8443")
