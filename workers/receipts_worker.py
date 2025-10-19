@@ -10,6 +10,8 @@ Env:
 import os, json, io, smtplib
 from email.message import EmailMessage
 import pika, psycopg
+
+from rabbit_helpers import ensure_exchange
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import letter
 
@@ -60,8 +62,8 @@ def send_email(to, subject, body, attachment=None, filename="receipt.pdf"):
 
 def main():
     os.makedirs(OUT, exist_ok=True)
-    conn = pika.BlockingConnection(pika.URLParameters(AMQP_URL)); ch = conn.channel()
-    ch.exchange_declare(EXCHANGE, "direct", durable=True)
+    conn = pika.BlockingConnection(pika.URLParameters(AMQP_URL))
+    ch = ensure_exchange(conn.channel(), EXCHANGE)
     q = ch.queue_declare("receipts.q", durable=True); ch.queue_bind(q.method.queue, EXCHANGE, "receipt.request")
     with psycopg.connect(DB_URL) as db:
         def cb(chx, method, props, body):

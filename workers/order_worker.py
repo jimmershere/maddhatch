@@ -9,6 +9,8 @@ import json, os, time, uuid
 import psycopg
 import pika
 
+from rabbit_helpers import ensure_exchange
+
 AMQP_URL = os.getenv("AMQP_URL", "amqp://app:app@rabbitmq:5672/")
 EXCHANGE = os.getenv("RMQ_EXCHANGE", "orders.direct")
 DB_URL = os.getenv("DATABASE_URL", "postgres://postgres:postgres@db:5432/maddhatchery?sslmode=disable")
@@ -21,8 +23,7 @@ def main():
     while True:
         try:
             conn = pika.BlockingConnection(pika.URLParameters(AMQP_URL))
-            ch = conn.channel()
-            ch.exchange_declare(EXCHANGE, "direct", durable=True)
+            ch = ensure_exchange(conn.channel(), EXCHANGE)
             q = ch.queue_declare("orders.q", durable=True)
             ch.queue_bind(q.method.queue, EXCHANGE, "order.created")
 
