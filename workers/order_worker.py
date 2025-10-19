@@ -9,7 +9,7 @@ import json, os, time, uuid
 import psycopg
 import pika
 
-from rabbit_helpers import ensure_exchange
+from rabbit_helpers import ensure_exchange, ensure_queue
 
 AMQP_URL = os.getenv("AMQP_URL", "amqp://app:app@rabbitmq:5672/")
 EXCHANGE = os.getenv("RMQ_EXCHANGE", "orders.direct")
@@ -24,8 +24,13 @@ def main():
         try:
             conn = pika.BlockingConnection(pika.URLParameters(AMQP_URL))
             ch = ensure_exchange(conn.channel(), EXCHANGE)
-            q = ch.queue_declare("orders.q", durable=True)
-            ch.queue_bind(q.method.queue, EXCHANGE, "order.created")
+            ch, q = ensure_queue(
+                ch,
+                "orders.q",
+                arguments={"x-dead-letter-exchange": "orders.dlx"},
+            )
+            queue_name = getattr(q.method, "queue", "orders.q")
+            ch.queue_bind(queue_name, EXCHANGE, "order.created")
 
             with psycopg.connect(DB_URL) as db:
                 db.execute("select 1")
@@ -59,7 +64,7 @@ def main():
                     chx.basic_ack(delivery_tag=method.delivery_tag)
 
                 ch.basic_qos(prefetch_count=10)
-                ch.basic_consume(q.method.queue, cb, auto_ack=False)
+                ch.basic_consume(queue_name, cb, auto_ack=False)
                 ch.start_consuming()
         except Exception as e:
             print("worker error, retrying:", e)

@@ -11,7 +11,7 @@ import os, json, io, smtplib
 from email.message import EmailMessage
 import pika, psycopg
 
-from rabbit_helpers import ensure_exchange
+from rabbit_helpers import ensure_exchange, ensure_queue
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import letter
 
@@ -64,7 +64,9 @@ def main():
     os.makedirs(OUT, exist_ok=True)
     conn = pika.BlockingConnection(pika.URLParameters(AMQP_URL))
     ch = ensure_exchange(conn.channel(), EXCHANGE)
-    q = ch.queue_declare("receipts.q", durable=True); ch.queue_bind(q.method.queue, EXCHANGE, "receipt.request")
+    ch, q = ensure_queue(ch, "receipts.q")
+    queue_name = getattr(q.method, "queue", "receipts.q")
+    ch.queue_bind(queue_name, EXCHANGE, "receipt.request")
     with psycopg.connect(DB_URL) as db:
         def cb(chx, method, props, body):
             m = json.loads(body); oid=m["order_id"]; email=m.get("email")
@@ -72,6 +74,6 @@ def main():
             open(os.path.join(OUT, f"{oid}.pdf"), "wb").write(pdf)
             if email: send_email(email, "Your Madd Hatchery receipt", "Attached is your receipt. Enjoy!", pdf, f"{oid}.pdf")
             chx.basic_ack(delivery_tag=method.delivery_tag)
-        ch.basic_qos(prefetch_count=5); ch.basic_consume(q.method.queue, cb, auto_ack=False); ch.start_consuming()
+        ch.basic_qos(prefetch_count=5); ch.basic_consume(queue_name, cb, auto_ack=False); ch.start_consuming()
 
 if __name__=="__main__": main()

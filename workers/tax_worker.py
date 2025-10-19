@@ -7,7 +7,7 @@ Tax aggregation worker:
 import os, json, datetime as dt
 import pika, psycopg
 
-from rabbit_helpers import ensure_exchange
+from rabbit_helpers import ensure_exchange, ensure_queue
 
 AMQP_URL = os.getenv("AMQP_URL", "amqp://app:app@rabbitmq:5672/")
 EXCHANGE = os.getenv("RMQ_EXCHANGE", "orders.direct")
@@ -16,7 +16,9 @@ DB_URL = os.getenv("DATABASE_URL", "postgres://postgres:postgres@db:5432/maddhat
 def main():
     conn = pika.BlockingConnection(pika.URLParameters(AMQP_URL)); ch = conn.channel()
     ch = ensure_exchange(ch, EXCHANGE)
-    q = ch.queue_declare("tax.q", durable=True); ch.queue_bind(q.method.queue, EXCHANGE, "tax.report")
+    ch, q = ensure_queue(ch, "tax.q")
+    queue_name = getattr(q.method, "queue", "tax.q")
+    ch.queue_bind(queue_name, EXCHANGE, "tax.report")
     with psycopg.connect(DB_URL) as db:
         def cb(chx, method, props, body):
             m = json.loads(body); period = m.get("period")
@@ -35,6 +37,6 @@ def main():
               ON CONFLICT (id) DO UPDATE SET total_gross_cents=EXCLUDED.total_gross_cents, total_tax_cents=EXCLUDED.total_tax_cents
             """, (rep_id, period, int(gross), int(tax)))
             chx.basic_ack(delivery_tag=method.delivery_tag)
-        ch.basic_qos(prefetch_count=1); ch.basic_consume(q.method.queue, cb, auto_ack=False); ch.start_consuming()
+        ch.basic_qos(prefetch_count=1); ch.basic_consume(queue_name, cb, auto_ack=False); ch.start_consuming()
 
 if __name__=="__main__": main()

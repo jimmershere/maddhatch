@@ -9,7 +9,7 @@ Publishes: cashapp.completed {order_id, method, amount_cents, link}
 import os, json
 import pika, psycopg
 
-from rabbit_helpers import ensure_exchange
+from rabbit_helpers import ensure_exchange, ensure_queue
 
 AMQP_URL = os.getenv("AMQP_URL", "amqp://app:app@rabbitmq:5672/")
 EXCHANGE = os.getenv("RMQ_EXCHANGE", "orders.direct")
@@ -22,7 +22,9 @@ def main():
     token = os.getenv("CASHAPP_TOKEN")
     conn = pika.BlockingConnection(pika.URLParameters(AMQP_URL))
     ch = ensure_exchange(conn.channel(), EXCHANGE)
-    q = ch.queue_declare("payments.q", durable=True); ch.queue_bind(q.method.queue, EXCHANGE, "cashapp.request")
+    ch, q = ensure_queue(ch, "payments.q")
+    queue_name = getattr(q.method, "queue", "payments.q")
+    ch.queue_bind(queue_name, EXCHANGE, "cashapp.request")
     with psycopg.connect(DB_URL) as db:
         def cb(chx, method, props, body):
             m = json.loads(body); oid=m["order_id"]
@@ -35,6 +37,6 @@ def main():
                 link = f"Manual: request ${amt/100:.2f} from customer via Cash App and record payment for order {oid}."
             publish(chx, "cashapp.completed", {"order_id": oid, "method":"cashapp", "amount_cents": int(amt), "link": link})
             chx.basic_ack(delivery_tag=method.delivery_tag)
-        ch.basic_qos(prefetch_count=10); ch.basic_consume(q.method.queue, cb, auto_ack=False); ch.start_consuming()
+        ch.basic_qos(prefetch_count=10); ch.basic_consume(queue_name, cb, auto_ack=False); ch.start_consuming()
 
 if __name__=="__main__": main()
