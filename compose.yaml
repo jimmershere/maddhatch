@@ -4,7 +4,7 @@ services:
     image: rabbitmq:3-management
     ports: ["5672:5672","15672:15672"]
     environment:
-      RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS: "-rabbitmq_management load_definitions "/etc/rabbitmq/definitions.json""
+      RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS: '-rabbitmq_management load_definitions "/etc/rabbitmq/definitions.json"'
     volumes:
       - ./rabbitmq/definitions.json:/etc/rabbitmq/definitions.json
 
