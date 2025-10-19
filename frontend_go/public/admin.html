@@ -1,0 +1,41 @@
+<!doctype html><html><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Admin • Madd Hatchery</title>
+<link rel="stylesheet" href="/assets/styles.css">
+</head><body>
+<header class="mh-header"><div class="brand">
+<img src="/assets/MaddHatchery.jpg" class="logo"><div><h1>Admin</h1><p class="tag">Orders & Invoices</p></div></div>
+<nav class="nav"><a href="/">Home</a></nav></header>
+<main class="content">
+<section>
+  <h2>Orders</h2>
+  <table id="orders" class="card"></table>
+</section>
+<section>
+  <h2>Invoices</h2>
+  <table id="invoices" class="card"></table>
+  <h3>Create Invoice</h3>
+  <input id="orderId" placeholder="order id"><button class="cta" onclick="createInvoice()">Create</button>
+  <p id="msg" class="muted"></p>
+</section>
+</main>
+<script>
+async function load() {
+  const o = await fetch('/admin/orders').then(r=>r.json());
+  const i = await fetch('/admin/invoices').then(r=>r.json());
+  const ot = document.getElementById('orders');
+  ot.innerHTML = '<tr><th>ID</th><th>Status</th><th>When</th><th>Name</th><th>Email</th><th>Subtotal</th></tr>' + 
+    o.map(r=>`<tr><td>${r.id}</td><td>${r.status}</td><td>${new Date(r.created_at).toLocaleString()}</td><td>${r.name}</td><td>${r.email}</td><td>$${(r.subtotal_cents/100).toFixed(2)}</td></tr>`).join('');
+  const it = document.getElementById('invoices');
+  it.innerHTML = '<tr><th>ID</th><th>Order</th><th>Total</th><th>Tax</th><th>Status</th><th>When</th></tr>' + 
+    i.map(r=>`<tr><td>${r.id}</td><td>${r.order_id}</td><td>$${(r.total_cents/100).toFixed(2)}</td><td>$${(r.tax_cents/100).toFixed(2)}</td><td>${r.status}</td><td>${new Date(r.created_at).toLocaleString()}</td></tr>`).join('');
+}
+async function createInvoice() {
+  const id = document.getElementById('orderId').value;
+  const r = await fetch('/admin/invoice/create', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({order_id:id})});
+  const j = await r.json(); document.getElementById('msg').textContent = 'Invoice: ' + (j.invoice_id||'error');
+  load();
+}
+load();
+</script>
+</body></html>

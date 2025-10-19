@@ -1,0 +1,10 @@
+[Unit]
+Description=RabbitMQ (Madd Hatchery)
+[Container]
+Image=rabbitmq:3-management
+PublishPort=5672:5672
+PublishPort=15672:15672
+Volume=%h/maddhatchery/rabbitmq/definitions.json:/etc/rabbitmq/definitions.json:ro
+Environment=RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS=-rabbitmq_management load_definitions /etc/rabbitmq/definitions.json
+[Install]
+WantedBy=default.target

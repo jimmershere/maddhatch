@@ -1,0 +1,14 @@
+[Unit]
+Description=Worker: receipts
+[Container]
+Image=python:3.12-slim
+Network=host
+WorkingDir=%h/maddhatchery/workers
+Volume=%h/maddhatchery/workers:%h/maddhatchery/workers
+Volume=%h/maddhatchery/out:%h/maddhatchery/out
+Env=AMQP_URL=amqp://guest:guest@localhost:5672/
+Env=DATABASE_URL=postgres://postgres:postgres@localhost:5432/maddhatchery?sslmode=disable
+Env=RMQ_EXCHANGE=orders.direct
+Command=/bin/sh -lc "pip install -r requirements.txt && python receipts_worker.py"
+[Install]
+WantedBy=default.target

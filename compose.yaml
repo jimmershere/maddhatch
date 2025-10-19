@@ -1,0 +1,80 @@
+version: "3.9"
+services:
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports: ["5672:5672","15672:15672"]
+    environment:
+      RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS: "-rabbitmq_management load_definitions "/etc/rabbitmq/definitions.json""
+    volumes:
+      - ./rabbitmq/definitions.json:/etc/rabbitmq/definitions.json
+
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: maddhatchery
+    volumes:
+      - ./db:/docker-entrypoint-initdb.d
+
+  frontend:
+    build: ./frontend_go
+    environment:
+      AMQP_URL: amqp://guest:guest@rabbitmq:5672/
+      DATABASE_URL: postgres://postgres:postgres@db:5432/maddhatchery?sslmode=disable
+      RMQ_EXCHANGE: orders.direct
+    volumes:
+      - ./config/certs:/certs:ro
+    ports: ["8443:8443"]
+    depends_on:
+      - rabbitmq
+      - db
+
+  worker:
+    image: python:3.12-slim
+    working_dir: /app
+    environment:
+      AMQP_URL: amqp://guest:guest@rabbitmq:5672/
+      DATABASE_URL: postgres://postgres:postgres@db:5432/maddhatchery?sslmode=disable
+      RMQ_EXCHANGE: orders.direct
+    volumes:
+      - ./workers:/app
+    command: ["python","order_worker.py"]
+    depends_on:
+      - rabbitmq
+      - db
+
+  receipts:
+    image: python:3.12-slim
+    working_dir: /app
+    environment:
+      AMQP_URL: amqp://guest:guest@rabbitmq:5672/
+      DATABASE_URL: postgres://postgres:postgres@db:5432/maddhatchery?sslmode=disable
+      RMQ_EXCHANGE: orders.direct
+      OUTPUT_DIR: /out
+    volumes:
+      - ./workers:/app
+      - ./out:/out
+    command: ["/bin/sh","-c","pip install -r requirements.txt && python receipts_worker.py"]
+    depends_on: [rabbitmq, db]
+
+  cashapp:
+    image: python:3.12-slim
+    working_dir: /app
+    environment:
+      AMQP_URL: amqp://guest:guest@rabbitmq:5672/
+      DATABASE_URL: postgres://postgres:postgres@db:5432/maddhatchery?sslmode=disable
+      RMQ_EXCHANGE: orders.direct
+    volumes: [ "./workers:/app" ]
+    command: ["/bin/sh","-c","pip install -r requirements.txt && python cashapp_worker.py"]
+    depends_on: [rabbitmq, db]
+
+  taxer:
+    image: python:3.12-slim
+    working_dir: /app
+    environment:
+      AMQP_URL: amqp://guest:guest@rabbitmq:5672/
+      DATABASE_URL: postgres://postgres:postgres@db:5432/maddhatchery?sslmode=disable
+      RMQ_EXCHANGE: orders.direct
+    volumes: [ "./workers:/app" ]
+    command: ["/bin/sh","-c","pip install -r requirements.txt && python tax_worker.py"]
+    depends_on: [rabbitmq, db]
