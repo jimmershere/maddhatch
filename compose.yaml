@@ -5,6 +5,8 @@ services:
     ports: ["5672:5672","15672:15672"]
     environment:
       RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS: '-rabbitmq_management load_definitions "/etc/rabbitmq/definitions.json"'
+      RABBITMQ_DEFAULT_USER: app
+      RABBITMQ_DEFAULT_PASS: app
     volumes:
       - ./rabbitmq/definitions.json:/etc/rabbitmq/definitions.json
 
@@ -19,7 +21,7 @@ services:
   frontend:
     build: ./frontend_go
     environment:
-      AMQP_URL: amqp://guest:guest@rabbitmq:5672/
+      AMQP_URL: amqp://app:app@rabbitmq:5672/
       DATABASE_URL: postgres://postgres:postgres@db:5432/maddhatchery?sslmode=disable
       RMQ_EXCHANGE: orders.direct
     volumes:
@@ -33,12 +35,12 @@ services:
     image: python:3.12-slim
     working_dir: /app
     environment:
-      AMQP_URL: amqp://guest:guest@rabbitmq:5672/
+      AMQP_URL: amqp://app:app@rabbitmq:5672/
       DATABASE_URL: postgres://postgres:postgres@db:5432/maddhatchery?sslmode=disable
       RMQ_EXCHANGE: orders.direct
     volumes:
       - ./workers:/app
-    command: ["python","order_worker.py"]
+    command: ["/bin/sh","-c","pip install -r requirements.txt && python order_worker.py"]
     depends_on:
       - rabbitmq
       - db
@@ -47,7 +49,7 @@ services:
     image: python:3.12-slim
     working_dir: /app
     environment:
-      AMQP_URL: amqp://guest:guest@rabbitmq:5672/
+      AMQP_URL: amqp://app:app@rabbitmq:5672/
       DATABASE_URL: postgres://postgres:postgres@db:5432/maddhatchery?sslmode=disable
       RMQ_EXCHANGE: orders.direct
       OUTPUT_DIR: /out
@@ -61,7 +63,7 @@ services:
     image: python:3.12-slim
     working_dir: /app
     environment:
-      AMQP_URL: amqp://guest:guest@rabbitmq:5672/
+      AMQP_URL: amqp://app:app@rabbitmq:5672/
       DATABASE_URL: postgres://postgres:postgres@db:5432/maddhatchery?sslmode=disable
       RMQ_EXCHANGE: orders.direct
     volumes: [ "./workers:/app" ]
@@ -72,7 +74,7 @@ services:
     image: python:3.12-slim
     working_dir: /app
     environment:
-      AMQP_URL: amqp://guest:guest@rabbitmq:5672/
+      AMQP_URL: amqp://app:app@rabbitmq:5672/
       DATABASE_URL: postgres://postgres:postgres@db:5432/maddhatchery?sslmode=disable
       RMQ_EXCHANGE: orders.direct
     volumes: [ "./workers:/app" ]
