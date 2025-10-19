@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -71,6 +72,55 @@ func env(key, def string) string {
 		return v
 	}
 	return def
+}
+
+func envInt(key string, def int) int {
+	if v := os.Getenv(key); v != "" {
+		if i, err := strconv.Atoi(v); err == nil {
+			return i
+		}
+		log.Printf("invalid value for %s: %q", key, v)
+	}
+	return def
+}
+
+func envDuration(key string, def time.Duration) time.Duration {
+	if v := os.Getenv(key); v != "" {
+		if d, err := time.ParseDuration(v); err == nil {
+			return d
+		}
+		log.Printf("invalid duration for %s: %q", key, v)
+	}
+	return def
+}
+
+func fileExists(path string) bool {
+	if path == "" {
+		return false
+	}
+	info, err := os.Stat(path)
+	if err != nil {
+		return false
+	}
+	return !info.IsDir()
+}
+
+func dialAMQPWithRetry(url string, attempts int, delay time.Duration) (*amqp.Connection, error) {
+	for i := 0; attempts <= 0 || i < attempts; i++ {
+		conn, err := amqp.Dial(url)
+		if err == nil {
+			if i > 0 {
+				log.Printf("amqp dial succeeded after %d attempt(s)", i+1)
+			}
+			return conn, nil
+		}
+		log.Printf("amqp dial attempt %d failed: %v", i+1, err)
+		time.Sleep(delay)
+	}
+	if attempts <= 0 {
+		return nil, fmt.Errorf("amqp dial: retries disabled but connection not established")
+	}
+	return nil, fmt.Errorf("amqp dial: exhausted %d attempts", attempts)
 }
 
 func health(w http.ResponseWriter, r *http.Request) {
@@ -227,9 +277,12 @@ func adminInvoiceCreate(db *sql.DB) http.HandlerFunc {
 func main() {
 	// AMQP
 	amqpURL := env("AMQP_URL", "amqp://guest:guest@rabbitmq:5672/")
-	conn, err := amqp.Dial(amqpURL)
+	amqpRetries := envInt("AMQP_CONNECT_RETRIES", 30)
+	amqpDelay := envDuration("AMQP_CONNECT_INTERVAL", time.Second)
+
+	conn, err := dialAMQPWithRetry(amqpURL, amqpRetries, amqpDelay)
 	if err != nil {
-		log.Fatalf("amqp dial: %v", err)
+		log.Fatalf("%v", err)
 	}
 	defer conn.Close()
 	ch, err := conn.Channel()
@@ -272,6 +325,15 @@ func main() {
 	addr := env("HTTP_ADDR", ":8443")
 	certFile := env("TLS_CERT_FILE", "/certs/fullchain.pem")
 	keyFile := env("TLS_KEY_FILE", "/certs/privkey.pem")
+
+	if !fileExists(certFile) && fileExists("/certs/server.crt") {
+		log.Printf("TLS cert %q not found, falling back to /certs/server.crt", certFile)
+		certFile = "/certs/server.crt"
+	}
+	if !fileExists(keyFile) && fileExists("/certs/server.key") {
+		log.Printf("TLS key %q not found, falling back to /certs/server.key", keyFile)
+		keyFile = "/certs/server.key"
+	}
 
 	server := &http.Server{
 		Addr:    addr,
