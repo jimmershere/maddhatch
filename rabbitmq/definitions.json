@@ -62,13 +62,15 @@
       "name": "orders.direct",
       "vhost": "/",
       "type": "direct",
-      "durable": true
+      "durable": true,
+      "auto_delete": false
     },
     {
       "name": "orders.dlx",
       "vhost": "/",
       "type": "fanout",
-      "durable": true
+      "durable": true,
+      "auto_delete": false
     }
   ],
   "bindings": [
