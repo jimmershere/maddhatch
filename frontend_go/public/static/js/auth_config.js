@@ -5,6 +5,12 @@
   function updateLoginLinks() {
     document.querySelectorAll('[data-login-link]').forEach((el) => {
       const desired = el.getAttribute('data-login-target');
+      const href = el.getAttribute('href') || '';
+
+      if (!desired && href.includes('/login.html')) {
+        return;
+      }
+
       const redirect = desired && desired.length ? desired : window.location.pathname + window.location.search;
       const target = loginStart + '?rd=' + encodeURIComponent(redirect);
       el.setAttribute('href', target);
