@@ -221,7 +221,7 @@ app.add_middleware(
 
 class RegistrationRequest(BaseModel):
     email: EmailStr
-    username: constr(min_length=3, max_length=64, regex=r"^[A-Za-z0-9_.-]+$")
+    username: constr(min_length=3, max_length=64, pattern=r"^[A-Za-z0-9_.-]+$")
     password: constr(min_length=8, max_length=256)
     display_name: Optional[str] = None
 
