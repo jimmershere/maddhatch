@@ -108,7 +108,20 @@ The script prints the password read from `~/.msmtp_pass`, surfaces the active
 `passwordeval` line from `~/.msmtprc`, and then sends a verbose test message via
 `msmtp`. If `msmtp` reports `cat … not found`, make sure the `passwordeval` line in
 `~/.msmtprc` does **not** include inline comments—put the command on its own line so
-`msmtp` can execute it verbatim.
+`msmtp` can execute it verbatim. When the new `smtp` container is running the
+generated configuration lives in `./smtp/config`; the helper automatically falls
+back to those files when `MSMTP_CONFIG` and `MSMTP_PASSWORD_FILE` are unset.
+
+### Local SMTP relay container
+
+`compose.yaml` now includes an `smtp` service that exposes `msmtpd` on
+`localhost:1025` and relays outbound mail through your upstream provider (for
+example SendGrid or SES). Populate the usual SMTP environment variables in
+`.env`, start the service with `docker compose up smtp`, and point the API/worker
+stack at `smtp.maddhatchery.com:1025` (inside Compose) or `localhost:1025` (on the
+host). The generated `msmtp` configuration is stored under `./smtp/config` so you
+can re-use the same credentials locally when running `scripts/msmtp_send_test.sh`.
+Override `SMTP_DOMAIN` if your relay expects a different EHLO hostname.
 
 Set `MADDH_OAUTH2_PROXY_URL` to the public oauth2-proxy endpoint (Keycloak, Okta, etc.). If the frontend reaches it via an internal host, also set `MADDH_OAUTH2_PROXY_INTERNAL_URL`. The Go service proxies `/oauth2/*` there and exposes the configured login start path via `/config.js`.
 
