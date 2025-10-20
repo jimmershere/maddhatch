@@ -95,10 +95,24 @@ class Settings:
             "LDAP_TLS_KEY_FILE"
         )
 
-        smtp_host = os.getenv("SMTP_HOST") or None
+        smtp_host = (
+            os.getenv("SMTP_HOST")
+            or os.getenv("SMTP_SERVER")
+            or os.getenv("SMTP_ADDRESS")
+            or None
+        )
         smtp_port = int(os.getenv("SMTP_PORT", "587"))
-        smtp_user = os.getenv("SMTP_USER") or None
-        smtp_password = os.getenv("SMTP_PASS") or None
+        smtp_user = (
+            os.getenv("SMTP_USER")
+            or os.getenv("SMTP_USERNAME")
+            or os.getenv("SMTP_LOGIN")
+            or None
+        )
+        smtp_password = (
+            os.getenv("SMTP_PASS")
+            or os.getenv("SMTP_PASSWORD")
+            or None
+        )
         smtp_sender = os.getenv("SMTP_FROM") or (smtp_user or "noreply@maddhatchery.com")
         public_base_url = os.getenv("MADDH_PUBLIC_BASE_URL", "https://maddhatchery.com")
         public_base_url = public_base_url.rstrip("/") or "https://maddhatchery.com"
