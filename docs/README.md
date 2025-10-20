@@ -76,6 +76,9 @@ MADDH_OAUTH2_PROXY_URL=http://rbac:4180/oauth2
 MADDH_OAUTH2_PROXY_INSECURE_SKIP_VERIFY=false
 MADDH_OAUTH2_START=/oauth2/start
 RBAC_SESSION_SECRET=rbac-session-secret
+# Expose LDAP on a high, non-privileged host port by default; switch to 389 if
+# you're running with elevated privileges and want the standard port on the host.
+LDAP_HOST_PORT=1389
 ```
 
 Set `MADDH_OAUTH2_PROXY_URL` to the public oauth2-proxy endpoint (Keycloak, Okta, etc.). If the frontend reaches it via an internal host, also set `MADDH_OAUTH2_PROXY_INTERNAL_URL`. The Go service proxies `/oauth2/*` there and exposes the configured login start path via `/config.js`.
@@ -108,5 +111,5 @@ Set `MADDH_LDAP_ENABLED=false` in `.env` if you want to skip the directory boots
 
 The original AMQP workers continue to process orders, generate invoices, and emit cash/tax events. Extend them as needed for your downstream tooling.
 
-> TLS certs: mount to `./config/certs/fullchain.pem` and `privkey.pem`. The same bundle is mapped into the LDAP container.
+> TLS certs: mount to `./config/certs/fullchain.pem` and `privkey.pem`. The same bundle is mapped into the LDAP container, and the frontend serves HTTPS on `https://localhost:8443` by default.
 
