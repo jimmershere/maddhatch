@@ -21,6 +21,7 @@ from ldap3 import (
     Server,
     Tls,
 )
+from ldap3.core.exceptions import LDAPSocketOpenError, LDAPStartTLSError
 from pydantic import BaseModel, Field
 
 
@@ -251,24 +252,38 @@ def _use_ssl(settings: Settings) -> bool:
 def create_ldap_connection(settings: Settings, *, user: str, password: str) -> Connection:
     tls = build_tls(settings)
     use_ssl = _use_ssl(settings)
-    server = Server(
-        settings.ldap_host,
-        port=settings.ldap_port,
-        use_ssl=use_ssl,
-        get_info=ALL,
-        tls=tls,
+
+    start_tls_requested = (
+        settings.ldap_use_tls
+        and not use_ssl
+        and not getattr(settings, "_ldap_tls_failed", False)
     )
 
-    auto_bind = AUTO_BIND_DEFAULT
-    if settings.ldap_use_tls and not use_ssl:
-        auto_bind = AUTO_BIND_TLS_BEFORE_BIND
+    def _build_server(*, use_ssl_flag: bool, tls_config: Optional[Tls]) -> Server:
+        return Server(
+            settings.ldap_host,
+            port=settings.ldap_port,
+            use_ssl=use_ssl_flag,
+            get_info=ALL,
+            tls=tls_config,
+        )
 
-    return Connection(
-        server,
-        user=user,
-        password=password,
-        auto_bind=auto_bind,
-    )
+    server = _build_server(use_ssl_flag=use_ssl, tls_config=tls)
+    auto_bind = AUTO_BIND_TLS_BEFORE_BIND if start_tls_requested else AUTO_BIND_DEFAULT
+
+    try:
+        return Connection(server, user=user, password=password, auto_bind=auto_bind)
+    except (LDAPStartTLSError, LDAPSocketOpenError):
+        if not start_tls_requested:
+            raise
+        setattr(settings, "_ldap_tls_failed", True)
+        fallback_server = _build_server(use_ssl_flag=False, tls_config=None)
+        return Connection(
+            fallback_server,
+            user=user,
+            password=password,
+            auto_bind=AUTO_BIND_DEFAULT,
+        )
 
 
 def ensure_ldap_entries(settings: Settings):
