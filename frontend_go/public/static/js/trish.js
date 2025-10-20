@@ -125,9 +125,12 @@
       <button type="button" class="trish-toggle" aria-expanded="false">💬 Trish</button>
       <div class="trish-panel" hidden>
         <div class="trish-header">
-          <div>
-            <strong>Trish — Customer Advocate</strong>
-            <p>Live support ${support.escalationHours || ''}</p>
+          <div class="trish-identity">
+            <img src="/assets/trish.svg" alt="Trish, customer advocate" class="trish-avatar">
+            <div>
+              <strong>Trish — Customer Advocate</strong>
+              <p>Live support ${support.escalationHours || ''}</p>
+            </div>
           </div>
           <button type="button" class="trish-close" aria-label="Close">×</button>
         </div>
