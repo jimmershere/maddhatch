@@ -79,7 +79,19 @@ RBAC_SESSION_SECRET=rbac-session-secret
 # Expose LDAP on a high, non-privileged host port by default; switch to 389 if
 # you're running with elevated privileges and want the standard port on the host.
 LDAP_HOST_PORT=1389
+
+# SMTP configuration (aliases SMTP_SERVER/SMTP_USERNAME/SMTP_PASSWORD also work)
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=alerts@maddhatchery.com
+SMTP_PASSWORD=app-specific-password
+SMTP_FROM=Trish <alerts@maddhatchery.com>
 ```
+
+The API now recognizes the more common `SMTP_SERVER`, `SMTP_USERNAME`, and `SMTP_PASSWORD`
+environment variables alongside the existing `SMTP_HOST`, `SMTP_USER`, and `SMTP_PASS`
+names. Provide whichever variant matches your infrastructure so registration emails
+deliver successfully.
 
 Set `MADDH_OAUTH2_PROXY_URL` to the public oauth2-proxy endpoint (Keycloak, Okta, etc.). If the frontend reaches it via an internal host, also set `MADDH_OAUTH2_PROXY_INTERNAL_URL`. The Go service proxies `/oauth2/*` there and exposes the configured login start path via `/config.js`.
 
