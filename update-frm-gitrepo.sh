@@ -3,6 +3,10 @@
 #
 #
 podman-compose down
-git pull origin main
-podman-compose build || sleep 3 ; podman-compose up
+sudo chown -R jimmer config/certs && git pull origin main; rc=$?; sleep 5
+if [[ "$rc" -ne "0" ]]; then
+	echo "git pull FAILED"
+	exit 1
+fi
+podman-compose build && podman-compose up
 
