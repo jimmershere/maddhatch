@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+HOME="/home/jimmer"
+export SMTP_FROM="Trish <alerts@maddhatchery.com>"
+export SMTP_TEST_RECIPIENT=jimmershere@gmail.com
 CONFIG_FILE="${MSMTP_CONFIG:-$HOME/.msmtprc}"
 PASSWORD_FILE="${MSMTP_PASSWORD_FILE:-$HOME/.msmtp_pass}"
 ACCOUNT="${MSMTP_ACCOUNT:-default}"
