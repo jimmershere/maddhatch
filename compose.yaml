@@ -34,7 +34,7 @@ services:
       LDAP_TLS_KEY_FILENAME: ${LDAP_TLS_KEY_FILENAME:-privkey.pem}
       LDAP_TLS_CA_CRT_FILENAME: ${LDAP_TLS_CA_CRT_FILENAME:-fullchain.pem}
     ports:
-      - "${LDAP_HOST_PORT:-389}:389"
+      - "${LDAP_HOST_PORT:-1389}:389"
     volumes:
       - ldap_data:/var/lib/ldap
       - ldap_config:/etc/ldap/slapd.d

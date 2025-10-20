@@ -27,7 +27,7 @@ services:
   ldap:
     image: osixia/openldap:1.5.0
     env_file: .env
-    ports: ["${LDAP_HOST_PORT:-389}:389"]
+    ports: ["${LDAP_HOST_PORT:-1389}:389"]
     volumes:
       - ldap_data:/var/lib/ldap
       - ldap_config:/etc/ldap/slapd.d
@@ -66,6 +66,8 @@ services:
 
 `.env` drives the wiring:
 
+> **LDAP host port:** Rootless Podman/Docker cannot bind privileged ports (<1024), so the compose file defaults `LDAP_HOST_PORT` to `1389`. If you are running as root (or have raised `net.ipv4.ip_unprivileged_port_start`), set `LDAP_HOST_PORT=389` in `.env` to expose the directory on the standard port.
+
 ```ini
 DATABASE_URL=postgres://postgres:postgres@db:5432/maddhatchery?sslmode=disable
 MADDH_SHARED_SECRET=super-secret-token
@@ -74,6 +76,9 @@ MADDH_OAUTH2_PROXY_URL=http://rbac:4180/oauth2
 MADDH_OAUTH2_PROXY_INSECURE_SKIP_VERIFY=false
 MADDH_OAUTH2_START=/oauth2/start
 RBAC_SESSION_SECRET=rbac-session-secret
+# Expose LDAP on a high, non-privileged host port by default; switch to 389 if
+# you're running with elevated privileges and want the standard port on the host.
+LDAP_HOST_PORT=1389
 ```
 
 Set `MADDH_OAUTH2_PROXY_URL` to the public oauth2-proxy endpoint (Keycloak, Okta, etc.). If the frontend reaches it via an internal host, also set `MADDH_OAUTH2_PROXY_INTERNAL_URL`. The Go service proxies `/oauth2/*` there and exposes the configured login start path via `/config.js`.
@@ -106,5 +111,5 @@ Set `MADDH_LDAP_ENABLED=false` in `.env` if you want to skip the directory boots
 
 The original AMQP workers continue to process orders, generate invoices, and emit cash/tax events. Extend them as needed for your downstream tooling.
 
-> TLS certs: mount to `./config/certs/fullchain.pem` and `privkey.pem`. The same bundle is mapped into the LDAP container.
+> TLS certs: mount to `./config/certs/fullchain.pem` and `privkey.pem`. The same bundle is mapped into the LDAP container, and the frontend serves HTTPS on `https://localhost:8443` by default.
 
