@@ -4,6 +4,7 @@ import hashlib
 import os
 import secrets
 import ssl
+from contextlib import suppress
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Any, Dict, List, Optional
@@ -68,9 +69,15 @@ class Settings:
         ldap_bind_password = os.getenv("MADDH_LDAP_BIND_PASSWORD", "3wm078uu")
         ldap_base_dn = os.getenv("MADDH_LDAP_BASE_DN", "dc=example,dc=com")
         ldap_bootstrap_password = os.getenv("MADDH_LDAP_BOOTSTRAP_PASSWORD", "3wm078uu")
-        ldap_tls_ca = os.getenv("LDAP_TLS_CA_FILE")
-        ldap_tls_cert = os.getenv("LDAP_TLS_CERT_FILE")
-        ldap_tls_key = os.getenv("LDAP_TLS_KEY_FILE")
+        ldap_tls_ca = os.getenv("MADDH_LDAP_TLS_CA_FILE") or os.getenv(
+            "LDAP_TLS_CA_FILE"
+        )
+        ldap_tls_cert = os.getenv("MADDH_LDAP_TLS_CERT_FILE") or os.getenv(
+            "LDAP_TLS_CERT_FILE"
+        )
+        ldap_tls_key = os.getenv("MADDH_LDAP_TLS_KEY_FILE") or os.getenv(
+            "LDAP_TLS_KEY_FILE"
+        )
 
         return cls(
             database_url=database_url,
@@ -238,9 +245,8 @@ def build_tls(settings: Settings) -> Optional[Tls]:
     tls.version = ssl.PROTOCOL_TLSv1_2
     if settings.ldap_tls_ca:
         tls.ca_certs_file = settings.ldap_tls_ca
-    if settings.ldap_tls_cert:
+    if settings.ldap_tls_cert and settings.ldap_tls_key:
         tls.local_certificate_file = settings.ldap_tls_cert
-    if settings.ldap_tls_key:
         tls.local_private_key_file = settings.ldap_tls_key
     return tls
 
@@ -284,7 +290,8 @@ def create_ldap_connection(settings: Settings, *, user: str, password: str) -> C
             if not conn.bound:
                 conn.bind()
         except Exception:
-            conn.unbind()
+            with suppress(Exception):
+                conn.unbind()
             raise
         return conn
 
