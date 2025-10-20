@@ -38,7 +38,7 @@ services:
     volumes:
       - ldap_data:/var/lib/ldap
       - ldap_config:/etc/ldap/slapd.d
-      - ./config/certs:/container/service/slapd/assets/certs:rw
+      - ./config/certs:/container/service/slapd/assets/certs:rw,z
 
   api:
     build: ./api
@@ -50,7 +50,7 @@ services:
       - db
       - ldap
     volumes:
-      - ./config/certs:/certs:ro
+      - ./config/certs:/certs:ro,z
 
   rbac:
     build: ./rbac
@@ -80,7 +80,7 @@ services:
       MADDH_OAUTH2_START: ${MADDH_OAUTH2_START:-/oauth2/start}
       RBAC_SESSION_SECRET: ${RBAC_SESSION_SECRET:-rbac-session-secret}
     volumes:
-      - ./config/certs:/certs:ro
+      - ./config/certs:/certs:ro,z
     ports: ["8443:8443"]
     depends_on:
       - rabbitmq
