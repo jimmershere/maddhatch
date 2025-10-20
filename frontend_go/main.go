@@ -801,7 +801,11 @@ func adminAuthProviderToggle(api *apiClient) http.HandlerFunc {
 func main() {
 	// AMQP
 	amqpURL := env("AMQP_URL", "amqp://guest:guest@rabbitmq:5672/")
-	amqpRetries := envInt("AMQP_CONNECT_RETRIES", 30)
+	// Allow the frontend to patiently wait for RabbitMQ to come online. The
+	// default of zero means "retry forever", which keeps the container running
+	// instead of crashing if the broker is temporarily unavailable during
+	// startup (a common scenario when compose is still bringing the stack up).
+	amqpRetries := envInt("AMQP_CONNECT_RETRIES", 0)
 	amqpDelay := envDuration("AMQP_CONNECT_INTERVAL", time.Second)
 
 	conn, err := dialAMQPWithRetry(amqpURL, amqpRetries, amqpDelay)
