@@ -27,7 +27,7 @@ services:
   ldap:
     image: osixia/openldap:1.5.0
     env_file: .env
-    ports: ["${LDAP_HOST_PORT:-389}:389"]
+    ports: ["${LDAP_HOST_PORT:-1389}:389"]
     volumes:
       - ldap_data:/var/lib/ldap
       - ldap_config:/etc/ldap/slapd.d
@@ -65,6 +65,8 @@ services:
 ```
 
 `.env` drives the wiring:
+
+> **LDAP host port:** Rootless Podman/Docker cannot bind privileged ports (<1024), so the compose file defaults `LDAP_HOST_PORT` to `1389`. If you are running as root (or have raised `net.ipv4.ip_unprivileged_port_start`), set `LDAP_HOST_PORT=389` in `.env` to expose the directory on the standard port.
 
 ```ini
 DATABASE_URL=postgres://postgres:postgres@db:5432/maddhatchery?sslmode=disable
