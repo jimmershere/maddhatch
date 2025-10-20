@@ -1,18 +1,21 @@
 import asyncio
 import base64
 import hashlib
+import logging
 import os
 import secrets
+import smtplib
 import ssl
 from contextlib import suppress
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
 import asyncpg
 from asyncpg import UniqueViolationError
 from fastapi import Depends, FastAPI, HTTPException, Request, status
 from fastapi.middleware.cors import CORSMiddleware
+from email.message import EmailMessage
 from ldap3 import (
     ALL,
     AUTO_BIND_DEFAULT,
@@ -27,10 +30,13 @@ from ldap3.core.exceptions import (
     LDAPSocketOpenError,
     LDAPStartTLSError,
 )
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, EmailStr, Field, constr
 
 
 DEFAULT_BOOTSTRAP_HASH = "pbkdf2_sha256$180000$n04XKKmoufacaPJx1ODKUg==$SxWQMn9fMgmvVWHJGp9uVe2aQ5FspwLqjFK1xmTPZpI="
+
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -50,6 +56,12 @@ class Settings:
     ldap_tls_ca: Optional[str]
     ldap_tls_cert: Optional[str]
     ldap_tls_key: Optional[str]
+    smtp_host: Optional[str]
+    smtp_port: int
+    smtp_user: Optional[str]
+    smtp_password: Optional[str]
+    smtp_sender: Optional[str]
+    public_base_url: str
 
     @classmethod
     def load(cls) -> "Settings":
@@ -83,6 +95,14 @@ class Settings:
             "LDAP_TLS_KEY_FILE"
         )
 
+        smtp_host = os.getenv("SMTP_HOST") or None
+        smtp_port = int(os.getenv("SMTP_PORT", "587"))
+        smtp_user = os.getenv("SMTP_USER") or None
+        smtp_password = os.getenv("SMTP_PASS") or None
+        smtp_sender = os.getenv("SMTP_FROM") or (smtp_user or "noreply@maddhatchery.com")
+        public_base_url = os.getenv("MADDH_PUBLIC_BASE_URL", "https://maddhatchery.com")
+        public_base_url = public_base_url.rstrip("/") or "https://maddhatchery.com"
+
         return cls(
             database_url=database_url,
             shared_secret=shared_secret,
@@ -99,6 +119,12 @@ class Settings:
             ldap_tls_ca=ldap_tls_ca,
             ldap_tls_cert=ldap_tls_cert,
             ldap_tls_key=ldap_tls_key,
+            smtp_host=smtp_host,
+            smtp_port=smtp_port,
+            smtp_user=smtp_user,
+            smtp_password=smtp_password,
+            smtp_sender=smtp_sender,
+            public_base_url=public_base_url,
         )
 
 
@@ -127,6 +153,48 @@ def verify_password(password: str, stored: str) -> bool:
         return False
 
 
+def hash_token(token: str) -> str:
+    return hashlib.sha256(token.encode()).hexdigest()
+
+
+def send_confirmation_email(settings: Settings, email: str, username: str, token: str) -> None:
+    if not settings.smtp_host:
+        logger.info("SMTP host not configured; skipping confirmation email for %s", email)
+        return
+
+    link = f"{settings.public_base_url}/login.html?token={token}"
+    msg = EmailMessage()
+    msg["To"] = email
+    msg["From"] = settings.smtp_sender or "noreply@maddhatchery.com"
+    msg["Subject"] = "Confirm your Madd Hatchery account"
+    msg.set_content(
+        (
+            "Howdy {username}!\n\n"
+            "Thanks for requesting a Madd Hatchery account. "
+            "Tap the button below (or copy the link) to activate your login.\n\n"
+            "Activate: {link}\n\n"
+            "If you did not request access you can ignore this email."
+        ).format(username=username, link=link)
+    )
+
+    try:
+        if settings.smtp_port == 465:
+            smtp: smtplib.SMTP = smtplib.SMTP_SSL(settings.smtp_host, settings.smtp_port)
+        else:
+            smtp = smtplib.SMTP(settings.smtp_host, settings.smtp_port)
+        with smtp as server:
+            server.ehlo()
+            if settings.smtp_port != 465:
+                with suppress(smtplib.SMTPException):
+                    server.starttls()
+                    server.ehlo()
+            if settings.smtp_user and settings.smtp_password:
+                server.login(settings.smtp_user, settings.smtp_password)
+            server.send_message(msg)
+    except Exception as exc:
+        logger.exception("failed to send confirmation email to %s: %s", email, exc)
+
+
 def require_shared_secret(request: Request, settings: Settings):
     token = request.headers.get("X-Maddh-Shared-Secret")
     if not token or token != settings.shared_secret:
@@ -149,6 +217,122 @@ app.add_middleware(
     allow_methods=["*"] ,
     allow_headers=["*"] ,
 )
+
+
+@app.post("/auth/register", response_model=RegistrationResponse, status_code=status.HTTP_202_ACCEPTED)
+async def auth_register(
+    payload: RegistrationRequest,
+    pool: asyncpg.Pool = Depends(get_pool),
+    settings: Settings = Depends(get_settings),
+):
+    username = payload.username.strip()
+    email = payload.email.strip().lower()
+    display_name = (payload.display_name or username).strip() or username
+
+    async with pool.acquire() as conn:
+        async with conn.transaction():
+            existing_user = await conn.fetchrow(
+                "SELECT 1 FROM app_users WHERE lower(username)=lower($1)", username
+            )
+            if existing_user:
+                raise HTTPException(
+                    status_code=status.HTTP_409_CONFLICT,
+                    detail="user exists",
+                )
+
+            await conn.execute(
+                "DELETE FROM app_user_registrations WHERE lower(username)=lower($1) OR lower(email)=lower($2)",
+                username,
+                email,
+            )
+
+            token = secrets.token_urlsafe(32)
+            pwd_hash = hash_password(payload.password)
+            token_digest = hash_token(token)
+
+            await conn.execute(
+                """
+                INSERT INTO app_user_registrations (email, username, display_name, password_hash, token_hash)
+                VALUES ($1, $2, $3, $4, $5)
+                """,
+                email,
+                username,
+                display_name,
+                pwd_hash,
+                token_digest,
+            )
+
+    loop = asyncio.get_running_loop()
+    await loop.run_in_executor(
+        None, send_confirmation_email, settings, email, username, token
+    )
+
+    return RegistrationResponse(
+        message="Thanks! Check your email for a confirmation link to activate your account."
+    )
+
+
+@app.post("/auth/register/confirm", response_model=RegistrationResponse)
+async def auth_register_confirm(
+    payload: RegistrationConfirmRequest,
+    pool: asyncpg.Pool = Depends(get_pool),
+    settings: Settings = Depends(get_settings),
+):
+    token_value = payload.token.strip()
+    if not token_value:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="token required")
+
+    digest = hash_token(token_value)
+
+    async with pool.acquire() as conn:
+        async with conn.transaction():
+            record = await conn.fetchrow(
+                """
+                SELECT id, email, username, display_name, password_hash, expires_at, confirmed_at
+                FROM app_user_registrations
+                WHERE token_hash=$1
+                """,
+                digest,
+            )
+
+            if not record:
+                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="invalid token")
+
+            if record["confirmed_at"]:
+                return RegistrationResponse(message="Account already activated. You can sign in now.")
+
+            if record["expires_at"] and record["expires_at"] < datetime.now(timezone.utc):
+                await conn.execute(
+                    "DELETE FROM app_user_registrations WHERE id=$1",
+                    record["id"],
+                )
+                raise HTTPException(status_code=status.HTTP_410_GONE, detail="token expired")
+
+            user_exists = await conn.fetchrow(
+                "SELECT 1 FROM app_users WHERE lower(username)=lower($1)",
+                record["username"],
+            )
+
+            if not user_exists:
+                try:
+                    await conn.execute(
+                        """
+                        INSERT INTO app_users (username, display_name, password_hash, role, can_portal, can_submit, can_admin)
+                        VALUES ($1, $2, $3, 'view', true, false, false)
+                        """,
+                        record["username"],
+                        record["display_name"] or record["username"],
+                        record["password_hash"],
+                    )
+                except UniqueViolationError:
+                    logger.info("user %s already exists during confirm", record["username"])
+
+            await conn.execute(
+                "UPDATE app_user_registrations SET confirmed_at=now() WHERE id=$1",
+                record["id"],
+            )
+
+    return RegistrationResponse(message="Your account is active — you can log in now.")
 
 
 class LoginRequest(BaseModel):
@@ -193,6 +377,21 @@ class UserUpdate(BaseModel):
     can_portal: Optional[bool] = None
     can_submit: Optional[bool] = None
     can_admin: Optional[bool] = None
+
+
+class RegistrationRequest(BaseModel):
+    email: EmailStr
+    username: constr(min_length=3, max_length=64, regex=r"^[A-Za-z0-9_.-]+$")
+    password: constr(min_length=8, max_length=256)
+    display_name: Optional[str] = None
+
+
+class RegistrationResponse(BaseModel):
+    message: str
+
+
+class RegistrationConfirmRequest(BaseModel):
+    token: constr(min_length=8, max_length=256)
 
 
 class SupportTicketIn(BaseModel):

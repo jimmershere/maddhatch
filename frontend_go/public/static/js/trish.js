@@ -105,6 +105,14 @@
       return;
     }
 
+    if (/(login|sign ?in|account|register)/i.test(message)) {
+      addMessage(
+        'trish',
+        'Need portal access? Head to <a href="/login.html">login.html</a>. You can launch the secure login or fill out the “Request an account” form — I’ll email you a confirmation link right away.'
+      );
+      return;
+    }
+
     if (/(error|trouble|issue|broken|fail)/i.test(message)) {
       pendingTicket = { summary: message };
       const helpText = (support.triage && support.triage.severityHelp) || 'Tell me a severity from 1 (outage) to 4 (heads up).';
