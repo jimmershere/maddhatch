@@ -219,6 +219,21 @@ app.add_middleware(
 )
 
 
+class RegistrationRequest(BaseModel):
+    email: EmailStr
+    username: constr(min_length=3, max_length=64, regex=r"^[A-Za-z0-9_.-]+$")
+    password: constr(min_length=8, max_length=256)
+    display_name: Optional[str] = None
+
+
+class RegistrationResponse(BaseModel):
+    message: str
+
+
+class RegistrationConfirmRequest(BaseModel):
+    token: constr(min_length=8, max_length=256)
+
+
 @app.post("/auth/register", response_model=RegistrationResponse, status_code=status.HTTP_202_ACCEPTED)
 async def auth_register(
     payload: RegistrationRequest,
@@ -377,21 +392,6 @@ class UserUpdate(BaseModel):
     can_portal: Optional[bool] = None
     can_submit: Optional[bool] = None
     can_admin: Optional[bool] = None
-
-
-class RegistrationRequest(BaseModel):
-    email: EmailStr
-    username: constr(min_length=3, max_length=64, regex=r"^[A-Za-z0-9_.-]+$")
-    password: constr(min_length=8, max_length=256)
-    display_name: Optional[str] = None
-
-
-class RegistrationResponse(BaseModel):
-    message: str
-
-
-class RegistrationConfirmRequest(BaseModel):
-    token: constr(min_length=8, max_length=256)
 
 
 class SupportTicketIn(BaseModel):
