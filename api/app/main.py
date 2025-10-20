@@ -12,7 +12,15 @@ import asyncpg
 from asyncpg import UniqueViolationError
 from fastapi import Depends, FastAPI, HTTPException, Request, status
 from fastapi.middleware.cors import CORSMiddleware
-from ldap3 import ALL, Connection, MODIFY_REPLACE, Server, Tls
+from ldap3 import (
+    ALL,
+    AUTO_BIND_DEFAULT,
+    AUTO_BIND_TLS_BEFORE_BIND,
+    Connection,
+    MODIFY_REPLACE,
+    Server,
+    Tls,
+)
 from pydantic import BaseModel, Field
 
 
@@ -160,7 +168,7 @@ class UserCreate(BaseModel):
     username: str
     password: str
     display_name: Optional[str] = None
-    role: str = Field(default="view", regex="^(view|submit|admin)$")
+    role: str = Field(default="view", pattern="^(view|submit|admin)$")
     can_portal: bool = True
     can_submit: bool = False
     can_admin: bool = False
@@ -169,7 +177,7 @@ class UserCreate(BaseModel):
 class UserUpdate(BaseModel):
     password: Optional[str] = None
     display_name: Optional[str] = None
-    role: Optional[str] = Field(default=None, regex="^(view|submit|admin)$")
+    role: Optional[str] = Field(default=None, pattern="^(view|submit|admin)$")
     can_portal: Optional[bool] = None
     can_submit: Optional[bool] = None
     can_admin: Optional[bool] = None
@@ -236,20 +244,38 @@ def build_tls(settings: Settings) -> Optional[Tls]:
     return tls
 
 
-def ensure_ldap_entries(settings: Settings):
+def _use_ssl(settings: Settings) -> bool:
+    return settings.ldap_use_tls and settings.ldap_port == 636
+
+
+def create_ldap_connection(settings: Settings, *, user: str, password: str) -> Connection:
     tls = build_tls(settings)
+    use_ssl = _use_ssl(settings)
     server = Server(
         settings.ldap_host,
         port=settings.ldap_port,
-        use_ssl=settings.ldap_use_tls,
+        use_ssl=use_ssl,
         get_info=ALL,
         tls=tls,
     )
-    conn = Connection(
+
+    auto_bind = AUTO_BIND_DEFAULT
+    if settings.ldap_use_tls and not use_ssl:
+        auto_bind = AUTO_BIND_TLS_BEFORE_BIND
+
+    return Connection(
         server,
+        user=user,
+        password=password,
+        auto_bind=auto_bind,
+    )
+
+
+def ensure_ldap_entries(settings: Settings):
+    conn = create_ldap_connection(
+        settings,
         user=settings.ldap_bind_dn,
         password=settings.ldap_bind_password,
-        auto_bind=True,
     )
 
     base_dn = settings.ldap_base_dn
@@ -296,17 +322,9 @@ def ensure_ldap_entries(settings: Settings):
 
 
 def ldap_authenticate(settings: Settings, username: str, password: str) -> Dict[str, Any]:
-    tls = build_tls(settings)
-    server = Server(
-        settings.ldap_host,
-        port=settings.ldap_port,
-        use_ssl=settings.ldap_use_tls,
-        get_info=ALL,
-        tls=tls,
-    )
     user_dn = f"uid={username},ou=users,{settings.ldap_base_dn}"
     try:
-        conn = Connection(server, user=user_dn, password=password, auto_bind=True)
+        conn = create_ldap_connection(settings, user=user_dn, password=password)
     except Exception:
         return {}
 
