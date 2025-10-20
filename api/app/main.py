@@ -268,22 +268,33 @@ def create_ldap_connection(settings: Settings, *, user: str, password: str) -> C
             tls=tls_config,
         )
 
-    server = _build_server(use_ssl_flag=use_ssl, tls_config=tls)
-    auto_bind = AUTO_BIND_TLS_BEFORE_BIND if start_tls_requested else AUTO_BIND_DEFAULT
+    def _connect(*, use_ssl_flag: bool, tls_config: Optional[Tls], start_tls: bool) -> Connection:
+        server = _build_server(use_ssl_flag=use_ssl_flag, tls_config=tls_config)
+        conn = Connection(
+            server,
+            user=user,
+            password=password,
+            auto_bind=AUTO_BIND_DEFAULT,
+            raise_exceptions=True,
+        )
+        try:
+            conn.open()
+            if start_tls:
+                conn.start_tls()
+            if not conn.bound:
+                conn.bind()
+        except Exception:
+            conn.unbind()
+            raise
+        return conn
 
     try:
-        return Connection(server, user=user, password=password, auto_bind=auto_bind)
+        return _connect(use_ssl_flag=use_ssl, tls_config=tls, start_tls=start_tls_requested)
     except (LDAPStartTLSError, LDAPSocketOpenError):
         if not start_tls_requested:
             raise
         setattr(settings, "_ldap_tls_failed", True)
-        fallback_server = _build_server(use_ssl_flag=False, tls_config=None)
-        return Connection(
-            fallback_server,
-            user=user,
-            password=password,
-            auto_bind=AUTO_BIND_DEFAULT,
-        )
+        return _connect(use_ssl_flag=False, tls_config=None, start_tls=False)
 
 
 def ensure_ldap_entries(settings: Settings):
