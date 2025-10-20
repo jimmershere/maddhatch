@@ -4,6 +4,7 @@ import hashlib
 import os
 import secrets
 import ssl
+from contextlib import suppress
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Any, Dict, List, Optional
@@ -284,7 +285,8 @@ def create_ldap_connection(settings: Settings, *, user: str, password: str) -> C
             if not conn.bound:
                 conn.bind()
         except Exception:
-            conn.unbind()
+            with suppress(Exception):
+                conn.unbind()
             raise
         return conn
 
