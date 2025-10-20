@@ -160,7 +160,7 @@ class UserCreate(BaseModel):
     username: str
     password: str
     display_name: Optional[str] = None
-    role: str = Field(default="view", regex="^(view|submit|admin)$")
+    role: str = Field(default="view", pattern="^(view|submit|admin)$")
     can_portal: bool = True
     can_submit: bool = False
     can_admin: bool = False
@@ -169,7 +169,7 @@ class UserCreate(BaseModel):
 class UserUpdate(BaseModel):
     password: Optional[str] = None
     display_name: Optional[str] = None
-    role: Optional[str] = Field(default=None, regex="^(view|submit|admin)$")
+    role: Optional[str] = Field(default=None, pattern="^(view|submit|admin)$")
     can_portal: Optional[bool] = None
     can_submit: Optional[bool] = None
     can_admin: Optional[bool] = None
