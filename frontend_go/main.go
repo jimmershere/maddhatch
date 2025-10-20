@@ -113,6 +113,21 @@ type authProvider struct {
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
+type registrationRequest struct {
+	Email       string `json:"email"`
+	Username    string `json:"username"`
+	Password    string `json:"password"`
+	DisplayName string `json:"display_name,omitempty"`
+}
+
+type registrationConfirmRequest struct {
+	Token string `json:"token"`
+}
+
+type registrationResponse struct {
+	Message string `json:"message"`
+}
+
 type frontendConfig struct {
 	OAuthProxyURL string `json:"oauthProxyUrl"`
 	OAuthStart    string `json:"oauthStart"`
@@ -299,6 +314,19 @@ func (c *apiClient) createSupportTicket(ctx context.Context, ticket supportTicke
 func (c *apiClient) listSupportTickets(ctx context.Context) ([]supportTicket, error) {
 	var out []supportTicket
 	err := c.do(ctx, http.MethodGet, "/admin/tickets", nil, &out)
+	return out, err
+}
+
+func (c *apiClient) registerAccount(ctx context.Context, req registrationRequest) (registrationResponse, error) {
+	var out registrationResponse
+	err := c.do(ctx, http.MethodPost, "/auth/register", req, &out)
+	return out, err
+}
+
+func (c *apiClient) confirmRegistration(ctx context.Context, token string) (registrationResponse, error) {
+	payload := registrationConfirmRequest{Token: token}
+	var out registrationResponse
+	err := c.do(ctx, http.MethodPost, "/auth/register/confirm", payload, &out)
 	return out, err
 }
 
@@ -664,6 +692,60 @@ func supportTicketCreate(api *apiClient) http.HandlerFunc {
 	}
 }
 
+func registerAccount(api *apiClient) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if api == nil {
+			respondError(w, http.StatusServiceUnavailable, "registration unavailable")
+			return
+		}
+		defer r.Body.Close()
+		var req registrationRequest
+		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+			respondError(w, http.StatusBadRequest, "invalid json")
+			return
+		}
+		req.Email = strings.TrimSpace(req.Email)
+		req.Username = strings.TrimSpace(req.Username)
+		req.Password = strings.TrimSpace(req.Password)
+		if req.Email == "" || req.Username == "" || req.Password == "" {
+			respondError(w, http.StatusBadRequest, "email, username, and password required")
+			return
+		}
+		res, err := api.registerAccount(r.Context(), req)
+		if err != nil {
+			respondError(w, http.StatusBadGateway, err.Error())
+			return
+		}
+		respondJSON(w, http.StatusAccepted, res)
+	}
+}
+
+func confirmRegistration(api *apiClient) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if api == nil {
+			respondError(w, http.StatusServiceUnavailable, "registration unavailable")
+			return
+		}
+		defer r.Body.Close()
+		var req registrationConfirmRequest
+		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+			respondError(w, http.StatusBadRequest, "invalid json")
+			return
+		}
+		req.Token = strings.TrimSpace(req.Token)
+		if req.Token == "" {
+			respondError(w, http.StatusBadRequest, "token required")
+			return
+		}
+		res, err := api.confirmRegistration(r.Context(), req.Token)
+		if err != nil {
+			respondError(w, http.StatusBadGateway, err.Error())
+			return
+		}
+		respondJSON(w, http.StatusOK, res)
+	}
+}
+
 func adminSupportTickets(api *apiClient) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if api == nil {
@@ -874,6 +956,8 @@ func main() {
 	r.HandleFunc("/healthz", health).Methods("GET")
 	r.HandleFunc("/api/order", orderHandler(ch)).Methods("POST")
 	r.HandleFunc("/support/tickets", supportTicketCreate(apiClientInstance)).Methods("POST")
+	r.HandleFunc("/auth/register", registerAccount(apiClientInstance)).Methods("POST")
+	r.HandleFunc("/auth/register/confirm", confirmRegistration(apiClientInstance)).Methods("POST")
 
 	if oauthProxy != nil {
 		r.PathPrefix("/oauth2/").Handler(oauthProxy)

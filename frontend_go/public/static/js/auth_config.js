@@ -4,7 +4,9 @@
 
   function updateLoginLinks() {
     document.querySelectorAll('[data-login-link]').forEach((el) => {
-      const target = loginStart + '?rd=' + encodeURIComponent(window.location.pathname + window.location.search);
+      const desired = el.getAttribute('data-login-target');
+      const redirect = desired && desired.length ? desired : window.location.pathname + window.location.search;
+      const target = loginStart + '?rd=' + encodeURIComponent(redirect);
       el.setAttribute('href', target);
     });
   }

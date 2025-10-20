@@ -3,39 +3,83 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Redirecting to sign-in…</title>
+  <title>Madd Hatchery Account Access</title>
   <link rel="stylesheet" href="/assets/styles.css">
-  <meta http-equiv="refresh" content="0; url=/oauth2/start">
 </head>
 <body>
 <header class="mh-header">
   <div class="brand">
     <img src="/assets/MaddHatchery.jpg" class="logo" alt="Madd Hatchery">
     <div>
-      <h1>Redirecting</h1>
-      <p class="tag">Taking you to the secure login portal…</p>
+      <h1>Madd Hatchery</h1>
+      <p class="tag">Secure portal for jams, jellies, and hatchery partners</p>
     </div>
   </div>
+  <nav class="nav">
+    <a href="/">Home</a>
+    <a href="/order.html">Order</a>
+    <a href="/about.html">About</a>
+    <a href="/support.html">Support</a>
+    <a data-login-link href="/login.html" aria-current="page">Login</a>
+  </nav>
+  <span class="badge-user" data-user-name hidden>Guest</span>
 </header>
-<section class="trish-tip-card" aria-label="Trish’s login help">
+
+<main class="login-layout" aria-labelledby="login-heading">
+  <section class="login-panel">
+    <h2 id="login-heading">Sign in to Madd Hatchery</h2>
+    <p>Access invoices, place wholesale orders, and follow hatch schedules through our secure customer portal.</p>
+    <button type="button" class="cta" data-login-button>Launch secure login</button>
+    <p class="muted">You can also <a data-login-link data-login-target="/order.html" href="/oauth2/start">open the portal in a new tab</a>.</p>
+    <div class="status-message" data-login-status hidden></div>
+  </section>
+
+  <section class="registration-panel" aria-labelledby="register-heading">
+    <h2 id="register-heading">Request an account</h2>
+    <p>Need access? Tell Trish who you are and we’ll send a confirmation email. Your account activates after you click the link.</p>
+    <form class="form registration-form" data-registration-form novalidate>
+      <label>
+        Email address
+        <input type="email" name="email" autocomplete="email" required>
+      </label>
+      <label>
+        Account name
+        <input type="text" name="username" autocomplete="username" minlength="3" maxlength="64" pattern="[A-Za-z0-9_.-]+" required>
+      </label>
+      <label>
+        Password
+        <input type="password" name="password" autocomplete="new-password" minlength="8" required>
+      </label>
+      <label>
+        Display name <span class="muted">(optional)</span>
+        <input type="text" name="display_name" autocomplete="name">
+      </label>
+      <button type="submit">Send confirmation email</button>
+    </form>
+    <div class="status-message" data-registration-message hidden role="status"></div>
+  </section>
+</main>
+
+<section class="trish-tip-card" aria-label="Trish’s portal help">
   <img src="/assets/trish.svg" alt="Trish, customer advocate" class="trish-tip-photo">
   <div class="trish-tip-bubble">
     <p class="trish-tip-title">Trish’s Tip</p>
-    <p class="trish-tip-text">On the portal screen, tap <strong>Create Account</strong> if you’re new. That sends me your details so I can approve access.</p>
-    <p class="trish-tip-text">Already registered? Log in and you’ll land back on <a href="/order.html">the order page</a> ready to go.</p>
+    <p class="trish-tip-text">Use the <strong>Request an account</strong> form to register yourself. I’ll send a confirmation email you can activate right away.</p>
+    <p class="trish-tip-text">Already registered? Hit <strong>Launch secure login</strong> and you’ll hop back to your dashboard after signing in.</p>
   </div>
 </section>
-<main class="content">
-  <p>If you are not redirected automatically, <a data-login-link href="/oauth2/start">launch the OAuth sign-in</a>.</p>
-</main>
+
+<footer class="footer">
+  <p>© <span id="y"></span> Madd Hatchery • Secure by HEDI</p>
+</footer>
+<script>
+  document.getElementById('y').textContent = new Date().getFullYear();
+</script>
 <script src="/config.js"></script>
 <script src="/static/js/support_config.js"></script>
 <script src="/static/js/auth_config.js" defer></script>
 <script src="/static/js/authz.js" defer></script>
 <script src="/static/js/trish.js" defer></script>
-<script>
-  const loginStart = window.MADDH_OAUTH2_START || (window.MADDH_CONFIG && window.MADDH_CONFIG.oauthStart) || '/oauth2/start';
-  window.location.replace(loginStart + '?rd=' + encodeURIComponent(window.location.pathname));
-</script>
+<script src="/static/js/login.js" defer></script>
 </body>
 </html>

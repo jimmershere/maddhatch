@@ -126,6 +126,21 @@ VALUES
   ('oidc', false)
 ON CONFLICT (provider) DO NOTHING;
 
+CREATE TABLE IF NOT EXISTS app_user_registrations (
+  id SERIAL PRIMARY KEY,
+  email TEXT NOT NULL,
+  username TEXT NOT NULL,
+  display_name TEXT,
+  password_hash TEXT NOT NULL,
+  token_hash TEXT NOT NULL UNIQUE,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  expires_at TIMESTAMPTZ NOT NULL DEFAULT (now() + interval '2 days'),
+  confirmed_at TIMESTAMPTZ
+);
+
+CREATE INDEX IF NOT EXISTS idx_app_user_registrations_username ON app_user_registrations(lower(username));
+CREATE INDEX IF NOT EXISTS idx_app_user_registrations_email ON app_user_registrations(lower(email));
+
 -- Procedure to create an invoice from an order
 CREATE OR REPLACE FUNCTION create_invoice(p_order_id TEXT, p_tax_rate NUMERIC DEFAULT 0.07)
 RETURNS TEXT AS $$
