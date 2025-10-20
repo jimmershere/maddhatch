@@ -22,7 +22,11 @@ from ldap3 import (
     Server,
     Tls,
 )
-from ldap3.core.exceptions import LDAPSocketOpenError, LDAPStartTLSError
+from ldap3.core.exceptions import (
+    LDAPNoSuchObjectResult,
+    LDAPSocketOpenError,
+    LDAPStartTLSError,
+)
 from pydantic import BaseModel, Field
 
 
@@ -316,7 +320,17 @@ def ensure_ldap_entries(settings: Settings):
     roles_dn = f"ou=roles,{base_dn}"
 
     def ensure_entry(dn: str, object_classes: List[str], attributes: Dict[str, Any]):
-        if not conn.search(dn, "(objectClass=*)", attributes=[]):
+        try:
+            exists = conn.search(
+                dn,
+                "(objectClass=*)",
+                search_scope="BASE",
+                attributes=[],
+            )
+        except LDAPNoSuchObjectResult:
+            exists = False
+
+        if not exists:
             conn.add(dn, object_classes, attributes)
 
     ensure_entry(base_dn, ["top", "domain"], {"dc": base_dn.split(",")[0].split("=")[1]})
