@@ -93,6 +93,23 @@ environment variables alongside the existing `SMTP_HOST`, `SMTP_USER`, and `SMTP
 names. Provide whichever variant matches your infrastructure so registration emails
 deliver successfully.
 
+### Troubleshooting SMTP delivery with msmtp
+
+The repository ships with `scripts/msmtp_send_test.sh` to validate your local `msmtp`
+configuration. The helper mirrors the manual diagnostic steps Trish documented:
+
+```bash
+export SMTP_FROM="Trish <alerts@maddhatchery.com>"
+export SMTP_TEST_RECIPIENT=jimmershere@gmail.com
+scripts/msmtp_send_test.sh
+```
+
+The script prints the password read from `~/.msmtp_pass`, surfaces the active
+`passwordeval` line from `~/.msmtprc`, and then sends a verbose test message via
+`msmtp`. If `msmtp` reports `cat … not found`, make sure the `passwordeval` line in
+`~/.msmtprc` does **not** include inline comments—put the command on its own line so
+`msmtp` can execute it verbatim.
+
 Set `MADDH_OAUTH2_PROXY_URL` to the public oauth2-proxy endpoint (Keycloak, Okta, etc.). If the frontend reaches it via an internal host, also set `MADDH_OAUTH2_PROXY_INTERNAL_URL`. The Go service proxies `/oauth2/*` there and exposes the configured login start path via `/config.js`.
 
 The FastAPI service gates `/auth/login`, `/admin/users`, `/admin/tickets`, and `/admin/auth/providers` behind `X-Maddh-Shared-Secret`, so keep `MADDH_SHARED_SECRET` aligned across `frontend_go`, `api`, and `rbac`.
