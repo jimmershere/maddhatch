@@ -49,15 +49,17 @@
   }
 
   window.addEventListener('DOMContentLoaded', () => {
-    const loginButton = document.querySelector('[data-login-button]');
     const loginStatus = document.querySelector('[data-login-status]');
-    if (loginButton) {
-      loginButton.addEventListener('click', () => {
-        updateStatus(loginStatus, 'Redirecting to the secure portal…', 'info');
-        const target = loginStart + '?rd=' + encodeURIComponent('/order.html');
+    document.querySelectorAll('[data-login-button]').forEach((button) => {
+      const targetPath = button.getAttribute('data-login-target') || '/order.html';
+      const label = button.getAttribute('data-login-label') || 'secure portal';
+      button.addEventListener('click', () => {
+        const redirect = targetPath.startsWith('/') ? targetPath : '/' + targetPath;
+        updateStatus(loginStatus, `Redirecting to the ${label}…`, 'info');
+        const target = loginStart + '?rd=' + encodeURIComponent(redirect);
         window.location.href = target;
       });
-    }
+    });
 
     const form = document.querySelector('[data-registration-form]');
     const messageEl = document.querySelector('[data-registration-message]');
