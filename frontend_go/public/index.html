@@ -20,8 +20,9 @@
       <a href="/order.html">Order</a>
       <a href="/about.html">About</a>
       <a href="/support.html">Support</a>
-      <a href="/login.html">Login</a>
+      <a data-login-link href="/login.html">Login</a>
     </nav>
+    <span class="badge-user" data-user-name hidden>Guest</span>
   </header>
 
   <section class="hero">
@@ -71,6 +72,14 @@
   <footer class="footer">
     <p>© <span id="y"></span> Madd Hatchery • Secure by HEDI</p>
   </footer>
-  <script>document.getElementById('y').textContent = new Date().getFullYear();</script>
+  <script>document.getElementById('y').textContent = new Date().getFullYear();
+    const badge=document.querySelector('[data-user-name]');
+    if(badge){badge.hidden=false;}
+  </script>
+  <script src="/config.js"></script>
+  <script src="/static/js/support_config.js"></script>
+  <script src="/static/js/auth_config.js" defer></script>
+  <script src="/static/js/authz.js" defer></script>
+  <script src="/static/js/trish.js" defer></script>
 </body>
 </html>

@@ -1,38 +1,61 @@
 <!doctype html>
-<html><head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Order • Madd Hatchery</title>
-<link rel="stylesheet" href="/assets/styles.css">
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Order • Madd Hatchery</title>
+  <link rel="stylesheet" href="/assets/styles.css">
 </head>
 <body>
-<header class="mh-header"><div class="brand">
-<img src="/assets/MaddHatchery.jpg" class="logo"><div><h1>Order</h1><p class="tag">Jam, chicks, eggs & merch</p></div></div>
-<nav class="nav"><a href="/">Home</a></nav></header>
+<header class="mh-header">
+  <div class="brand">
+    <img src="/assets/MaddHatchery.jpg" class="logo" alt="Madd Hatchery">
+    <div>
+      <h1>Order</h1>
+      <p class="tag">Jam, chicks, eggs &amp; merch</p>
+    </div>
+  </div>
+  <nav class="nav">
+    <a href="/">Home</a>
+    <a href="/order.html">Order</a>
+    <a href="/support.html">Support</a>
+    <a data-login-link href="/login.html">Login</a>
+  </nav>
+  <span class="badge-user" data-user-name hidden>Guest</span>
+</header>
 <main class="content">
-<form id="orderForm" class="form">
-  <h2>Start Your Order</h2>
-  <label>Name<input name="name" required></label>
-  <label>Email<input name="email" type="email" required></label>
-  <label>Phone<input name="phone" required></label>
-  <label>Items (free text for now)<textarea name="items" placeholder="e.g., 2x Sassy Strawberry, 1 dozen hatching eggs"></textarea></label>
-  <label>Notes<textarea name="notes"></textarea></label>
-  <button class="cta" type="submit">Queue Order</button>
-  <p id="resp" class="muted"></p>
-</form>
+  <form id="orderForm" class="form">
+    <h2>Start Your Order</h2>
+    <label>Name<input name="name" required></label>
+    <label>Email<input name="email" type="email" required></label>
+    <label>Phone<input name="phone" required></label>
+    <label>Items (free text for now)<textarea name="items" placeholder="e.g., 2x Sassy Strawberry, 1 dozen hatching eggs"></textarea></label>
+    <label>Notes<textarea name="notes"></textarea></label>
+    <button class="cta" type="submit">Queue Order</button>
+    <p id="resp" class="muted"></p>
+  </form>
 </main>
 <script>
+  const badge=document.querySelector('[data-user-name]');
+  if(badge){badge.hidden=false;}
   document.getElementById('orderForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     const fd = new FormData(e.target);
     const payload = {
       customer: { name: fd.get('name'), email: fd.get('email'), phone: fd.get('phone') },
-      items: [{ sku: "freeform", name: "Freeform", qty: 1, unit_cents: 0 }],
-      notes: fd.get('notes') + "\n" + fd.get('items'),
-      channel: "web"
+      items: [{ sku: 'freeform', name: 'Freeform', qty: 1, unit_cents: 0 }],
+      notes: fd.get('notes') + '\n' + fd.get('items'),
+      channel: 'web'
     };
     const r = await fetch('/api/order', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)});
     const js = await r.json();
     document.getElementById('resp').textContent = js.status ? `Order queued, id: ${js.id}` : 'Submit failed';
   });
 </script>
-</body></html>
+<script src="/config.js"></script>
+<script src="/static/js/support_config.js"></script>
+<script src="/static/js/auth_config.js" defer></script>
+<script src="/static/js/authz.js" defer></script>
+<script src="/static/js/trish.js" defer></script>
+</body>
+</html>

@@ -1,14 +1,14 @@
+# Madd Hatchery Platform
 
-# Madd Hatchery Site 0.1
+Modernized starter stack that layers OAuth2/OIDC sign-on, LDAP-backed RBAC, and Trish’s support experience on top of the original HEDI order flow.
 
-Turnkey scaffold that reuses your HEDI patterns:
+- **frontend_go/** — Go 1.22 TLS site that serves the portal/admin UI, proxies `/oauth2/*` to an oauth2-proxy compatible service, and calls the FastAPI identity service for RBAC operations.
+- **api/** — FastAPI 0.111 identity + admin API. Manages `app_users`, support tickets, auth provider toggles, and bootstraps the LDAP directory and administrator account.
+- **rbac/** — Lightweight RBAC/login experience that emulates the oauth2-proxy contract. Presents a login form, validates credentials via the FastAPI API, and issues HMAC-signed session cookies.
+- **db/schema.sql** — Adds `app_users`, `support_tickets`, and `maddh_auth_providers` tables alongside the existing order/invoice schema.
+- **workers/** — Python 3.12 AMQP workers from the original release (orders → receipts/invoices/cashapp/tax).
 
-- **frontend_go/** — Go 1.22 TLS site + API (`/api/order`) that queues orders to RabbitMQ.
-- **rabbitmq/definitions.json** — Exchanges/queues/bindings for orders → receipts/invoices/cashapp/tax.
-- **db/schema.sql** — Postgres tables + a `create_invoice(order_id)` function.
-- **workers/order_worker.py** — Python 3.12 AMQP consumer that writes orders to DB and fans out work.
-
-## Run (compose example)
+## Run (docker compose)
 
 ```yaml
 services:
@@ -16,8 +16,6 @@ services:
     image: rabbitmq:3-management
     ports: ["5672:5672","15672:15672"]
     volumes: ["./rabbitmq/definitions.json:/etc/rabbitmq/definitions.json"]
-    environment:
-      RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS: "-rabbitmq_management load_definitions "/etc/rabbitmq/definitions.json""
 
   db:
     image: postgres:16
@@ -26,53 +24,87 @@ services:
       POSTGRES_DB: maddhatchery
     volumes: ["./db:/docker-entrypoint-initdb.d"]
 
-  frontend:
-    build: ./frontend_go
-    environment:
-      AMQP_URL: amqp://guest:guest@rabbitmq:5672/
-      DATABASE_URL: postgres://postgres:postgres@db:5432/maddhatchery?sslmode=disable
-      RMQ_EXCHANGE: orders.direct
+  ldap:
+    image: osixia/openldap:1.5.0
+    env_file: .env
+    ports: ["${LDAP_HOST_PORT:-389}:389"]
+    volumes:
+      - ldap_data:/var/lib/ldap
+      - ldap_config:/etc/ldap/slapd.d
+      - ./config/certs:/container/service/slapd/assets/certs:rw
+
+  api:
+    build: ./api
+    env_file: .env
     volumes: ["./config/certs:/certs:ro"]
-    ports: ["8443:8443"]
-    depends_on: [rabbitmq, db]
+    depends_on: [db, ldap]
+
+  rbac:
+    build: ./rbac
+    env_file: .env
+    ports: ["4180:4180"]
+    depends_on: [api]
+
+    frontend:
+      build: ./frontend_go
+      env_file: .env
+      ports: ["8443:8443"]
+      volumes: ["./config/certs:/certs:ro"]
+      depends_on: [rabbitmq, db, api, rbac]
 
   worker:
     image: python:3.12-slim
     working_dir: /app
     environment:
-      AMQP_URL: amqp://guest:guest@rabbitmq:5672/
-      DATABASE_URL: postgres://postgres:postgres@db:5432/maddhatchery?sslmode=disable
-      RMQ_EXCHANGE: orders.direct
+      AMQP_URL: ${AMQP_URL}
+      DATABASE_URL: ${DATABASE_URL}
+      RMQ_EXCHANGE: ${RMQ_EXCHANGE}
     volumes: ["./workers:/app"]
-    command: ["python","order_worker.py"]
+    command: ["/bin/sh","-c","pip install -r requirements.txt && python order_worker.py"]
     depends_on: [rabbitmq, db]
 ```
 
-> TLS certs: mount to `./config/certs/fullchain.pem` and `privkey.pem`. Self-signed works for local.
+`.env` drives the wiring:
 
-## OpenLDAP & Roles
+```ini
+DATABASE_URL=postgres://postgres:postgres@db:5432/maddhatchery?sslmode=disable
+MADDH_SHARED_SECRET=super-secret-token
+MADDH_API_URL=http://api:8000
+MADDH_OAUTH2_PROXY_URL=http://rbac:4180/oauth2
+MADDH_OAUTH2_PROXY_INSECURE_SKIP_VERIFY=false
+MADDH_OAUTH2_START=/oauth2/start
+RBAC_SESSION_SECRET=rbac-session-secret
+```
 
-Re-use your existing LDAP DIT and groups: `group=admin`, `group=submit`, `group=view`. The Go site
-expects SSO to inject an HTTP header `X-User-Groups` (comma-separated) and `X-User-Email` after login.
-Wire your existing SSO reverse proxy to perform the LDAP bind and set those headers, then protect `/admin`.
+Set `MADDH_OAUTH2_PROXY_URL` to the public oauth2-proxy endpoint (Keycloak, Okta, etc.). If the frontend reaches it via an internal host, also set `MADDH_OAUTH2_PROXY_INTERNAL_URL`. The Go service proxies `/oauth2/*` there and exposes the configured login start path via `/config.js`.
 
-## SSO placeholder
+The FastAPI service gates `/auth/login`, `/admin/users`, `/admin/tickets`, and `/admin/auth/providers` behind `X-Maddh-Shared-Secret`, so keep `MADDH_SHARED_SECRET` aligned across `frontend_go`, `api`, and `rbac`.
 
-Add your open-source SSO in front (e.g., oauth2-proxy/Keycloak). Configure it to:
-- authenticate users against OpenLDAP,
-- map LDAP groups → `X-User-Groups`,
-- pass through to frontend on success.
+### OpenLDAP quick reference
 
-## Cash App requests
+| Item | Value |
+|------|-------|
+| Base DN | `dc=example,dc=com` |
+| Admin bind | `cn=admin,dc=example,dc=com` (password `3wm078uu` by default) |
+| User branch | `ou=users,dc=example,dc=com` |
+| Role branch | `ou=roles,dc=example,dc=com` (`cn=view|submit|admin` groups) |
+| Bootstrap user | `uid=admin,ou=users,dc=example,dc=com` |
+| Persistent volumes | `ldap_data`, `ldap_config` |
+| TLS | Re-uses `./config/certs/fullchain.pem` & `privkey.pem` (override via `LDAP_TLS_*` envs) |
 
-The `payments.q` receives `cashapp.request` messages. Add a dedicated worker later to call your Cash App
-(or manual workflow) and then publish `cashapp.completed` with amounts recorded into `payments`.
+`api/app/main.py` seeds the directory on startup (users OU, roles OU, admin user, role groups) and mirrors LDAP-authenticated users into `app_users`. Rotate credentials by overriding `MADDH_BOOTSTRAP_ADMIN_USER`, `MADDH_BOOTSTRAP_ADMIN_HASH`, and `MADDH_LDAP_BOOTSTRAP_PASSWORD` before first run.
 
-## Tax reporting
+Set `MADDH_LDAP_ENABLED=false` in `.env` if you want to skip the directory bootstrap and rely solely on local `app_users` accounts.
 
-The `tax.q` consumer should aggregate `invoices` by period and insert rows into `tax_reports`.
+### RBAC & Trish assistant
 
-## Quadlet
+- `rbac/` issues HMAC-signed cookies (`RBAC_SESSION_SECRET`) that the Go frontend validates. Session data drives client-side authorization (`data-requires-role` attributes) and is surfaced to `/oauth2/userinfo` for the UI.
+- Trish’s floating chat widget lives in `frontend_go/public/static/js/trish.js`. It detects phrases like “error” or “trouble,” prompts for severity (1–4), stores tickets in localStorage under **Madd Hatchery Support Tickets**, and posts each ticket to the FastAPI API for admins to triage.
+- `frontend_go/public/static/js/support_config.js` centralizes support contact details (email, SMS, phone) so every page and the chat widget stay consistent.
 
-Translate the compose units into `.container` Quadlet files under `/etc/containers/systemd/` as you’ve done before.
-This repo keeps it simple for portability.
+### Legacy workers & reports
+
+The original AMQP workers continue to process orders, generate invoices, and emit cash/tax events. Extend them as needed for your downstream tooling.
+
+> TLS certs: mount to `./config/certs/fullchain.pem` and `privkey.pem`. The same bundle is mapped into the LDAP container.
+

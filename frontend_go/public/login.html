@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Redirecting to sign-in…</title>
+  <link rel="stylesheet" href="/assets/styles.css">
+  <meta http-equiv="refresh" content="0; url=/oauth2/start">
+</head>
+<body>
+<header class="mh-header">
+  <div class="brand">
+    <img src="/assets/MaddHatchery.jpg" class="logo" alt="Madd Hatchery">
+    <div>
+      <h1>Redirecting</h1>
+      <p class="tag">Taking you to the secure login portal…</p>
+    </div>
+  </div>
+</header>
+<main class="content">
+  <p>If you are not redirected automatically, <a data-login-link href="/oauth2/start">launch the OAuth sign-in</a>.</p>
+</main>
+<script src="/config.js"></script>
+<script src="/static/js/support_config.js"></script>
+<script src="/static/js/auth_config.js" defer></script>
+<script src="/static/js/authz.js" defer></script>
+<script src="/static/js/trish.js" defer></script>
+<script>
+  const loginStart = window.MADDH_OAUTH2_START || (window.MADDH_CONFIG && window.MADDH_CONFIG.oauthStart) || '/oauth2/start';
+  window.location.replace(loginStart + '?rd=' + encodeURIComponent(window.location.pathname));
+</script>
+</body>
+</html>
