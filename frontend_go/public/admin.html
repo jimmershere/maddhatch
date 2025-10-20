@@ -52,20 +52,44 @@
   </section>
   <section class="admin-card" data-requires-role="admin">
     <h2>User &amp; role management</h2>
-    <form id="createUser" class="admin-actions">
-      <input name="username" placeholder="username" required>
-      <input name="display_name" placeholder="display name">
-      <input name="password" placeholder="temporary password" required>
-      <select name="role">
-        <option value="view">view</option>
-        <option value="submit">submit</option>
-        <option value="admin">admin</option>
-      </select>
-      <label><input type="checkbox" name="can_portal" checked> portal</label>
-      <label><input type="checkbox" name="can_submit"> submit</label>
-      <label><input type="checkbox" name="can_admin"> admin</label>
-      <button type="submit">Create</button>
-      <span class="muted" id="createUserMsg"></span>
+    <p class="muted">Add administrators and operators, assign the correct data access, then optionally email their temporary credentials.</p>
+    <form id="createUser" class="admin-actions admin-actions-stacked">
+      <div class="admin-actions-row">
+        <label>
+          Username
+          <input name="username" placeholder="username" required>
+        </label>
+        <label>
+          Display name
+          <input name="display_name" placeholder="display name">
+        </label>
+        <label>
+          Email
+          <input type="email" name="email" placeholder="name@example.com">
+        </label>
+      </div>
+      <div class="admin-actions-row">
+        <label>
+          Temporary password
+          <input name="password" placeholder="temporary password" required>
+        </label>
+        <label>
+          Role level
+          <select name="role">
+            <option value="view">view</option>
+            <option value="submit">submit</option>
+            <option value="admin">admin</option>
+          </select>
+        </label>
+        <label class="checkbox-group"><input type="checkbox" name="can_portal" checked> portal access</label>
+        <label class="checkbox-group"><input type="checkbox" name="can_submit"> submit access</label>
+        <label class="checkbox-group"><input type="checkbox" name="can_admin"> admin access</label>
+      </div>
+      <div class="admin-actions-row">
+        <label class="checkbox-group"><input type="checkbox" name="send_email" checked> Email new credentials to the user</label>
+        <button type="submit" class="cta">Create user</button>
+      </div>
+      <div class="status-message" id="createUserMsg" role="status" hidden></div>
     </form>
     <table id="users" class="admin-table"></table>
   </section>
@@ -90,6 +114,16 @@
     }
     return null;
   };
+
+  function setMessage(el, text, variant) {
+    if (!el) return;
+    el.textContent = text || '';
+    el.hidden = !text;
+    el.classList.remove('status-error', 'status-success', 'status-info');
+    if (text && variant) {
+      el.classList.add(`status-${variant}`);
+    }
+  }
 
   async function loadOrders() {
     const data = await fetchJSON('/admin/orders');
@@ -171,7 +205,11 @@
 
   async function handleCreateUser(event) {
     event.preventDefault();
-    const fd = new FormData(event.target);
+    const form = event.target;
+    const messageEl = document.getElementById('createUserMsg');
+    const fd = new FormData(form);
+    const sendEmail = fd.get('send_email') === 'on';
+    const email = String(fd.get('email') || '').trim();
     const body = {
       username: fd.get('username'),
       display_name: fd.get('display_name') || fd.get('username'),
@@ -181,14 +219,28 @@
       can_submit: fd.get('can_submit') === 'on',
       can_admin: fd.get('can_admin') === 'on'
     };
-    await fetchJSON('/admin/users', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body)
-    });
-    event.target.reset();
-    document.getElementById('createUserMsg').textContent = 'User created.';
-    await loadUsers();
+    if (sendEmail && !email) {
+      setMessage(messageEl, 'Provide an email address to send credentials.', 'error');
+      return;
+    }
+    if (email) {
+      body.email = email;
+    }
+    body.send_email = sendEmail;
+    setMessage(messageEl, 'Creating user…', 'info');
+    try {
+      const res = await fetchJSON('/admin/users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+      form.reset();
+      const successMsg = (res && (res.notice || res.message)) || (sendEmail ? 'User created and credentials email queued.' : 'User created.');
+      setMessage(messageEl, successMsg, 'success');
+      await loadUsers();
+    } catch (err) {
+      setMessage(messageEl, err.message, 'error');
+    }
   }
 
   async function handleUserTable(event) {
@@ -230,9 +282,7 @@
     });
   });
   document.getElementById('createUser').addEventListener('submit', (e) => {
-    handleCreateUser(e).catch(err => {
-      document.getElementById('createUserMsg').textContent = err.message;
-    });
+    handleCreateUser(e);
   });
   document.getElementById('users').addEventListener('click', (e) => {
     handleUserTable(e).catch(err => alert(err.message));

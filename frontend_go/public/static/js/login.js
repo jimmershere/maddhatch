@@ -48,17 +48,29 @@
       });
   }
 
+  function buildLoginUrl(targetPath) {
+    const redirect = targetPath.startsWith('/') ? targetPath : '/' + targetPath;
+    return loginStart + '?rd=' + encodeURIComponent(redirect);
+  }
+
   window.addEventListener('DOMContentLoaded', () => {
     const loginStatus = document.querySelector('[data-login-status]');
     document.querySelectorAll('[data-login-button]').forEach((button) => {
       const targetPath = button.getAttribute('data-login-target') || '/order.html';
       const label = button.getAttribute('data-login-label') || 'secure portal';
       button.addEventListener('click', () => {
-        const redirect = targetPath.startsWith('/') ? targetPath : '/' + targetPath;
         updateStatus(loginStatus, `Redirecting to the ${label}…`, 'info');
-        const target = loginStart + '?rd=' + encodeURIComponent(redirect);
-        window.location.href = target;
+        window.location.href = buildLoginUrl(targetPath);
       });
+    });
+
+    document.querySelectorAll('[data-login-link]').forEach((link) => {
+      const targetPath = link.getAttribute('data-login-target') || '/order.html';
+      link.setAttribute('href', buildLoginUrl(targetPath));
+      if (!link.getAttribute('target')) {
+        link.setAttribute('target', '_blank');
+      }
+      link.setAttribute('rel', 'noopener');
     });
 
     const form = document.querySelector('[data-registration-form]');
