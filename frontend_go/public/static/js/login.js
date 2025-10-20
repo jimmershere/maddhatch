@@ -48,16 +48,30 @@
       });
   }
 
+  function buildLoginUrl(targetPath) {
+    const redirect = targetPath.startsWith('/') ? targetPath : '/' + targetPath;
+    return loginStart + '?rd=' + encodeURIComponent(redirect);
+  }
+
   window.addEventListener('DOMContentLoaded', () => {
-    const loginButton = document.querySelector('[data-login-button]');
     const loginStatus = document.querySelector('[data-login-status]');
-    if (loginButton) {
-      loginButton.addEventListener('click', () => {
-        updateStatus(loginStatus, 'Redirecting to the secure portal…', 'info');
-        const target = loginStart + '?rd=' + encodeURIComponent('/order.html');
-        window.location.href = target;
+    document.querySelectorAll('[data-login-button]').forEach((button) => {
+      const targetPath = button.getAttribute('data-login-target') || '/order.html';
+      const label = button.getAttribute('data-login-label') || 'secure portal';
+      button.addEventListener('click', () => {
+        updateStatus(loginStatus, `Redirecting to the ${label}…`, 'info');
+        window.location.href = buildLoginUrl(targetPath);
       });
-    }
+    });
+
+    document.querySelectorAll('[data-login-link]').forEach((link) => {
+      const targetPath = link.getAttribute('data-login-target') || '/order.html';
+      link.setAttribute('href', buildLoginUrl(targetPath));
+      if (!link.getAttribute('target')) {
+        link.setAttribute('target', '_blank');
+      }
+      link.setAttribute('rel', 'noopener');
+    });
 
     const form = document.querySelector('[data-registration-form]');
     const messageEl = document.querySelector('[data-registration-message]');

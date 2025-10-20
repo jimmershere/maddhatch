@@ -29,8 +29,18 @@
   <section class="login-panel">
     <h2 id="login-heading">Sign in to Madd Hatchery</h2>
     <p>Access invoices, place wholesale orders, and follow hatch schedules through our secure customer portal.</p>
-    <button type="button" class="cta" data-login-button>Launch secure login</button>
-    <p class="muted">You can also <a data-login-link data-login-target="/order.html" href="/oauth2/start">open the portal in a new tab</a>.</p>
+    <div class="login-actions">
+      <button type="button" class="cta" data-login-button data-login-target="/order.html" data-login-label="order portal">
+        Launch order portal login
+      </button>
+      <p class="muted">Opens the customer ordering dashboard after authentication. <a data-login-link data-login-target="/order.html" href="/oauth2/start?rd=%2Forder.html" target="_blank" rel="noopener">Open in a new tab</a>.</p>
+    </div>
+    <div class="login-actions">
+      <button type="button" class="cta" data-login-button data-login-target="/admin.html" data-login-label="admin portal">
+        Launch admin portal login
+      </button>
+      <p class="muted">Opens the administrative console for managing accounts. <a data-login-link data-login-target="/admin.html" href="/oauth2/start?rd=%2Fadmin.html" target="_blank" rel="noopener">Open in a new tab</a>.</p>
+    </div>
     <div class="status-message" data-login-status hidden></div>
   </section>
 
@@ -65,7 +75,7 @@
   <div class="trish-tip-bubble">
     <p class="trish-tip-title">Trish’s Tip</p>
     <p class="trish-tip-text">Use the <strong>Request an account</strong> form to register yourself. I’ll send a confirmation email you can activate right away.</p>
-    <p class="trish-tip-text">Already registered? Hit <strong>Launch secure login</strong> and you’ll hop back to your dashboard after signing in.</p>
+    <p class="trish-tip-text">Already registered? Pick the portal you need above and you’ll hop back to that dashboard after signing in.</p>
   </div>
 </section>
 
