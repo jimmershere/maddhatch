@@ -912,8 +912,20 @@ func main() {
 		},
 	}
 
-	log.Printf("MaddHatchery frontend listening on %s (TLS)", addr)
-	if err := server.ListenAndServeTLS(certFile, keyFile); err != nil {
-		log.Fatalf("ListenAndServeTLS: %v", err)
+	useTLS := fileExists(certFile) && fileExists(keyFile)
+	if !useTLS {
+		log.Printf("TLS cert/key not found; serving HTTP without TLS on %s", addr)
+	}
+
+	if useTLS {
+		log.Printf("MaddHatchery frontend listening on %s (TLS)", addr)
+		if err := server.ListenAndServeTLS(certFile, keyFile); err != nil {
+			log.Fatalf("ListenAndServeTLS: %v", err)
+		}
+	} else {
+		log.Printf("MaddHatchery frontend listening on %s (HTTP)", addr)
+		if err := server.ListenAndServe(); err != nil {
+			log.Fatalf("ListenAndServe: %v", err)
+		}
 	}
 }
