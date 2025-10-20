@@ -75,6 +75,57 @@ FROM orders o
 JOIN order_items oi ON oi.order_id=o.id
 GROUP BY o.id;
 
+-- RBAC / identity tables
+CREATE TABLE IF NOT EXISTS app_users (
+  id SERIAL PRIMARY KEY,
+  username TEXT UNIQUE NOT NULL,
+  display_name TEXT,
+  password_hash TEXT NOT NULL,
+  role TEXT NOT NULL DEFAULT 'view', -- view -> submit -> admin
+  can_portal BOOLEAN NOT NULL DEFAULT true,
+  can_submit BOOLEAN NOT NULL DEFAULT false,
+  can_admin BOOLEAN NOT NULL DEFAULT false,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE OR REPLACE FUNCTION set_app_users_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at := now();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS trg_app_users_updated_at ON app_users;
+CREATE TRIGGER trg_app_users_updated_at
+BEFORE UPDATE ON app_users
+FOR EACH ROW EXECUTE FUNCTION set_app_users_updated_at();
+
+CREATE TABLE IF NOT EXISTS support_tickets (
+  id TEXT PRIMARY KEY,
+  user_username TEXT REFERENCES app_users(username) ON DELETE SET NULL,
+  summary TEXT NOT NULL,
+  severity INTEGER NOT NULL CHECK (severity BETWEEN 1 AND 4),
+  status TEXT NOT NULL DEFAULT 'open',
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_support_tickets_status ON support_tickets(status);
+
+CREATE TABLE IF NOT EXISTS maddh_auth_providers (
+  provider TEXT PRIMARY KEY,
+  enabled BOOLEAN NOT NULL,
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+INSERT INTO maddh_auth_providers(provider, enabled)
+VALUES
+  ('local', true),
+  ('ldap', true),
+  ('oidc', false)
+ON CONFLICT (provider) DO NOTHING;
+
 -- Procedure to create an invoice from an order
 CREATE OR REPLACE FUNCTION create_invoice(p_order_id TEXT, p_tax_rate NUMERIC DEFAULT 0.07)
 RETURNS TEXT AS $$

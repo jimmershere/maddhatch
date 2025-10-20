@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Support • Madd Hatchery</title>
+  <link rel="stylesheet" href="/assets/styles.css">
+</head>
+<body>
+<header class="mh-header">
+  <div class="brand">
+    <img src="/assets/MaddHatchery.jpg" class="logo" alt="Madd Hatchery">
+    <div>
+      <h1>Customer Support</h1>
+      <p class="tag">Trish and the hatchery crew are standing by</p>
+    </div>
+  </div>
+  <nav class="nav">
+    <a href="/">Home</a>
+    <a href="/order.html">Order</a>
+    <a href="/support.html">Support</a>
+    <a data-login-link href="/login.html">Login</a>
+  </nav>
+  <span class="badge-user" data-user-name hidden>Guest</span>
+</header>
+<main class="content">
+  <section class="admin-card">
+    <h2>How to reach us</h2>
+    <p>Trish routes every request through our lightweight RBAC service so the right advocate answers quickly. Start a chat, send an email, or tap the hotline for urgent hatchery issues.</p>
+    <ul>
+      <li>Email: <a id="supportEmail" href="mailto:support@maddhatchery.example">support@maddhatchery.example</a></li>
+      <li>SMS: <a id="supportSms" href="sms:+15551234567">+1 (555) 123-4567</a></li>
+      <li>Phone: <a id="supportPhone" href="tel:+15551234567">+1 (555) 123-4567</a></li>
+      <li>Portal login: <a data-login-link href="/login.html">Secure sign-on</a></li>
+    </ul>
+  </section>
+  <section class="admin-card">
+    <h2>Ticket history</h2>
+    <p>Tickets created in this browser are stored locally so you can reference prior chats with Trish.</p>
+    <table class="admin-table" id="ticketHistory"></table>
+  </section>
+</main>
+<script src="/config.js"></script>
+<script src="/static/js/support_config.js"></script>
+<script>
+  const badge=document.querySelector('[data-user-name]');
+  if(badge){badge.hidden=false;}
+  function loadTickets(){
+    const store = JSON.parse(localStorage.getItem('Madd Hatchery Support Tickets')||'[]');
+    const table=document.getElementById('ticketHistory');
+    if(!store.length){table.innerHTML='<tr><td>No tickets logged yet.</td></tr>';return;}
+    table.innerHTML='<tr><th>ID</th><th>Severity</th><th>Summary</th><th>When</th></tr>'+store.map(t=>`<tr><td>${t.id}</td><td>${t.severity}</td><td>${t.summary}</td><td>${new Date(t.timestamp).toLocaleString()}</td></tr>`).join('');
+  }
+  loadTickets();
+  const support = window.MADDH_SUPPORT || {};
+  const email=document.getElementById('supportEmail');
+  if(email && support.email){email.textContent=support.email;email.href='mailto:'+support.email;}
+  const sms=document.getElementById('supportSms');
+  if(sms && support.sms){sms.textContent=support.sms;sms.href='sms:'+support.sms;}
+  const phone=document.getElementById('supportPhone');
+  if(phone && support.phone){phone.textContent=support.phone;phone.href='tel:'+support.phone;}
+</script>
+<script src="/static/js/auth_config.js" defer></script>
+<script src="/static/js/authz.js" defer></script>
+<script src="/static/js/trish.js" defer></script>
+</body>
+</html>
