@@ -95,7 +95,7 @@ The FastAPI service gates `/auth/login`, `/admin/users`, `/admin/tickets`, and `
 | Role branch | `ou=roles,dc=example,dc=com` (`cn=view|submit|admin` groups) |
 | Bootstrap user | `uid=admin,ou=users,dc=example,dc=com` |
 | Persistent volumes | `ldap_data`, `ldap_config` |
-| TLS | Re-uses `./config/certs/fullchain.pem` & `privkey.pem` (override via `LDAP_TLS_*` envs) |
+| TLS | Re-uses `./config/certs/fullchain.pem` & `privkey.pem` (override via `MADDH_LDAP_TLS_*` envs) |
 
 `api/app/main.py` seeds the directory on startup (users OU, roles OU, admin user, role groups) and mirrors LDAP-authenticated users into `app_users`. Rotate credentials by overriding `MADDH_BOOTSTRAP_ADMIN_USER`, `MADDH_BOOTSTRAP_ADMIN_HASH`, and `MADDH_LDAP_BOOTSTRAP_PASSWORD` before first run.
 
