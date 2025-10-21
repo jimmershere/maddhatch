@@ -1033,7 +1033,8 @@ func main() {
 	r.HandleFunc("/auth/register/confirm", confirmRegistration(apiClientInstance)).Methods("POST")
 
 	if oauthProxy != nil {
-		r.PathPrefix("/oauth2/").Handler(oauthProxy)
+		oauthHandler := http.StripPrefix("/oauth2", oauthProxy)
+		r.PathPrefix("/oauth2").Handler(oauthHandler)
 	}
 
 	// Admin API
