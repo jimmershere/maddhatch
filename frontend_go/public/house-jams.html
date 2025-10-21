@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>House Jams • Madd Hatchery</title>
+  <link rel="stylesheet" href="/assets/styles.css">
+</head>
+<body>
+  <header class="mh-header">
+    <div class="brand">
+      <img src="/assets/MaddHatchery.jpg" class="logo" alt="Madd Hatchery">
+      <div>
+        <h1>House Jams</h1>
+        <p class="tag">Small-batch jars, sun-ripened berries, and Trish-approved sweetness</p>
+      </div>
+    </div>
+    <nav class="nav">
+      <a href="/">Home</a>
+      <a href="/house-jams.html" aria-current="page">House Jams</a>
+      <a href="/chicks-eggs.html">Chicks &amp; Eggs</a>
+      <a href="/merch.html">Merch</a>
+      <a href="/order.html">Order</a>
+      <a href="/support.html">Support</a>
+      <a data-login-link data-login-target="/house-jams.html" href="/login.html">Login</a>
+    </nav>
+    <span class="badge-user" data-user-name hidden>Guest</span>
+  </header>
+
+  <section class="trish-tip-card" aria-label="Trish’s jam kitchen welcome">
+    <img src="/assets/trish.svg" alt="Trish, customer advocate" class="trish-tip-photo">
+    <div class="trish-tip-bubble">
+      <p class="trish-tip-title">Trish’s Tip</p>
+      <p class="trish-tip-text">Log in to peek at today’s tasting notes and reserve jars before they leave the table. I flag your favorites so you can restock muscadine, strawberry, or blueberry in seconds.</p>
+      <p class="trish-tip-text">Need an account? Click the login button and choose “Request an account” — I’ll send a confirmation faster than a batch of Peace Jam sets.</p>
+    </div>
+  </section>
+
+  <main class="content content-stack" data-gated-content aria-hidden="true">
+    <section class="feature-card">
+      <h2>Local fruit, legendary flavor</h2>
+      <p>Every jar carries the story of the growers who nurture our favorite berries. We keep batches small so the muscadine, strawberry, and blueberry notes shine without needing shortcuts.</p>
+      <div class="feature-grid" aria-label="Fruit partners">
+        <div class="feature-grid-item">
+          <h4>Muscadine from Cedar Creek Vineyard</h4>
+          <p>These heritage vines in Madison County are hand-trimmed after sunrise and delivered the same afternoon. Their thick skins give our House Muscadine Jam that naturally rich, honeyed finish.</p>
+        </div>
+        <div class="feature-grid-item">
+          <h4>Strawberries from Foxglove Patch</h4>
+          <p>Foxglove’s raised beds stay covered to protect the berries from cold snaps. We pick only the ruby clusters for Sassy Strawberry and Peace Jam, keeping the spice balanced with fresh sweetness.</p>
+        </div>
+        <div class="feature-grid-item">
+          <h4>Blueberries from Riverbend Grove</h4>
+          <p>Riverbend watches soil moisture like hawks so each berry keeps a burst of tartness. The growers text us picking notes so we can time every blueberry batch for peak color and clarity.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="feature-card">
+      <h2>From kettle to jar</h2>
+      <p>We taste every pot the minute it cools. Your login unlocks batch logs, including brix readings and spice levels so you can match previous orders.</p>
+      <h3>Flavor board</h3>
+      <ul>
+        <li><strong>House Muscadine:</strong> A velvety classic that pairs with biscuits or a charcuterie spread.</li>
+        <li><strong>Sassy Strawberry:</strong> Strawberries with a little Jalapeño wink for brunch tables that like a spark.</li>
+        <li><strong>Blueberry Burst:</strong> Blueberries brightened with lemon zest for pancakes, yogurts, and parfaits.</li>
+        <li><strong>Peace Jam:</strong> A peachy-strawberry blend that sold out at the last three farmer’s markets.</li>
+      </ul>
+      <p>Ask for seasonal add-ins — if the growers have a bumper crop, we spin it into limited runs and reserve cases for logged-in members first.</p>
+    </section>
+  </main>
+
+  <div class="login-overlay" data-login-overlay role="dialog" aria-modal="true" aria-labelledby="jamOverlayTitle" hidden>
+    <div class="login-overlay-panel">
+      <h2 id="jamOverlayTitle">Login required</h2>
+      <p>House Jams details are for our portal family. Sign in to browse batch notes, reserve jars, and see which farms just delivered fresh fruit.</p>
+      <a class="cta" data-login-link data-login-target="/house-jams.html" href="/login.html">Launch secure login</a>
+      <p class="muted">No account yet? Choose “Request an account” on the login screen and Trish will approve you.</p>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <p>© <span id="y"></span> Madd Hatchery • Secure by HEDI</p>
+  </footer>
+  <script>document.getElementById('y').textContent = new Date().getFullYear();
+    const badge=document.querySelector('[data-user-name]');
+    if(badge){badge.hidden=false;}
+  </script>
+  <script src="/config.js"></script>
+  <script src="/static/js/support_config.js"></script>
+  <script src="/static/js/auth_config.js" defer></script>
+  <script src="/static/js/authz.js" defer></script>
+  <script src="/static/js/trish.js" defer></script>
+  <script src="/static/js/gated.js" defer></script>
+</body>
+</html>

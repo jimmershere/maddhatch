@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Merch • Madd Hatchery</title>
+  <link rel="stylesheet" href="/assets/styles.css">
+</head>
+<body>
+  <header class="mh-header">
+    <div class="brand">
+      <img src="/assets/MaddHatchery.jpg" class="logo" alt="Madd Hatchery">
+      <div>
+        <h1>Merch</h1>
+        <p class="tag">Trish poses, HEDI mascots, and the Helix Global LLC crew on every drop</p>
+      </div>
+    </div>
+    <nav class="nav">
+      <a href="/">Home</a>
+      <a href="/house-jams.html">House Jams</a>
+      <a href="/chicks-eggs.html">Chicks &amp; Eggs</a>
+      <a href="/merch.html" aria-current="page">Merch</a>
+      <a href="/order.html">Order</a>
+      <a href="/support.html">Support</a>
+      <a data-login-link data-login-target="/merch.html" href="/login.html">Login</a>
+    </nav>
+    <span class="badge-user" data-user-name hidden>Guest</span>
+  </header>
+
+  <section class="trish-tip-card" aria-label="Trish’s merch shoutout">
+    <img src="/assets/trish.svg" alt="Trish, customer advocate" class="trish-tip-photo">
+    <div class="trish-tip-bubble">
+      <p class="trish-tip-title">Trish’s Tip</p>
+      <p class="trish-tip-text">Log in to unlock bundle pricing and sneak peeks of the next drop. I tag your preferred sizes so reorders ship fast.</p>
+      <p class="trish-tip-text">Want Uggy, Seamus, or Khiah on something new? Message me once you’re signed in — we keep blank stock ready.</p>
+    </div>
+  </section>
+
+  <main class="content content-stack" data-gated-content aria-hidden="true">
+    <section class="feature-card">
+      <h2>Signature art &amp; characters</h2>
+      <p>Our merch celebrates the HEDI parent company’s mascots alongside Madd Hatchery’s farm-fresh flair. Every piece is illustrated by the Helix Global LLC art team.</p>
+      <div class="feature-grid" aria-label="Character lineup">
+        <div class="feature-grid-item">
+          <h4>Trish in Action</h4>
+          <p>From jam ladles to chick cuddles, Trish strikes confident poses with phrases like “Keep it Sassy” and “Peace, Love &amp; Pectin.” They anchor tees, aprons, and tote bags.</p>
+        </div>
+        <div class="feature-grid-item">
+          <h4>Uggy the HEDI Guardian</h4>
+          <p>Uggy beams on hoodies and crewnecks reminding everyone that security can be cute. Members can mix colorways to match the latest portal themes.</p>
+        </div>
+        <div class="feature-grid-item">
+          <h4>Seamus &amp; Khiah</h4>
+          <p>These Helix Global icons show up on enamel pins and coop signage with slogans like “Egg-spert in Charge” and “Berry Busy.”</p>
+        </div>
+        <div class="feature-grid-item">
+          <h4>The Helix Family Cameo</h4>
+          <p>Limited-edition posters gather every mascot — Trish, Uggy, Seamus, Khiah, and more — around a jar of House Muscadine. Log in to see the signed variants.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="feature-card">
+      <h2>Gear built for fans and partners</h2>
+      <p>We print on USA-made blanks and keep fulfillment in-house for quick turnaround.</p>
+      <h3>What you can reserve today</h3>
+      <ul>
+        <li><strong>Wholesale-ready bundles:</strong> Case packs of tees, koozies, and keychains with custom hang tags.</li>
+        <li><strong>Pop-up market kits:</strong> Table runners, signage, and sample jars with matching Trish quotes.</li>
+        <li><strong>Collector drops:</strong> Numbered prints, hat pins, and small-batch hoodies released to logged-in members first.</li>
+      </ul>
+      <p>Portal access gives you inventory counts, pricing tiers, and reorder reminders. Ping Trish once you’re in to add personalized thank-you notes or packaging.</p>
+    </section>
+  </main>
+
+  <div class="login-overlay" data-login-overlay role="dialog" aria-modal="true" aria-labelledby="merchOverlayTitle" hidden>
+    <div class="login-overlay-panel">
+      <h2 id="merchOverlayTitle">Login required</h2>
+      <p>Merch catalogs, pricing, and bundle builder tools live behind the secure portal. Sign in to shop the Helix Global LLC family lineup.</p>
+      <a class="cta" data-login-link data-login-target="/merch.html" href="/login.html">Launch secure login</a>
+      <p class="muted">Not registered yet? Request an account from the login screen and we’ll send your confirmation right away.</p>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <p>© <span id="y"></span> Madd Hatchery • Secure by HEDI</p>
+  </footer>
+  <script>document.getElementById('y').textContent = new Date().getFullYear();
+    const badge=document.querySelector('[data-user-name]');
+    if(badge){badge.hidden=false;}
+  </script>
+  <script src="/config.js"></script>
+  <script src="/static/js/support_config.js"></script>
+  <script src="/static/js/auth_config.js" defer></script>
+  <script src="/static/js/authz.js" defer></script>
+  <script src="/static/js/trish.js" defer></script>
+  <script src="/static/js/gated.js" defer></script>
+</body>
+</html>
