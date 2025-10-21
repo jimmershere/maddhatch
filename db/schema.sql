@@ -113,6 +113,18 @@ CREATE TABLE IF NOT EXISTS support_tickets (
 
 CREATE INDEX IF NOT EXISTS idx_support_tickets_status ON support_tickets(status);
 
+CREATE TABLE IF NOT EXISTS support_requests (
+  id BIGSERIAL PRIMARY KEY,
+  request_number TEXT NOT NULL UNIQUE,
+  user_id TEXT NOT NULL,
+  email TEXT NOT NULL,
+  phone TEXT NOT NULL,
+  description TEXT NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_support_requests_created_at ON support_requests(created_at DESC);
+
 CREATE TABLE IF NOT EXISTS maddh_auth_providers (
   provider TEXT PRIMARY KEY,
   enabled BOOLEAN NOT NULL,

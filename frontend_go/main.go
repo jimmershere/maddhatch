@@ -21,7 +21,7 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
-	_ "github.com/lib/pq"
+	pq "github.com/lib/pq"
 	"github.com/streadway/amqp"
 )
 
@@ -75,6 +75,18 @@ type supportTicket struct {
 	Severity     int       `json:"severity"`
 	Status       string    `json:"status"`
 	CreatedAt    time.Time `json:"created_at"`
+}
+
+type supportRequestPayload struct {
+	UserID      string `json:"user_id"`
+	Email       string `json:"email"`
+	Phone       string `json:"phone"`
+	Description string `json:"description"`
+}
+
+type supportRequestRecord struct {
+	RequestNumber string    `json:"request_number"`
+	CreatedAt     time.Time `json:"created_at"`
 }
 
 type userRecord struct {
@@ -692,6 +704,66 @@ func supportTicketCreate(api *apiClient) http.HandlerFunc {
 	}
 }
 
+func insertSupportRequest(ctx context.Context, db *sql.DB, payload supportRequestPayload) (supportRequestRecord, error) {
+	const maxAttempts = 5
+	for attempt := 0; attempt < maxAttempts; attempt++ {
+		reqNumber := fmt.Sprintf("req_%d", time.Now().UnixNano())
+		var record supportRequestRecord
+		err := db.QueryRowContext(ctx, `
+            INSERT INTO support_requests (request_number, user_id, email, phone, description)
+            VALUES ($1, $2, $3, $4, $5)
+            RETURNING request_number, created_at
+        `, reqNumber, payload.UserID, payload.Email, payload.Phone, payload.Description).Scan(&record.RequestNumber, &record.CreatedAt)
+		if err == nil {
+			return record, nil
+		}
+		if pqErr, ok := err.(*pq.Error); ok && pqErr.Code == "23505" {
+			time.Sleep(10 * time.Millisecond)
+			continue
+		}
+		return supportRequestRecord{}, err
+	}
+	return supportRequestRecord{}, fmt.Errorf("failed to allocate request number")
+}
+
+func supportRequestCreate(db *sql.DB) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if db == nil {
+			respondError(w, http.StatusServiceUnavailable, "support requests unavailable")
+			return
+		}
+		defer r.Body.Close()
+
+		var payload supportRequestPayload
+		if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+			respondError(w, http.StatusBadRequest, "invalid json")
+			return
+		}
+
+		payload.UserID = strings.TrimSpace(payload.UserID)
+		payload.Email = strings.TrimSpace(payload.Email)
+		payload.Phone = strings.TrimSpace(payload.Phone)
+		payload.Description = strings.TrimSpace(payload.Description)
+
+		if payload.UserID == "" || payload.Email == "" || payload.Phone == "" || payload.Description == "" {
+			respondError(w, http.StatusBadRequest, "user id, email, phone, and description are required")
+			return
+		}
+
+		record, err := insertSupportRequest(r.Context(), db, payload)
+		if err != nil {
+			log.Printf("support request insert failed: %v", err)
+			respondError(w, http.StatusInternalServerError, "could not log support request")
+			return
+		}
+
+		respondJSON(w, http.StatusCreated, map[string]any{
+			"request_number": record.RequestNumber,
+			"created_at":     record.CreatedAt,
+		})
+	}
+}
+
 func registerAccount(api *apiClient) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if api == nil {
@@ -956,11 +1028,13 @@ func main() {
 	r.HandleFunc("/healthz", health).Methods("GET")
 	r.HandleFunc("/api/order", orderHandler(ch)).Methods("POST")
 	r.HandleFunc("/support/tickets", supportTicketCreate(apiClientInstance)).Methods("POST")
+	r.HandleFunc("/support/requests", supportRequestCreate(db)).Methods("POST")
 	r.HandleFunc("/auth/register", registerAccount(apiClientInstance)).Methods("POST")
 	r.HandleFunc("/auth/register/confirm", confirmRegistration(apiClientInstance)).Methods("POST")
 
 	if oauthProxy != nil {
-		r.PathPrefix("/oauth2/").Handler(oauthProxy)
+		oauthHandler := http.StripPrefix("/oauth2", oauthProxy)
+		r.PathPrefix("/oauth2").Handler(oauthHandler)
 	}
 
 	// Admin API

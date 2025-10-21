@@ -19,7 +19,7 @@
     <a href="/">Home</a>
     <a href="/order.html">Order</a>
     <a href="/support.html">Support</a>
-    <a data-login-link href="/login.html">Login</a>
+    <a data-login-link data-login-target="/support.html" href="/login.html">Login</a>
   </nav>
   <span class="badge-user" data-user-name hidden>Guest</span>
 </header>
@@ -27,7 +27,7 @@
   <img src="/assets/trish.svg" alt="Trish, customer advocate" class="trish-tip-photo">
   <div class="trish-tip-bubble">
     <p class="trish-tip-title">Trish’s Tip</p>
-    <p class="trish-tip-text">Need an account before you open a ticket? Hit the <a data-login-link href="/login.html">Login</a> link and choose <strong>Create Account</strong>, or just tell me in chat and I’ll invite you.</p>
+    <p class="trish-tip-text">Need an account before you open a ticket? Hit the <a data-login-link data-login-target="/support.html" href="/login.html">Login</a> link and choose <strong>Create Account</strong>, or just tell me in chat and I’ll invite you.</p>
     <p class="trish-tip-text">Signed in already? Click the 💬 badge to message me — I can jump straight to your recent orders so support is faster.</p>
   </div>
 </section>
@@ -39,10 +39,38 @@
       <li>Email: <a id="supportEmail" href="mailto:support@maddhatchery.example">support@maddhatchery.example</a></li>
       <li>SMS: <a id="supportSms" href="sms:+15551234567">+1 (555) 123-4567</a></li>
       <li>Phone: <a id="supportPhone" href="tel:+15551234567">+1 (555) 123-4567</a></li>
-      <li>Portal login: <a data-login-link href="/login.html">Secure sign-on</a></li>
+      <li>Portal login: <a data-login-link data-login-target="/support.html" href="/login.html">Secure sign-on</a></li>
     </ul>
   </section>
-  <section class="admin-card">
+  <section class="admin-card" data-support-view-only>
+    <h2>Need elevated access?</h2>
+    <p>Support requests require submit-level credentials. Ask an administrator to grant you access or use the hotline above for urgent issues.</p>
+  </section>
+  <section class="admin-card" data-support-internal hidden>
+    <h2>Open an internal support request</h2>
+    <p>Submit-level teammates log structured issues here so Trish and the admin crew can track and resolve them quickly.</p>
+    <form class="form" data-support-request-form novalidate>
+      <label>
+        User ID
+        <input type="text" name="user_id" autocomplete="username" required>
+      </label>
+      <label>
+        Email
+        <input type="email" name="email" autocomplete="email" required>
+      </label>
+      <label>
+        Cell phone
+        <input type="tel" name="phone" autocomplete="tel" required>
+      </label>
+      <label>
+        Describe the problem
+        <textarea name="description" rows="5" required placeholder="Include error messages, order IDs, or any recent changes."></textarea>
+      </label>
+      <button type="submit" class="cta">Log request</button>
+    </form>
+    <div class="status-message" data-support-request-status hidden role="status"></div>
+  </section>
+  <section class="admin-card" data-support-internal hidden>
     <h2>Ticket history</h2>
     <p>Tickets created in this browser are stored locally so you can reference prior chats with Trish.</p>
     <table class="admin-table" id="ticketHistory"></table>
@@ -71,5 +99,6 @@
 <script src="/static/js/auth_config.js" defer></script>
 <script src="/static/js/authz.js" defer></script>
 <script src="/static/js/trish.js" defer></script>
+<script src="/static/js/support.js" defer></script>
 </body>
 </html>
