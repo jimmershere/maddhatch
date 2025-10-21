@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Chicks &amp; Eggs • Madd Hatchery</title>
+  <link rel="stylesheet" href="/assets/styles.css">
+</head>
+<body>
+  <header class="mh-header">
+    <div class="brand">
+      <img src="/assets/MaddHatchery.jpg" class="logo" alt="Madd Hatchery">
+      <div>
+        <h1>Chicks &amp; Eggs</h1>
+        <p class="tag">Curated breeds, steady incubation, and plenty of Trish TLC</p>
+      </div>
+    </div>
+    <nav class="nav">
+      <a href="/">Home</a>
+      <a href="/house-jams.html">House Jams</a>
+      <a href="/chicks-eggs.html" aria-current="page">Chicks &amp; Eggs</a>
+      <a href="/merch.html">Merch</a>
+      <a href="/order.html">Order</a>
+      <a href="/support.html">Support</a>
+      <a data-login-link data-login-target="/chicks-eggs.html" href="/login.html">Login</a>
+    </nav>
+    <span class="badge-user" data-user-name hidden>Guest</span>
+  </header>
+
+  <section class="trish-tip-card" aria-label="Trish’s hatchery hello">
+    <img src="/assets/trish.svg" alt="Trish, customer advocate" class="trish-tip-photo">
+    <div class="trish-tip-bubble">
+      <p class="trish-tip-title">Trish’s Tip</p>
+      <p class="trish-tip-text">We log every egg rotation and brooder check. Sign in so I can match you with the perfect curly frizzle or Ayam Cemani clutch and schedule pickups.</p>
+      <p class="trish-tip-text">Already incubating at home? Drop your humidity notes in chat once you’re logged in and I’ll sync your schedule with ours.</p>
+    </div>
+  </section>
+
+  <main class="content content-stack" data-gated-content aria-hidden="true">
+    <section class="feature-card">
+      <h2>Featured breeds on deck</h2>
+      <p>We rotate a playful lineup of show-stoppers and steady layers. Members get alerts as soon as hatches clear quarantine.</p>
+      <div class="feature-grid" aria-label="Current spotlight breeds">
+        <div class="feature-grid-item">
+          <h4>Curly Frizzles</h4>
+          <p>These fluffballs steal every selfie. We keep their curls pristine with high-protein crumble and twice-daily grooming checks so you take home a thriving, social bird.</p>
+        </div>
+        <div class="feature-grid-item">
+          <h4>Ayam Cemani</h4>
+          <p>Midnight plumage, mythic demand. Our Cemani line is tracked for temperament and sheen — log in to see parent pairings and reserve limited hatch spots.</p>
+        </div>
+        <div class="feature-grid-item">
+          <h4>Polish Top Hats</h4>
+          <p>Polish chicks bring the drama with their feathered crowns. We trim around their crests during brooder time so they can find feeders easily once they reach your coop.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="feature-card">
+      <h2>21 days to hatch, then hands-on care</h2>
+      <p>Healthy chicks take patience. Our incubators run a strict 21-day cycle with logs on temperature, humidity, and egg turning.</p>
+      <h3>Daily care schedule</h3>
+      <ul>
+        <li><strong>Incubation:</strong> Automatic turners keep eggs moving until lockdown, while we chart humidity twice per shift.</li>
+        <li><strong>Hatch window:</strong> We candle at day 18, boost humidity, and keep the brooder warmed and ready.</li>
+        <li><strong>First 72 hours:</strong> Chicks are checked three times a day for water refreshes, crumble top-offs, and bedding swaps.</li>
+      </ul>
+      <p>Only after those care rounds do we clear birds for pickup or delivery. Logged-in members can see available dates, care notes, and add-on starter kits.</p>
+    </section>
+  </main>
+
+  <div class="login-overlay" data-login-overlay role="dialog" aria-modal="true" aria-labelledby="chickOverlayTitle" hidden>
+    <div class="login-overlay-panel">
+      <h2 id="chickOverlayTitle">Login required</h2>
+      <p>Our hatch lists and care records stay private for the coop community. Sign in to reserve eggs, join the waitlist, and get real-time care updates.</p>
+      <a class="cta" data-login-link data-login-target="/chicks-eggs.html" href="/login.html">Launch secure login</a>
+      <p class="muted">Need access? Use the request form on the login screen and I’ll approve you as soon as I finish brooder rounds.</p>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <p>© <span id="y"></span> Madd Hatchery • Secure by HEDI</p>
+  </footer>
+  <script>document.getElementById('y').textContent = new Date().getFullYear();
+    const badge=document.querySelector('[data-user-name]');
+    if(badge){badge.hidden=false;}
+  </script>
+  <script src="/config.js"></script>
+  <script src="/static/js/support_config.js"></script>
+  <script src="/static/js/auth_config.js" defer></script>
+  <script src="/static/js/authz.js" defer></script>
+  <script src="/static/js/trish.js" defer></script>
+  <script src="/static/js/gated.js" defer></script>
+</body>
+</html>
