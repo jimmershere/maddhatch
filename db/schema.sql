@@ -35,6 +35,23 @@ CREATE TABLE IF NOT EXISTS order_items (
   unit_cents INTEGER NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS merch_orders (
+  id BIGSERIAL PRIMARY KEY,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  customer_name TEXT NOT NULL,
+  shipping_address TEXT NOT NULL,
+  city TEXT NOT NULL,
+  state TEXT NOT NULL,
+  zip_code TEXT NOT NULL,
+  merch_item_number TEXT NOT NULL,
+  size_code TEXT NOT NULL,
+  color TEXT NOT NULL,
+  quantity INTEGER NOT NULL CHECK (quantity > 0)
+);
+
+CREATE INDEX IF NOT EXISTS idx_merch_orders_created_at ON merch_orders(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_merch_orders_item ON merch_orders(merch_item_number);
+
 CREATE TABLE IF NOT EXISTS invoices (
   id TEXT PRIMARY KEY,
   order_id TEXT UNIQUE NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
