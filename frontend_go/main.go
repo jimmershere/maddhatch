@@ -33,6 +33,8 @@ type Order struct {
 	Items     []OrderItem `json:"items"`
 	Notes     string      `json:"notes"`
 	Channel   string      `json:"channel"`
+	OrderType string      `json:"order_type"`
+	Flavor    string      `json:"flavor,omitempty"`
 }
 
 // Customer holds identifying information for an order customer.
@@ -49,6 +51,25 @@ type OrderItem struct {
 	Qty       int    `json:"qty"`
 	UnitCents int    `json:"unit_cents"`
 }
+
+var (
+	allowedOrderTypes = map[string]struct{}{
+		"jam/jelly":     {},
+		"hatching eggs": {},
+		"eating eggs":   {},
+		"baby chicks":   {},
+		"grown birds":   {},
+	}
+	allowedFlavors = map[string]struct{}{
+		"blueberry-straight-up": {},
+		"blueberry-pepper":      {},
+		"strawberry":            {},
+		"sassy-strawberry":      {},
+		"peace-jam":             {},
+		"muscadine-jam":         {},
+		"chai-jelly":            {},
+	}
+)
 
 type sessionContextKey string
 
@@ -535,6 +556,25 @@ func orderHandler(ch *amqp.Channel) http.HandlerFunc {
 			o.ID = fmt.Sprintf("ord_%d", time.Now().UnixNano())
 		}
 		o.CreatedAt = time.Now().UTC()
+
+		o.OrderType = strings.ToLower(strings.TrimSpace(o.OrderType))
+		if o.OrderType == "" {
+			o.OrderType = "jam/jelly"
+		}
+		if _, ok := allowedOrderTypes[o.OrderType]; !ok {
+			o.OrderType = "jam/jelly"
+		}
+
+		flavor := strings.ToLower(strings.TrimSpace(o.Flavor))
+		if o.OrderType == "jam/jelly" && flavor != "" {
+			if _, ok := allowedFlavors[flavor]; ok {
+				o.Flavor = flavor
+			} else {
+				o.Flavor = ""
+			}
+		} else {
+			o.Flavor = ""
+		}
 
 		if err := publishOrder(ch, env("RMQ_EXCHANGE", "orders.direct"), o); err != nil {
 			http.Error(w, "queue error", http.StatusInternalServerError)
