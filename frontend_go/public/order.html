@@ -34,42 +34,138 @@
     <p class="trish-tip-text">No account yet? Ping me in the chat widget or email <a id="supportEmailInline" href="mailto:support@maddhatchery.example">support@maddhatchery.example</a> and I’ll set you up.</p>
   </div>
 </section>
-<main class="content">
+<main class="content" data-gated-content aria-hidden="true">
   <form id="orderForm" class="form">
     <h2>Start Your Order</h2>
     <label>Name<input name="name" required></label>
     <label>Email<input name="email" type="email" required></label>
     <label>Phone<input name="phone" required></label>
-    <label>Items (free text for now)<textarea name="items" placeholder="e.g., 2x Sassy Strawberry, 1 dozen hatching eggs"></textarea></label>
-    <label>Notes<textarea name="notes"></textarea></label>
+    <label>Item type
+      <select name="orderType" id="orderType" required>
+        <option value="jam/jelly">Jam &amp; Jelly</option>
+        <option value="hatching eggs">Hatching eggs</option>
+        <option value="eating eggs">Eating eggs</option>
+        <option value="baby chicks">Baby chicks</option>
+        <option value="grown birds">Grown birds</option>
+      </select>
+    </label>
+    <label id="flavorField" hidden>Flavor
+      <select name="flavor" id="flavorSelect">
+        <option value="blueberry-straight-up">Blueberry Straight-Up</option>
+        <option value="blueberry-pepper">Blueberry Pepper</option>
+        <option value="strawberry">Strawberry</option>
+        <option value="sassy-strawberry">Sassy Strawberry</option>
+        <option value="peace-jam">Peace Jam</option>
+        <option value="muscadine-jam">Muscadine Jam</option>
+        <option value="chai-jelly">Chai Jelly</option>
+      </select>
+    </label>
+    <label>Order details<textarea name="items" placeholder="Quantities, pickup or delivery notes, favorite breeds..."></textarea></label>
+    <label>Notes<textarea name="notes" placeholder="Anything else we should know?"></textarea></label>
     <button class="cta" type="submit">Queue Order</button>
     <p id="resp" class="muted"></p>
   </form>
 </main>
+
+<div class="login-overlay" data-login-overlay role="dialog" aria-modal="true" aria-labelledby="orderOverlayTitle" hidden>
+  <div class="login-overlay-panel">
+    <h2 id="orderOverlayTitle">Login required to place orders</h2>
+    <p>Our order form lives behind the secure Madd Hatchery OAuth portal. Sign in to auto-fill your contact info, view past orders, and lock in your next pickup.</p>
+    <a class="cta" data-login-link data-login-target="/order.html" href="/login.html">Launch secure login</a>
+    <p class="muted">Need an invite? Use the request link on the login page and we’ll approve it as soon as Trish finishes the kitchen checks.</p>
+  </div>
+</div>
 <script>
   const badge=document.querySelector('[data-user-name]');
   if(badge){badge.hidden=false;}
   const inlineEmail=document.getElementById('supportEmailInline');
   const support = window.MADDH_SUPPORT || {};
   if(inlineEmail && support.email){inlineEmail.textContent=support.email;inlineEmail.href='mailto:'+support.email;}
-  document.getElementById('orderForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const fd = new FormData(e.target);
-    const payload = {
-      customer: { name: fd.get('name'), email: fd.get('email'), phone: fd.get('phone') },
-      items: [{ sku: 'freeform', name: 'Freeform', qty: 1, unit_cents: 0 }],
-      notes: fd.get('notes') + '\n' + fd.get('items'),
-      channel: 'web'
-    };
-    const r = await fetch('/api/order', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)});
-    const js = await r.json();
-    document.getElementById('resp').textContent = js.status ? `Order queued, id: ${js.id}` : 'Submit failed';
-  });
+
+  const flavorField=document.getElementById('flavorField');
+  const flavorSelect=document.getElementById('flavorSelect');
+  const orderTypeSelect=document.getElementById('orderType');
+
+  function updateFlavorField(){
+    if(!orderTypeSelect){return;}
+    const needsFlavor = orderTypeSelect.value === 'jam/jelly';
+    if(flavorField){
+      flavorField.hidden = !needsFlavor;
+    }
+    if(flavorSelect){
+      flavorSelect.required = needsFlavor;
+      if(!needsFlavor){
+        flavorSelect.value = '';
+      }
+    }
+  }
+
+  if(orderTypeSelect){
+    orderTypeSelect.addEventListener('change', updateFlavorField);
+    updateFlavorField();
+  }
+
+  const form = document.getElementById('orderForm');
+  const resp = document.getElementById('resp');
+
+  if(form){
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if(!(window.MADDH_USER && (window.MADDH_USER.username || window.MADDH_USER.display_name))){
+        if(resp){resp.textContent = 'Please log in to submit an order.';}
+        return;
+      }
+
+      const fd = new FormData(form);
+      const orderType = fd.get('orderType') || 'jam/jelly';
+      const flavor = orderType === 'jam/jelly' ? (fd.get('flavor') || '').toString() : '';
+      const friendlyType = {
+        'jam/jelly': 'Jam & Jelly',
+        'hatching eggs': 'Hatching Eggs',
+        'eating eggs': 'Eating Eggs',
+        'baby chicks': 'Baby Chicks',
+        'grown birds': 'Grown Birds'
+      };
+      const skuMap = {
+        'jam/jelly': 'jamjelly',
+        'hatching eggs': 'hatching-eggs',
+        'eating eggs': 'eating-eggs',
+        'baby chicks': 'baby-chicks',
+        'grown birds': 'grown-birds'
+      };
+      const orderDetails = (fd.get('items') || '').toString().trim();
+      const extraNotes = (fd.get('notes') || '').toString().trim();
+      const notes = [extraNotes, orderDetails].filter(Boolean).join('\n');
+      const payload = {
+        customer: { name: fd.get('name'), email: fd.get('email'), phone: fd.get('phone') },
+        items: [{ sku: skuMap[orderType] || 'custom', name: orderType === 'jam/jelly' && flavor ? `${friendlyType[orderType]} - ${flavor}` : (friendlyType[orderType] || 'Custom Order'), qty: 1, unit_cents: 0 }],
+        notes,
+        channel: 'web',
+        order_type: orderType
+      };
+      if(orderType === 'jam/jelly' && flavor){
+        payload.flavor = flavor;
+      }
+
+      try {
+        const r = await fetch('/api/order', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)});
+        if(!r.ok){
+          throw new Error('Request failed');
+        }
+        const js = await r.json();
+        if(resp){resp.textContent = js.status ? `Order queued, id: ${js.id}` : 'Submit failed';}
+      } catch (err) {
+        console.error('order submit failed', err);
+        if(resp){resp.textContent = 'Submit failed';}
+      }
+    });
+  }
 </script>
 <script src="/config.js"></script>
 <script src="/static/js/support_config.js"></script>
 <script src="/static/js/auth_config.js" defer></script>
 <script src="/static/js/authz.js" defer></script>
 <script src="/static/js/trish.js" defer></script>
+<script src="/static/js/gated.js" defer></script>
 </body>
 </html>

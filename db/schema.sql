@@ -21,10 +21,47 @@ CREATE TABLE IF NOT EXISTS orders (
   id TEXT PRIMARY KEY,
   customer_id UUID NOT NULL REFERENCES customers(id),
   channel TEXT NOT NULL,
+  order_type TEXT NOT NULL DEFAULT 'jam/jelly',
+  flavor TEXT,
   notes TEXT,
   status TEXT NOT NULL DEFAULT 'queued',
-  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  CONSTRAINT orders_order_type_check CHECK (order_type IN ('jam/jelly','hatching eggs','eating eggs','baby chicks','grown birds')),
+  CONSTRAINT orders_flavor_check CHECK (flavor IS NULL OR flavor IN ('blueberry-straight-up','blueberry-pepper','strawberry','sassy-strawberry','peace-jam','muscadine-jam','chai-jelly'))
 );
+
+ALTER TABLE orders
+  ADD COLUMN IF NOT EXISTS order_type TEXT;
+
+ALTER TABLE orders
+  ALTER COLUMN order_type SET DEFAULT 'jam/jelly';
+
+UPDATE orders SET order_type = 'jam/jelly' WHERE order_type IS NULL;
+
+ALTER TABLE orders
+  ALTER COLUMN order_type SET NOT NULL;
+
+ALTER TABLE orders
+  ADD COLUMN IF NOT EXISTS flavor TEXT;
+
+UPDATE orders
+  SET flavor = NULL
+  WHERE flavor IS NOT NULL
+    AND flavor NOT IN ('blueberry-straight-up','blueberry-pepper','strawberry','sassy-strawberry','peace-jam','muscadine-jam','chai-jelly');
+
+DO $$
+BEGIN
+  ALTER TABLE orders ADD CONSTRAINT orders_order_type_check CHECK (order_type IN ('jam/jelly','hatching eggs','eating eggs','baby chicks','grown birds'));
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$
+BEGIN
+  ALTER TABLE orders ADD CONSTRAINT orders_flavor_check CHECK (flavor IS NULL OR flavor IN ('blueberry-straight-up','blueberry-pepper','strawberry','sassy-strawberry','peace-jam','muscadine-jam','chai-jelly'));
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+END $$;
 
 CREATE TABLE IF NOT EXISTS order_items (
   id BIGSERIAL PRIMARY KEY,

@@ -5,7 +5,7 @@ Order worker (Python 3.12)
 - Upserts customer, creates order + freeform item
 - Emits invoice.request, receipt.request, cashapp.request messages
 """
-import json, os, time, uuid
+import json, os, time
 import psycopg
 import pika
 
@@ -14,6 +14,24 @@ from rabbit_helpers import ensure_exchange, ensure_queue
 AMQP_URL = os.getenv("AMQP_URL", "amqp://app:app@rabbitmq:5672/")
 EXCHANGE = os.getenv("RMQ_EXCHANGE", "orders.direct")
 DB_URL = os.getenv("DATABASE_URL", "postgres://postgres:postgres@db:5432/maddhatchery?sslmode=disable")
+
+ORDER_TYPES = {
+    "jam/jelly",
+    "hatching eggs",
+    "eating eggs",
+    "baby chicks",
+    "grown birds",
+}
+
+FLAVORS = {
+    "blueberry-straight-up",
+    "blueberry-pepper",
+    "strawberry",
+    "sassy-strawberry",
+    "peace-jam",
+    "muscadine-jam",
+    "chai-jelly",
+}
 
 def publish(ch, rk, payload):
     ch.basic_publish(EXCHANGE, rk, json.dumps(payload).encode("utf-8"),
@@ -47,9 +65,20 @@ def main():
                             (cust["email"], cust["name"], cust.get("phone"))
                         ).fetchone()
                         customer_id = row[0]
+                        order_type = (o.get("order_type") or "jam/jelly").strip().lower()
+                        if order_type not in ORDER_TYPES:
+                            order_type = "jam/jelly"
+
+                        flavor = o.get("flavor") or ""
+                        if isinstance(flavor, str):
+                            flavor = flavor.strip().lower()
+                        else:
+                            flavor = ""
+                        flavor_value = flavor if order_type == "jam/jelly" and flavor in FLAVORS else None
+
                         db.execute(
-                            "INSERT INTO orders(id, customer_id, channel, notes, status) VALUES(%s,%s,%s,%s,'queued')",
-                            (o["id"], customer_id, o.get("channel","web"), o.get("notes",""))
+                            "INSERT INTO orders(id, customer_id, channel, notes, order_type, flavor, status) VALUES(%s,%s,%s,%s,%s,%s,'queued')",
+                            (o["id"], customer_id, o.get("channel","web"), o.get("notes",""), order_type, flavor_value)
                         )
                         for it in o.get("items", []):
                             db.execute(
