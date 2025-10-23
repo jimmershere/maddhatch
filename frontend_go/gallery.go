@@ -99,9 +99,15 @@ func buildGalleryEntries(baseDir, relativePath string) ([]galleryEntry, error) {
 		name := file.Name()
 		src := path.Join(webBase, name)
 		title := humaniseFilename(name)
+		caption := wittyCaption(relativePath, name)
+
 		entry := galleryEntry{Src: src}
 		if title != "" {
 			entry.Alt = title
+		}
+		if caption != "" {
+			entry.Caption = caption
+		} else if title != "" {
 			entry.Caption = title
 		}
 		entries = append(entries, entry)

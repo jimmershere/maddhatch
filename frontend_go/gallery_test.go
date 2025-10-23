@@ -54,6 +54,10 @@ func TestGalleryManifestHandlerReturnsEntries(t *testing.T) {
 		t.Fatalf("unexpected alt text: %q", payload[0].Alt)
 	}
 
+	if payload[0].Caption != wittyCaption("chicks", "a fluff.png") {
+		t.Fatalf("unexpected caption: %q", payload[0].Caption)
+	}
+
 	if payload[1].Src != "/static/img/chicks/b-chick.JPG" {
 		t.Fatalf("unexpected second src: %q", payload[1].Src)
 	}
