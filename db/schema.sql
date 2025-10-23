@@ -23,11 +23,17 @@ CREATE TABLE IF NOT EXISTS orders (
   channel TEXT NOT NULL,
   order_type TEXT NOT NULL DEFAULT 'jam/jelly',
   flavor TEXT,
+  breed TEXT,
+  size TEXT,
+  quantity INTEGER,
   notes TEXT,
   status TEXT NOT NULL DEFAULT 'queued',
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   CONSTRAINT orders_order_type_check CHECK (order_type IN ('jam/jelly','hatching eggs','eating eggs','baby chicks','grown birds')),
-  CONSTRAINT orders_flavor_check CHECK (flavor IS NULL OR flavor IN ('blueberry-straight-up','blueberry-pepper','strawberry','sassy-strawberry','peace-jam','muscadine-jam','chai-jelly'))
+  CONSTRAINT orders_flavor_check CHECK (flavor IS NULL OR (order_type = 'jam/jelly' AND flavor IN ('blueberry-straight-up','blueberry-pepper','strawberry','sassy-strawberry','peace-jam','muscadine-jam','chai-jelly'))),
+  CONSTRAINT orders_breed_check CHECK (breed IS NULL OR (order_type = 'hatching eggs' AND breed IN ('curly-frizzles','ayam-cemani','polish-top-hats','silver-gold-spangled-spitzhauben','easter-eggers','silky-curly-frizzles'))),
+  CONSTRAINT orders_size_check CHECK (size IS NULL OR (order_type = 'jam/jelly' AND size IN ('quarter-pint','half-pint','one-pint'))),
+  CONSTRAINT orders_quantity_check CHECK ((order_type = 'hatching eggs' AND quantity BETWEEN 1 AND 24) OR (order_type = 'eating eggs' AND quantity BETWEEN 1 AND 5) OR (order_type NOT IN ('hatching eggs','eating eggs') AND quantity IS NULL))
 );
 
 ALTER TABLE orders
@@ -44,10 +50,35 @@ ALTER TABLE orders
 ALTER TABLE orders
   ADD COLUMN IF NOT EXISTS flavor TEXT;
 
+ALTER TABLE orders
+  ADD COLUMN IF NOT EXISTS breed TEXT;
+
+ALTER TABLE orders
+  ADD COLUMN IF NOT EXISTS size TEXT;
+
+ALTER TABLE orders
+  ADD COLUMN IF NOT EXISTS quantity INTEGER;
+
 UPDATE orders
   SET flavor = NULL
   WHERE flavor IS NOT NULL
     AND flavor NOT IN ('blueberry-straight-up','blueberry-pepper','strawberry','sassy-strawberry','peace-jam','muscadine-jam','chai-jelly');
+
+UPDATE orders
+  SET breed = NULL
+  WHERE breed IS NOT NULL
+    AND breed NOT IN ('curly-frizzles','ayam-cemani','polish-top-hats','silver-gold-spangled-spitzhauben','easter-eggers','silky-curly-frizzles');
+
+UPDATE orders
+  SET size = NULL
+  WHERE size IS NOT NULL
+    AND size NOT IN ('quarter-pint','half-pint','one-pint');
+
+UPDATE orders
+  SET quantity = NULL
+  WHERE (order_type = 'hatching eggs' AND (quantity IS NULL OR quantity < 1 OR quantity > 24))
+     OR (order_type = 'eating eggs' AND (quantity IS NULL OR quantity < 1 OR quantity > 5))
+     OR (order_type NOT IN ('hatching eggs','eating eggs') AND quantity IS NOT NULL);
 
 DO $$
 BEGIN
@@ -58,7 +89,28 @@ END $$;
 
 DO $$
 BEGIN
-  ALTER TABLE orders ADD CONSTRAINT orders_flavor_check CHECK (flavor IS NULL OR flavor IN ('blueberry-straight-up','blueberry-pepper','strawberry','sassy-strawberry','peace-jam','muscadine-jam','chai-jelly'));
+  ALTER TABLE orders ADD CONSTRAINT orders_flavor_check CHECK (flavor IS NULL OR (order_type = 'jam/jelly' AND flavor IN ('blueberry-straight-up','blueberry-pepper','strawberry','sassy-strawberry','peace-jam','muscadine-jam','chai-jelly')));
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$
+BEGIN
+  ALTER TABLE orders ADD CONSTRAINT orders_breed_check CHECK (breed IS NULL OR (order_type = 'hatching eggs' AND breed IN ('curly-frizzles','ayam-cemani','polish-top-hats','silver-gold-spangled-spitzhauben','easter-eggers','silky-curly-frizzles')));
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$
+BEGIN
+  ALTER TABLE orders ADD CONSTRAINT orders_size_check CHECK (size IS NULL OR (order_type = 'jam/jelly' AND size IN ('quarter-pint','half-pint','one-pint')));
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$
+BEGIN
+  ALTER TABLE orders ADD CONSTRAINT orders_quantity_check CHECK ((order_type = 'hatching eggs' AND quantity BETWEEN 1 AND 24) OR (order_type = 'eating eggs' AND quantity BETWEEN 1 AND 5) OR (order_type NOT IN ('hatching eggs','eating eggs') AND quantity IS NULL));
 EXCEPTION
   WHEN duplicate_object THEN NULL;
 END $$;
