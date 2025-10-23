@@ -33,6 +33,21 @@ FLAVORS = {
     "chai-jelly",
 }
 
+BREEDS = {
+    "curly-frizzles",
+    "ayam-cemani",
+    "polish-top-hats",
+    "silver-gold-spangled-spitzhauben",
+    "easter-eggers",
+    "silky-curly-frizzles",
+}
+
+SIZES = {
+    "quarter-pint",
+    "half-pint",
+    "one-pint",
+}
+
 def publish(ch, rk, payload):
     ch.basic_publish(EXCHANGE, rk, json.dumps(payload).encode("utf-8"),
                      properties=pika.BasicProperties(content_type="application/json", delivery_mode=2))
@@ -76,9 +91,31 @@ def main():
                             flavor = ""
                         flavor_value = flavor if order_type == "jam/jelly" and flavor in FLAVORS else None
 
+                        breed = o.get("breed") or ""
+                        if isinstance(breed, str):
+                            breed = breed.strip().lower()
+                        else:
+                            breed = ""
+                        breed_value = breed if order_type == "hatching eggs" and breed in BREEDS else None
+
+                        size = o.get("size") or ""
+                        if isinstance(size, str):
+                            size = size.strip().lower()
+                        else:
+                            size = ""
+                        size_value = size if order_type == "jam/jelly" and size in SIZES else None
+
+                        quantity = o.get("quantity")
+                        quantity_value = None
+                        if isinstance(quantity, int):
+                            if order_type == "hatching eggs" and 1 <= quantity <= 24:
+                                quantity_value = quantity
+                            elif order_type == "eating eggs" and 1 <= quantity <= 5:
+                                quantity_value = quantity
+
                         db.execute(
-                            "INSERT INTO orders(id, customer_id, channel, notes, order_type, flavor, status) VALUES(%s,%s,%s,%s,%s,%s,'queued')",
-                            (o["id"], customer_id, o.get("channel","web"), o.get("notes",""), order_type, flavor_value)
+                            "INSERT INTO orders(id, customer_id, channel, notes, order_type, flavor, breed, size, quantity, status) VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s,'queued')",
+                            (o["id"], customer_id, o.get("channel","web"), o.get("notes",""), order_type, flavor_value, breed_value, size_value, quantity_value)
                         )
                         for it in o.get("items", []):
                             db.execute(

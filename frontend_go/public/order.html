@@ -49,16 +49,14 @@
         <option value="grown birds">Grown birds</option>
       </select>
     </label>
-    <label id="flavorField" hidden>Flavor
-      <select name="flavor" id="flavorSelect">
-        <option value="blueberry-straight-up">Blueberry Straight-Up</option>
-        <option value="blueberry-pepper">Blueberry Pepper</option>
-        <option value="strawberry">Strawberry</option>
-        <option value="sassy-strawberry">Sassy Strawberry</option>
-        <option value="peace-jam">Peace Jam</option>
-        <option value="muscadine-jam">Muscadine Jam</option>
-        <option value="chai-jelly">Chai Jelly</option>
-      </select>
+    <label id="flavorField" hidden>Flavor/Breed
+      <select name="flavorBreed" id="flavorSelect"></select>
+    </label>
+    <label id="sizeField" hidden>Size
+      <select name="size" id="sizeSelect"></select>
+    </label>
+    <label id="quantityField" hidden>Quantity
+      <select name="quantity" id="quantitySelect"></select>
     </label>
     <label>Order details<textarea name="items" placeholder="Quantities, pickup or delivery notes, favorite breeds..."></textarea></label>
     <label>Notes<textarea name="notes" placeholder="Anything else we should know?"></textarea></label>
@@ -84,25 +82,118 @@
 
   const flavorField=document.getElementById('flavorField');
   const flavorSelect=document.getElementById('flavorSelect');
+  const sizeField=document.getElementById('sizeField');
+  const sizeSelect=document.getElementById('sizeSelect');
+  const quantityField=document.getElementById('quantityField');
+  const quantitySelect=document.getElementById('quantitySelect');
   const orderTypeSelect=document.getElementById('orderType');
 
-  function updateFlavorField(){
-    if(!orderTypeSelect){return;}
-    const needsFlavor = orderTypeSelect.value === 'jam/jelly';
-    if(flavorField){
-      flavorField.hidden = !needsFlavor;
+  const jamFlavors=[
+    {value:'blueberry-straight-up',label:'Blueberry Straight-Up'},
+    {value:'blueberry-pepper',label:'Blueberry Pepper'},
+    {value:'strawberry',label:'Strawberry'},
+    {value:'sassy-strawberry',label:'Sassy Strawberry'},
+    {value:'peace-jam',label:'Peace Jam'},
+    {value:'muscadine-jam',label:'Muscadine Jam'},
+    {value:'chai-jelly',label:'Chai Jelly'}
+  ];
+  const jamFlavorMap=new Map(jamFlavors.map((o)=>[o.value,o.label]));
+  const jamSizes=[
+    {value:'quarter-pint',label:'1/4 pint'},
+    {value:'half-pint',label:'1/2 pint'},
+    {value:'one-pint',label:'1 pint'}
+  ];
+  const jamSizeMap=new Map(jamSizes.map((o)=>[o.value,o.label]));
+  const hatchingBreeds=[
+    {value:'curly-frizzles',label:'Curly Frizzles'},
+    {value:'ayam-cemani',label:'Ayam Cemani'},
+    {value:'polish-top-hats',label:'Polish Top Hats'},
+    {value:'silver-gold-spangled-spitzhauben',label:'Silver & Gold Spangled Spitzhauben'},
+    {value:'easter-eggers',label:'Easter Eggers'},
+    {value:'silky-curly-frizzles',label:'Silky Curly Frizzles'}
+  ];
+  const hatchingBreedMap=new Map(hatchingBreeds.map((o)=>[o.value,o.label]));
+
+  function populateSelect(select,options){
+    if(!select){return;}
+    select.innerHTML='';
+    options.forEach(({value,label})=>{
+      const opt=document.createElement('option');
+      opt.value=value;
+      opt.textContent=label;
+      select.append(opt);
+    });
+    if(options.length>0){
+      select.value=options[0].value;
     }
-    if(flavorSelect){
-      flavorSelect.required = needsFlavor;
-      if(!needsFlavor){
-        flavorSelect.value = '';
+  }
+
+  function updateOrderFields(){
+    if(!orderTypeSelect){return;}
+    const type=orderTypeSelect.value;
+
+    if(flavorField && flavorSelect){
+      if(type==='jam/jelly'){
+        populateSelect(flavorSelect,jamFlavors);
+        flavorField.hidden=false;
+        flavorSelect.required=true;
+      }else if(type==='hatching eggs'){
+        populateSelect(flavorSelect,hatchingBreeds);
+        flavorField.hidden=false;
+        flavorSelect.required=true;
+      }else if(type==='eating eggs'){
+        populateSelect(flavorSelect,[]);
+        flavorField.hidden=false;
+        flavorSelect.required=false;
+      }else{
+        populateSelect(flavorSelect,[]);
+        flavorField.hidden=true;
+        flavorSelect.required=false;
+      }
+      if(flavorSelect.hidden || flavorSelect.options.length===0){
+        flavorSelect.value='';
+      }
+    }
+
+    if(sizeField && sizeSelect){
+      if(type==='jam/jelly'){
+        populateSelect(sizeSelect,jamSizes);
+        sizeField.hidden=false;
+        sizeSelect.required=true;
+      }else{
+        populateSelect(sizeSelect,[]);
+        sizeField.hidden=true;
+        sizeSelect.required=false;
+        sizeSelect.value='';
+      }
+    }
+
+    if(quantityField && quantitySelect){
+      if(type==='hatching eggs'){
+        const options=Array.from({length:24},(_,i)=>({value:String(i+1),label:String(i+1)}));
+        populateSelect(quantitySelect,options);
+        quantityField.hidden=false;
+        quantitySelect.required=true;
+      }else if(type==='eating eggs'){
+        const options=Array.from({length:5},(_,i)=>{
+          const dozen=i+1;
+          return {value:String(dozen),label:`${dozen} dozen${dozen>1?'s':''}`};
+        });
+        populateSelect(quantitySelect,options);
+        quantityField.hidden=false;
+        quantitySelect.required=true;
+      }else{
+        populateSelect(quantitySelect,[]);
+        quantityField.hidden=true;
+        quantitySelect.required=false;
+        quantitySelect.value='';
       }
     }
   }
 
   if(orderTypeSelect){
-    orderTypeSelect.addEventListener('change', updateFlavorField);
-    updateFlavorField();
+    orderTypeSelect.addEventListener('change', updateOrderFields);
+    updateOrderFields();
   }
 
   const form = document.getElementById('orderForm');
@@ -118,7 +209,23 @@
 
       const fd = new FormData(form);
       const orderType = fd.get('orderType') || 'jam/jelly';
-      const flavor = orderType === 'jam/jelly' ? (fd.get('flavor') || '').toString() : '';
+      const selectedFlavorOrBreed = (fd.get('flavorBreed') || '').toString();
+      const sizeValue = (fd.get('size') || '').toString();
+      const quantityValue = (fd.get('quantity') || '').toString();
+      let flavor='';
+      let breed='';
+      if(orderType === 'jam/jelly'){
+        flavor = selectedFlavorOrBreed;
+      }else if(orderType === 'hatching eggs'){
+        breed = selectedFlavorOrBreed;
+      }
+      let quantity = 0;
+      if(orderType === 'hatching eggs' || orderType === 'eating eggs'){
+        const parsed = parseInt(quantityValue,10);
+        if(!Number.isNaN(parsed)){
+          quantity = parsed;
+        }
+      }
       const friendlyType = {
         'jam/jelly': 'Jam & Jelly',
         'hatching eggs': 'Hatching Eggs',
@@ -136,15 +243,53 @@
       const orderDetails = (fd.get('items') || '').toString().trim();
       const extraNotes = (fd.get('notes') || '').toString().trim();
       const notes = [extraNotes, orderDetails].filter(Boolean).join('\n');
+      const flavorLabel = flavor ? (jamFlavorMap.get(flavor) || flavor) : '';
+      const sizeLabel = orderType === 'jam/jelly' && sizeValue ? (jamSizeMap.get(sizeValue) || sizeValue) : '';
+      const breedLabel = breed ? (hatchingBreedMap.get(breed) || breed) : '';
+      let itemName = friendlyType[orderType] || 'Custom Order';
+      if(orderType === 'jam/jelly'){
+        if(flavorLabel){
+          itemName += ` - ${flavorLabel}`;
+        }
+        if(sizeLabel){
+          itemName += ` (${sizeLabel})`;
+        }
+      }else if(orderType === 'hatching eggs'){
+        if(breedLabel){
+          itemName += ` - ${breedLabel}`;
+        }
+        if(quantity){
+          itemName += ` (${quantity} eggs)`;
+        }
+      }else if(orderType === 'eating eggs'){
+        if(quantity){
+          itemName += ` (${quantity} dozen)`;
+        }
+      }
       const payload = {
         customer: { name: fd.get('name'), email: fd.get('email'), phone: fd.get('phone') },
-        items: [{ sku: skuMap[orderType] || 'custom', name: orderType === 'jam/jelly' && flavor ? `${friendlyType[orderType]} - ${flavor}` : (friendlyType[orderType] || 'Custom Order'), qty: 1, unit_cents: 0 }],
+        items: [{ sku: skuMap[orderType] || 'custom', name: itemName, qty: 1, unit_cents: 0 }],
         notes,
         channel: 'web',
         order_type: orderType
       };
       if(orderType === 'jam/jelly' && flavor){
         payload.flavor = flavor;
+        if(sizeValue){
+          payload.size = sizeValue;
+        }
+      }
+      if(orderType === 'hatching eggs' && breed){
+        payload.breed = breed;
+      }
+      if((orderType === 'hatching eggs' || orderType === 'eating eggs') && quantity){
+        payload.quantity = quantity;
+      }
+      if(orderType !== 'jam/jelly'){
+        payload.flavor = '';
+      }
+      if(orderType === 'jam/jelly' && !sizeValue){
+        payload.size = '';
       }
 
       try {

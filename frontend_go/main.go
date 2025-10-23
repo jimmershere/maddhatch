@@ -35,6 +35,9 @@ type Order struct {
 	Channel   string      `json:"channel"`
 	OrderType string      `json:"order_type"`
 	Flavor    string      `json:"flavor,omitempty"`
+	Breed     string      `json:"breed,omitempty"`
+	Size      string      `json:"size,omitempty"`
+	Quantity  int         `json:"quantity,omitempty"`
 }
 
 // Customer holds identifying information for an order customer.
@@ -68,6 +71,19 @@ var (
 		"peace-jam":             {},
 		"muscadine-jam":         {},
 		"chai-jelly":            {},
+	}
+	allowedBreeds = map[string]struct{}{
+		"curly-frizzles":                   {},
+		"ayam-cemani":                      {},
+		"polish-top-hats":                  {},
+		"silver-gold-spangled-spitzhauben": {},
+		"easter-eggers":                    {},
+		"silky-curly-frizzles":             {},
+	}
+	allowedSizes = map[string]struct{}{
+		"quarter-pint": {},
+		"half-pint":    {},
+		"one-pint":     {},
 	}
 )
 
@@ -574,6 +590,40 @@ func orderHandler(ch *amqp.Channel) http.HandlerFunc {
 			}
 		} else {
 			o.Flavor = ""
+		}
+
+		breed := strings.ToLower(strings.TrimSpace(o.Breed))
+		if o.OrderType == "hatching eggs" && breed != "" {
+			if _, ok := allowedBreeds[breed]; ok {
+				o.Breed = breed
+			} else {
+				o.Breed = ""
+			}
+		} else {
+			o.Breed = ""
+		}
+
+		size := strings.ToLower(strings.TrimSpace(o.Size))
+		if o.OrderType == "jam/jelly" && size != "" {
+			if _, ok := allowedSizes[size]; ok {
+				o.Size = size
+			} else {
+				o.Size = ""
+			}
+		} else {
+			o.Size = ""
+		}
+
+		if o.OrderType == "hatching eggs" {
+			if o.Quantity < 1 || o.Quantity > 24 {
+				o.Quantity = 0
+			}
+		} else if o.OrderType == "eating eggs" {
+			if o.Quantity < 1 || o.Quantity > 5 {
+				o.Quantity = 0
+			}
+		} else {
+			o.Quantity = 0
 		}
 
 		if err := publishOrder(ch, env("RMQ_EXCHANGE", "orders.direct"), o); err != nil {
