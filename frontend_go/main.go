@@ -1115,6 +1115,7 @@ func main() {
 	r := mux.NewRouter()
 	r.Use(sessionMiddleware(sessionSecret, sessionCookie))
 	r.HandleFunc("/config.js", configJSHandler(cfg)).Methods("GET")
+	r.HandleFunc("/static/img/{galleryPath:.*}/gallery.json", galleryManifestHandler("./public/static/img")).Methods("GET")
 	r.HandleFunc("/healthz", health).Methods("GET")
 	r.HandleFunc("/api/order", orderHandler(ch)).Methods("POST")
 	r.HandleFunc("/support/tickets", supportTicketCreate(apiClientInstance)).Methods("POST")
