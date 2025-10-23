@@ -33,6 +33,46 @@
   const galleryCache = new Map();
   const galleryStates = new Map();
 
+  function normalisePhotos(rawEntries, section, directory) {
+    if (!Array.isArray(rawEntries)) {
+      return [];
+    }
+    const productName = section.dataset.productName || 'Merch photo';
+    return rawEntries
+      .map((entry, index) => {
+        if (!entry) {
+          return null;
+        }
+
+        let src = '';
+        let alt = '';
+        let caption = '';
+
+        if (typeof entry === 'string') {
+          src = entry;
+        } else {
+          src = entry.src || entry.file || '';
+          alt = entry.alt || '';
+          caption = entry.caption || '';
+        }
+
+        if (!src) {
+          return null;
+        }
+
+        if (!/^https?:/i.test(src) && !src.startsWith('/')) {
+          src = `${directory}${src}`;
+        }
+
+        return {
+          src,
+          alt: alt || `${productName} ${index + 1}`,
+          caption
+        };
+      })
+      .filter(Boolean);
+  }
+
   async function loadGallery(section) {
     const directory = ensureDirectorySuffix(section.dataset.photoDirectory || '');
     if (!directory) {
@@ -43,49 +83,66 @@
       return galleryCache.get(directory);
     }
 
+    const galleryUrl = `${directory}gallery.json`;
     try {
-      const response = await fetch(`${directory}manifest.json`, { cache: 'no-cache' });
-      if (!response.ok) {
-        throw new Error(`Manifest not found for ${directory}`);
-      }
-      const manifest = await response.json();
-      const photos = Array.isArray(manifest.photos)
-        ? manifest.photos.map((photo, index) => {
-            const src = photo.file && /^https?:/i.test(photo.file)
-              ? photo.file
-              : `${directory}${photo.file}`;
-            return {
-              src,
-              alt: photo.alt || `${section.dataset.productName || 'Merch photo'} ${index + 1}`,
-              caption: photo.caption || ''
-            };
-          })
-        : [];
-      galleryCache.set(directory, photos);
-      return photos;
-    } catch (error) {
-      console.warn('Unable to load gallery manifest; falling back to placeholders.', directory, error);
-      const productName = section.dataset.productName || 'Merch preview';
-      const fallback = [
-        {
-          src: svgPlaceholder(productName, 'Front view'),
-          alt: `${productName} front view`,
-          caption: 'Front preview placeholder.'
-        },
-        {
-          src: svgPlaceholder(productName, 'Back view'),
-          alt: `${productName} back view`,
-          caption: 'Back preview placeholder.'
-        },
-        {
-          src: svgPlaceholder(productName, 'Detail view'),
-          alt: `${productName} detail view`,
-          caption: 'Detail preview placeholder.'
+      const response = await fetch(galleryUrl, { cache: 'no-cache' });
+      if (response.ok) {
+        const payload = await response.json();
+        const photos = normalisePhotos(Array.isArray(payload) ? payload : payload && Array.isArray(payload.photos) ? payload.photos : [], section, directory);
+        if (photos.length) {
+          galleryCache.set(directory, photos);
+          return photos;
         }
-      ];
-      galleryCache.set(directory, fallback);
-      return fallback;
+      } else if (response.status && response.status !== 404) {
+        console.warn('Gallery request failed', galleryUrl, response.status);
+      }
+    } catch (error) {
+      console.warn('Gallery manifest fetch failed; will try static manifest.', galleryUrl, error);
     }
+
+    const manifestUrl = `${directory}manifest.json`;
+    try {
+      const response = await fetch(manifestUrl, { cache: 'no-cache' });
+      if (response.ok) {
+        const manifest = await response.json();
+        const manifestEntries = Array.isArray(manifest)
+          ? manifest
+          : manifest && Array.isArray(manifest.photos)
+          ? manifest.photos
+          : [];
+        const photos = normalisePhotos(manifestEntries, section, directory);
+        if (photos.length) {
+          galleryCache.set(directory, photos);
+          return photos;
+        }
+      } else if (response.status && response.status !== 404) {
+        console.warn('Static manifest request failed', manifestUrl, response.status);
+      }
+    } catch (error) {
+      console.warn('Static manifest load failed.', manifestUrl, error);
+    }
+
+    const productName = section.dataset.productName || 'Merch preview';
+    console.warn('Unable to load gallery assets; falling back to placeholders.', directory);
+    const fallback = [
+      {
+        src: svgPlaceholder(productName, 'Front view'),
+        alt: `${productName} front view`,
+        caption: 'Front preview placeholder.'
+      },
+      {
+        src: svgPlaceholder(productName, 'Back view'),
+        alt: `${productName} back view`,
+        caption: 'Back preview placeholder.'
+      },
+      {
+        src: svgPlaceholder(productName, 'Detail view'),
+        alt: `${productName} detail view`,
+        caption: 'Detail preview placeholder.'
+      }
+    ];
+    galleryCache.set(directory, fallback);
+    return fallback;
   }
 
   function renderFeature(section, photo) {
