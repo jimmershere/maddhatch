@@ -1,7 +1,9 @@
+import asyncio
 import base64
 import hashlib
 import hmac
 import json
+import logging
 import os
 import time
 from dataclasses import dataclass
@@ -11,6 +13,9 @@ import httpx
 from fastapi import Depends, FastAPI, Form, HTTPException, Request, status
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
+
+
+logger = logging.getLogger(__name__)
 
 
 def b64encode(data: bytes) -> str:
@@ -64,11 +69,48 @@ async def get_settings(request: Request) -> Settings:
 async def fetch_identity(settings: Settings, username: str, password: str) -> Dict[str, Any]:
     payload = {"username": username, "password": password}
     headers = {"X-Maddh-Shared-Secret": settings.shared_secret}
-    async with httpx.AsyncClient(timeout=10) as client:
-        resp = await client.post(f"{settings.api_url}/auth/login", json=payload, headers=headers)
-    if resp.status_code != 200:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="invalid credentials")
-    return resp.json()
+
+    attempts = 5
+    delay = 0.5
+    last_error: Optional[BaseException] = None
+
+    for attempt in range(1, attempts + 1):
+        try:
+            async with httpx.AsyncClient(timeout=10) as client:
+                resp = await client.post(
+                    f"{settings.api_url}/auth/login", json=payload, headers=headers
+                )
+        except httpx.HTTPError as exc:
+            last_error = exc
+            logger.warning(
+                "Failed to reach Madd Hatchery API (attempt %s/%s): %s",
+                attempt,
+                attempts,
+                exc,
+            )
+            if attempt == attempts:
+                break
+            await asyncio.sleep(delay)
+            delay = min(delay * 2, 5.0)
+            continue
+
+        if resp.status_code == status.HTTP_200_OK:
+            return resp.json()
+        if resp.status_code == status.HTTP_401_UNAUTHORIZED:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="invalid credentials")
+
+        logger.error(
+            "Unexpected response from Madd Hatchery API: %s %s",
+            resp.status_code,
+            resp.text,
+        )
+        raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail="upstream authentication error")
+
+    assert last_error is not None
+    raise HTTPException(
+        status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+        detail="authentication service temporarily unavailable",
+    )
 
 
 def sign_session(settings: Settings, data: Dict[str, Any]) -> str:
