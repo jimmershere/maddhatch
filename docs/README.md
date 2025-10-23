@@ -140,5 +140,5 @@ Set `MADDH_LDAP_ENABLED=false` in `.env` if you want to skip the directory boots
 
 The original AMQP workers continue to process orders, generate invoices, and emit cash/tax events. Extend them as needed for your downstream tooling.
 
-> TLS certs: mount to `./config/certs/fullchain.pem` and `privkey.pem`. The same bundle is mapped into the LDAP container, and the frontend serves HTTPS on `https://localhost:8443` by default.
+> TLS certs: mount to `./config/certs/fullchain.pem` and `privkey.pem`. The same bundle is mapped into the LDAP container, and the frontend serves HTTPS on `https://localhost:8443` by default. If those files are missing or the bundle lacks Subject Alternative Names, the frontend now auto-generates a self-signed certificate (configurable via `TLS_CERT_HOSTS`, `TLS_RUNTIME_CERT_DIR`, and `TLS_AUTO_SELF_SIGNED`).
 

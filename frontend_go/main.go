@@ -4,18 +4,26 @@ import (
 	"bytes"
 	"context"
 	"crypto/hmac"
+	"crypto/rand"
+	"crypto/rsa"
 	"crypto/sha256"
 	"crypto/tls"
+	"crypto/x509"
+	"crypto/x509/pkix"
 	"database/sql"
 	"encoding/base64"
 	"encoding/json"
+	"encoding/pem"
 	"fmt"
 	"io"
 	"log"
+	"math/big"
+	"net"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -303,6 +311,150 @@ func fileExists(path string) bool {
 		return false
 	}
 	return !info.IsDir()
+}
+
+func certificateHasSAN(certPath string) (bool, error) {
+	data, err := os.ReadFile(certPath)
+	if err != nil {
+		return false, err
+	}
+	block, _ := pem.Decode(data)
+	if block == nil {
+		return false, fmt.Errorf("unable to decode certificate pem from %s", certPath)
+	}
+	cert, err := x509.ParseCertificate(block.Bytes)
+	if err != nil {
+		return false, err
+	}
+	return len(cert.DNSNames) > 0 || len(cert.IPAddresses) > 0, nil
+}
+
+func parseCertificateHosts(value string) []string {
+	parts := strings.Split(value, ",")
+	hosts := make([]string, 0, len(parts))
+	for _, part := range parts {
+		if trimmed := strings.TrimSpace(part); trimmed != "" {
+			hosts = append(hosts, trimmed)
+		}
+	}
+	return hosts
+}
+
+func generateSelfSignedCertificate(hosts []string, dir string) (string, string, error) {
+	if len(hosts) == 0 {
+		return "", "", fmt.Errorf("no hosts provided for self-signed certificate")
+	}
+
+	if err := os.MkdirAll(dir, 0o755); err != nil {
+		return "", "", err
+	}
+
+	priv, err := rsa.GenerateKey(rand.Reader, 2048)
+	if err != nil {
+		return "", "", err
+	}
+
+	serialLimit := new(big.Int).Lsh(big.NewInt(1), 128)
+	serial, err := rand.Int(rand.Reader, serialLimit)
+	if err != nil {
+		return "", "", err
+	}
+
+	now := time.Now()
+	tmpl := &x509.Certificate{
+		SerialNumber: serial,
+		Subject: pkix.Name{
+			Organization: []string{"Madd Hatchery Auto TLS"},
+		},
+		NotBefore:             now.Add(-time.Hour),
+		NotAfter:              now.Add(365 * 24 * time.Hour * 5),
+		KeyUsage:              x509.KeyUsageKeyEncipherment | x509.KeyUsageDigitalSignature,
+		ExtKeyUsage:           []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth},
+		BasicConstraintsValid: true,
+	}
+
+	for _, host := range hosts {
+		if ip := net.ParseIP(host); ip != nil {
+			tmpl.IPAddresses = append(tmpl.IPAddresses, ip)
+		} else {
+			tmpl.DNSNames = append(tmpl.DNSNames, host)
+		}
+	}
+
+	derBytes, err := x509.CreateCertificate(rand.Reader, tmpl, tmpl, &priv.PublicKey, priv)
+	if err != nil {
+		return "", "", err
+	}
+
+	certPath := filepath.Join(dir, "selfsigned-cert.pem")
+	keyPath := filepath.Join(dir, "selfsigned-key.pem")
+
+	certBuf := &bytes.Buffer{}
+	if err := pem.Encode(certBuf, &pem.Block{Type: "CERTIFICATE", Bytes: derBytes}); err != nil {
+		return "", "", err
+	}
+	keyBuf := &bytes.Buffer{}
+	if err := pem.Encode(keyBuf, &pem.Block{Type: "RSA PRIVATE KEY", Bytes: x509.MarshalPKCS1PrivateKey(priv)}); err != nil {
+		return "", "", err
+	}
+
+	if err := os.WriteFile(certPath, certBuf.Bytes(), 0o644); err != nil {
+		return "", "", err
+	}
+	if err := os.WriteFile(keyPath, keyBuf.Bytes(), 0o600); err != nil {
+		return "", "", err
+	}
+
+	return certPath, keyPath, nil
+}
+
+func ensureTLSCertificates(certFile, keyFile string) (string, string, bool) {
+	if !fileExists(certFile) && fileExists("/certs/server.crt") {
+		log.Printf("TLS cert %q not found, falling back to /certs/server.crt", certFile)
+		certFile = "/certs/server.crt"
+	}
+	if !fileExists(keyFile) && fileExists("/certs/server.key") {
+		log.Printf("TLS key %q not found, falling back to /certs/server.key", keyFile)
+		keyFile = "/certs/server.key"
+	}
+
+	certExists := fileExists(certFile)
+	keyExists := fileExists(keyFile)
+
+	runtimeDir := env("TLS_RUNTIME_CERT_DIR", "/tmp/tls")
+	autoHosts := parseCertificateHosts(env("TLS_CERT_HOSTS", "frontend,localhost,127.0.0.1"))
+	autoGenerate := envBool("TLS_AUTO_SELF_SIGNED", true)
+
+	if certExists && keyExists {
+		if envBool("TLS_ENSURE_SAN", true) {
+			hasSAN, err := certificateHasSAN(certFile)
+			if err != nil {
+				log.Printf("unable to inspect TLS certificate %q: %v", certFile, err)
+			} else if !hasSAN && autoGenerate {
+				log.Printf("TLS certificate %q is missing Subject Alternative Names; generating a self-signed replacement", certFile)
+				generatedCert, generatedKey, genErr := generateSelfSignedCertificate(autoHosts, runtimeDir)
+				if genErr != nil {
+					log.Printf("failed to generate self-signed TLS certificate: %v", genErr)
+				} else {
+					log.Printf("Using auto-generated self-signed certificate with hosts: %s", strings.Join(autoHosts, ", "))
+					return generatedCert, generatedKey, true
+				}
+			}
+		}
+		return certFile, keyFile, true
+	}
+
+	if autoGenerate {
+		generatedCert, generatedKey, err := generateSelfSignedCertificate(autoHosts, runtimeDir)
+		if err != nil {
+			log.Printf("failed to generate self-signed TLS certificate: %v", err)
+		} else {
+			log.Printf("Generated self-signed TLS certificate with hosts: %s", strings.Join(autoHosts, ", "))
+			return generatedCert, generatedKey, true
+		}
+	}
+
+	return certFile, keyFile, false
 }
 
 func newAPIClient(raw, secret string) (*apiClient, error) {
@@ -1148,14 +1300,7 @@ func main() {
 	certFile := env("TLS_CERT_FILE", "/certs/fullchain.pem")
 	keyFile := env("TLS_KEY_FILE", "/certs/privkey.pem")
 
-	if !fileExists(certFile) && fileExists("/certs/server.crt") {
-		log.Printf("TLS cert %q not found, falling back to /certs/server.crt", certFile)
-		certFile = "/certs/server.crt"
-	}
-	if !fileExists(keyFile) && fileExists("/certs/server.key") {
-		log.Printf("TLS key %q not found, falling back to /certs/server.key", keyFile)
-		keyFile = "/certs/server.key"
-	}
+	certFile, keyFile, useTLS := ensureTLSCertificates(certFile, keyFile)
 
 	server := &http.Server{
 		Addr:    addr,
@@ -1165,7 +1310,6 @@ func main() {
 		},
 	}
 
-	useTLS := fileExists(certFile) && fileExists(keyFile)
 	if !useTLS {
 		log.Printf("TLS cert/key not found; serving HTTP without TLS on %s", addr)
 	}
