@@ -15,14 +15,24 @@
       <p class="tag">Trish and the hatchery crew are standing by</p>
     </div>
   </div>
-  <nav class="nav">
-    <a href="/">Home</a>
-    <a href="/house-jams.html">House Jams</a>
-    <a href="/chicks-eggs.html">Chicks &amp; Eggs</a>
-    <a href="/merch.html">Merch</a>
-    <a href="/order.html">Order</a>
-    <a href="/support.html">Support</a>
-    <a data-login-link data-login-target="/support.html" href="/login.html">Login</a>
+  <nav class="nav" aria-label="Main navigation">
+    <a class="nav-link" href="/">Home</a>
+    <a class="nav-link" href="/house-jams.html">House Jams</a>
+    <div class="nav-dropdown" data-nav-dropdown>
+      <button class="nav-toggle" type="button" data-nav-toggle aria-expanded="false" aria-controls="nav-merch-menu">Merch &amp; Flock</button>
+      <div class="nav-menu" id="nav-merch-menu" data-nav-menu role="menu">
+        <a class="nav-menu-link" href="/t-shirt.html" role="menuitem">Howdy Y&rsquo;all Tee</a>
+        <a class="nav-menu-link" href="/eating-eggs.html" role="menuitem">Eating Eggs</a>
+        <a class="nav-menu-link" href="/hatching-eggs.html" role="menuitem">Hatching Eggs</a>
+        <a class="nav-menu-link" href="/chicks.html" role="menuitem">Chicks</a>
+        <a class="nav-menu-link" href="/grown-birds.html" role="menuitem">Grown Birds</a>
+      </div>
+    </div>
+    <a class="nav-link" href="/order.html">Order</a>
+    <a class="nav-link" href="/support.html" aria-current="page">Support</a>
+    <a class="nav-link" href="/admin.html">Admin</a>
+    <a class="nav-link" data-nav-auth="login" data-login-link data-login-target="/support.html" href="/login.html">Login</a>
+    <a class="nav-link nav-link--logout" data-nav-auth="logout" href="/oauth2/logout">Logout</a>
   </nav>
   <span class="badge-user" data-user-name hidden>Guest</span>
 </header>
@@ -81,6 +91,7 @@
 </main>
 <script src="/config.js"></script>
 <script src="/static/js/support_config.js"></script>
+<script src="/static/js/nav.js" defer></script>
 <script>
   const badge=document.querySelector('[data-user-name]');
   if(badge){badge.hidden=false;}

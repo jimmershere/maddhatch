@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Grown Birds • Madd Hatchery</title>
+  <link rel="stylesheet" href="/assets/styles.css">
+</head>
+<body>
+  <header class="mh-header">
+    <div class="brand">
+      <img src="/assets/MaddHatchery.jpg" class="logo" alt="Madd Hatchery">
+      <div>
+        <h1>Grown Birds</h1>
+        <p class="tag">Started pullets and ambassador birds ready for your coop</p>
+      </div>
+    </div>
+    <nav class="nav" aria-label="Main navigation">
+      <a class="nav-link" href="/">Home</a>
+      <a class="nav-link" href="/house-jams.html">House Jams</a>
+      <div class="nav-dropdown is-current" data-nav-dropdown>
+        <button class="nav-toggle" type="button" data-nav-toggle aria-expanded="false" aria-controls="nav-merch-menu">Merch &amp; Flock</button>
+        <div class="nav-menu" id="nav-merch-menu" data-nav-menu role="menu">
+          <a class="nav-menu-link" href="/t-shirt.html" role="menuitem">Howdy Y&rsquo;all Tee</a>
+          <a class="nav-menu-link" href="/eating-eggs.html" role="menuitem">Eating Eggs</a>
+          <a class="nav-menu-link" href="/hatching-eggs.html" role="menuitem">Hatching Eggs</a>
+          <a class="nav-menu-link" href="/chicks.html" role="menuitem">Chicks</a>
+          <a class="nav-menu-link" href="/grown-birds.html" role="menuitem" aria-current="page">Grown Birds</a>
+        </div>
+      </div>
+      <a class="nav-link" href="/order.html">Order</a>
+      <a class="nav-link" href="/support.html">Support</a>
+      <a class="nav-link" href="/admin.html">Admin</a>
+      <a class="nav-link" data-nav-auth="login" data-login-link data-login-target="/grown-birds.html" href="/login.html">Login</a>
+      <a class="nav-link nav-link--logout" data-nav-auth="logout" href="/oauth2/logout">Logout</a>
+    </nav>
+    <span class="badge-user" data-user-name hidden>Guest</span>
+  </header>
+
+  <section class="trish-tip-card" aria-label="Trish’s grown bird tip">
+    <img src="/assets/trish.svg" alt="Trish, customer advocate" class="trish-tip-photo">
+    <div class="trish-tip-bubble">
+      <p class="trish-tip-title">Trish’s Tip</p>
+      <p class="trish-tip-text">Signed-in members can see quarantine logs, vaccination history, and transport notes for every mature bird.</p>
+      <p class="trish-tip-text">Ask for video clips once you log in — I&rsquo;ll send walking tours so you can meet your new coop boss before pickup.</p>
+    </div>
+  </section>
+
+  <main class="content content-stack" data-gated-content aria-hidden="true">
+    <section class="feature-card">
+      <h2>Who&rsquo;s available right now</h2>
+      <p>We keep a rotation of trained birds for folks who want instant egg production or calm ambassadors for educational programs.</p>
+      <div class="feature-grid" aria-label="Available grown bird categories">
+        <div class="feature-grid-item">
+          <h4>Started pullets</h4>
+          <p>18–24 week layers with strong production notes. Each bird ships with a feeding schedule and laying curve so you can plug them into your flock immediately.</p>
+        </div>
+        <div class="feature-grid-item">
+          <h4>Breeder trios</h4>
+          <p>Carefully paired roosters and hens for heritage lines. Track lineage, fertility stats, and hatch forecasts after you sign in.</p>
+        </div>
+        <div class="feature-grid-item">
+          <h4>Ambassador birds</h4>
+          <p>Handle-trained mascots for school programs and events. Notes include crowd comfort levels and preferred travel crates.</p>
+        </div>
+      </div>
+      <a class="cta" href="/order.html">Request grown birds</a>
+    </section>
+
+    <section class="feature-card">
+      <h2>Transport &amp; training support</h2>
+      <ul>
+        <li><strong>Quarantine to-go kits:</strong> Reserve coop disinfectant, vitamins, and bedding so your new additions settle fast.</li>
+        <li><strong>Route planning:</strong> Share your mileage and we&rsquo;ll time electrolytes and rest stops for stress-free travel.</li>
+        <li><strong>Follow-up coaching:</strong> After you log in, schedule a post-arrival check-in to make sure integration stays smooth.</li>
+      </ul>
+      <p class="muted">Need a custom crate or interstate paperwork? Message Trish as soon as you submit the order so she can prep the documents.</p>
+    </section>
+  </main>
+
+  <div class="login-overlay" data-login-overlay role="dialog" aria-modal="true" aria-labelledby="grownBirdOverlay" hidden>
+    <div class="login-overlay-panel">
+      <h2 id="grownBirdOverlay">Login required</h2>
+      <p>Detailed health records and transport plans are private. Sign in to review histories, confirm availability, and request delivery.</p>
+      <a class="cta" data-login-link data-login-target="/grown-birds.html" href="/login.html">Launch secure login</a>
+      <p class="muted">No portal access yet? Use the login screen to request an account and I&rsquo;ll approve it quickly.</p>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <p>© <span id="y"></span> Madd Hatchery • Secure by HEDI</p>
+  </footer>
+  <script>document.getElementById('y').textContent = new Date().getFullYear();
+    const badge=document.querySelector('[data-user-name]');
+    if(badge){badge.hidden=false;}
+  </script>
+  <script src="/config.js"></script>
+  <script src="/static/js/support_config.js"></script>
+  <script src="/static/js/nav.js" defer></script>
+  <script src="/static/js/auth_config.js" defer></script>
+  <script src="/static/js/authz.js" defer></script>
+  <script src="/static/js/trish.js" defer></script>
+  <script src="/static/js/gated.js" defer></script>
+</body>
+</html>

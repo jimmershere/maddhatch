@@ -15,14 +15,24 @@
         <p class="tag">Trish poses, HEDI mascots, and the Helix Global LLC crew on every drop</p>
       </div>
     </div>
-    <nav class="nav">
-      <a href="/">Home</a>
-      <a href="/house-jams.html">House Jams</a>
-      <a href="/chicks-eggs.html">Chicks &amp; Eggs</a>
-      <a href="/merch.html" aria-current="page">Merch</a>
-      <a href="/order.html">Order</a>
-      <a href="/support.html">Support</a>
-      <a data-login-link data-login-target="/merch.html" href="/login.html">Login</a>
+    <nav class="nav" aria-label="Main navigation">
+      <a class="nav-link" href="/">Home</a>
+      <a class="nav-link" href="/house-jams.html">House Jams</a>
+      <div class="nav-dropdown is-current" data-nav-dropdown>
+        <button class="nav-toggle" type="button" data-nav-toggle aria-expanded="false" aria-controls="nav-merch-menu">Merch &amp; Flock</button>
+        <div class="nav-menu" id="nav-merch-menu" data-nav-menu role="menu">
+          <a class="nav-menu-link" href="/t-shirt.html" role="menuitem">Howdy Y&rsquo;all Tee</a>
+          <a class="nav-menu-link" href="/eating-eggs.html" role="menuitem">Eating Eggs</a>
+          <a class="nav-menu-link" href="/hatching-eggs.html" role="menuitem">Hatching Eggs</a>
+          <a class="nav-menu-link" href="/chicks.html" role="menuitem">Chicks</a>
+          <a class="nav-menu-link" href="/grown-birds.html" role="menuitem">Grown Birds</a>
+        </div>
+      </div>
+      <a class="nav-link" href="/order.html">Order</a>
+      <a class="nav-link" href="/support.html">Support</a>
+      <a class="nav-link" href="/admin.html">Admin</a>
+      <a class="nav-link" data-nav-auth="login" data-login-link data-login-target="/merch.html" href="/login.html">Login</a>
+      <a class="nav-link nav-link--logout" data-nav-auth="logout" href="/oauth2/logout">Logout</a>
     </nav>
     <span class="badge-user" data-user-name hidden>Guest</span>
   </header>
@@ -37,73 +47,47 @@
   </section>
 
   <main class="content content-stack" data-gated-content aria-hidden="true">
-    <section class="feature-card merch-feature" aria-labelledby="howdy-women-tee-heading">
+    <section class="feature-card merch-feature" aria-labelledby="merch-hub-heading">
       <div class="merch-feature-layout">
         <div class="merch-feature-media">
-          <button type="button" class="merch-photo-button" data-photo-trigger aria-label="Open Howdy Y'all tee photo gallery">
-            <img class="merch-feature-photo" data-feature-photo src="https://dummyimage.com/720x720/f3f4f6/1f2937&text=Howdy+Y'all+tee" alt="Howdy Y'all tee preview" loading="lazy">
-          </button>
-          <p class="merch-feature-caption"><span data-feature-caption>Tap to browse every angle.</span></p>
-          <p class="merch-feature-note">Feature photo refreshes every minute. Click to open the full gallery.</p>
+          <img class="merch-feature-photo" src="https://dummyimage.com/720x720/f3f4f6/1f2937&text=Howdy+Y'all+tee" alt="Howdy Y'all tee preview" loading="lazy">
+          <p class="merch-feature-caption">Howdy Y&rsquo;all tee now has its own showcase.</p>
+          <p class="merch-feature-note">Review the gallery and order form from the dedicated tee page.</p>
         </div>
         <div class="merch-feature-body">
-          <h2 id="howdy-women-tee-heading">Howdy Y'all – need some eggs? women&rsquo;s tee</h2>
-          <p>Celebrate Trish&rsquo;s signature greeting on a soft ringspun tee tailored for women. It pairs bright illustration with a relaxed fit ready for farm stand shifts or video calls.</p>
-          <ul class="merch-price-list">
-            <li><strong>Sizes:</strong> Women&rsquo;s S&nbsp;&ndash;&nbsp;3X (relaxed fit)</li>
-            <li><strong>Pricing:</strong> $25 for S&nbsp;&ndash;&nbsp;XL • $30 for 2X&nbsp;&ndash;&nbsp;3X</li>
-            <li><strong>Merch item #:</strong> <code>WT2025001</code></li>
-          </ul>
-          <form class="merch-order-form" data-merch-order-form novalidate>
-            <h3>Reserve your tee</h3>
-            <p class="merch-order-copy">Share shipping details and we&rsquo;ll start your Printful fulfillment ticket instantly.</p>
-            <div class="merch-order-grid">
-              <label>Customer name
-                <input type="text" name="customer_name" autocomplete="name" required>
-              </label>
-              <label>Shipping address
-                <input type="text" name="shipping_address" autocomplete="street-address" required>
-              </label>
-              <label>City
-                <input type="text" name="city" autocomplete="address-level2" required>
-              </label>
-              <label>State / Province
-                <input type="text" name="state" autocomplete="address-level1" maxlength="64" required>
-              </label>
-              <label>ZIP / Postal code
-                <input type="text" name="zip_code" autocomplete="postal-code" pattern="[A-Za-z0-9\- ]{3,10}" required>
-              </label>
-              <label>Merch item #
-                <input type="text" name="merch_item_number" value="WT2025001" readonly>
-              </label>
-              <label>Size code
-                <select name="size_code" required>
-                  <option value="">Select a size</option>
-                  <option value="S">S</option>
-                  <option value="M">M</option>
-                  <option value="L">L</option>
-                  <option value="XL">XL</option>
-                  <option value="2X">2X</option>
-                  <option value="3X">3X</option>
-                </select>
-              </label>
-              <label>Color
-                <select name="color" required>
-                  <option value="">Choose a color</option>
-                  <option value="White">White</option>
-                  <option value="Athletic Heather">Athletic Heather</option>
-                  <option value="Custom Printful color">Custom Printful color</option>
-                </select>
-              </label>
-              <label>Quantity
-                <input type="number" name="quantity" min="1" max="24" value="1" required>
-              </label>
-            </div>
-            <button type="submit" class="cta">Submit order request</button>
-            <p class="muted merch-order-help">A Madd Hatchery specialist will confirm payment details before the shirt ships.</p>
-            <div class="status-message merch-status" data-merch-status role="status" aria-live="polite" hidden></div>
-          </form>
+          <h2 id="merch-hub-heading">Your tee orders moved next door</h2>
+          <p>Trish pulled the Howdy Y&rsquo;all tee into a focused experience so you can browse every photo, check sizing notes, and submit the reservation form without distractions.</p>
+          <p>Use the dropdown above or jump straight in below to place your order and preview upcoming colorways.</p>
+          <a class="cta" href="/t-shirt.html">Open the Howdy Y&rsquo;all tee page</a>
+          <p class="muted merch-order-help">More shirt styles are warming up backstage — keep an eye out for fresh listings soon.</p>
         </div>
+      </div>
+    </section>
+
+    <section class="feature-card">
+      <h2>Merch &amp; flock quick links</h2>
+      <p>Everything that lived on this page now has a dedicated home. Open the page that fits your next project and Trish will keep it updated with availability, pricing, and pickup notes.</p>
+      <div class="feature-grid" aria-label="Merch and flock navigation">
+        <a class="feature-grid-item feature-grid-link" href="/t-shirt.html">
+          <h4>Howdy Y&rsquo;all tee</h4>
+          <p>Browse the photo gallery, sizing grid, and reservation form for our flagship shirt.</p>
+        </a>
+        <a class="feature-grid-item feature-grid-link" href="/eating-eggs.html">
+          <h4>Eating eggs</h4>
+          <p>Check carton availability, flock diets, and grab the direct link to place a brunch order.</p>
+        </a>
+        <a class="feature-grid-item feature-grid-link" href="/hatching-eggs.html">
+          <h4>Hatching eggs</h4>
+          <p>Follow the incubation schedule and reserve clutches tailored to your set-up.</p>
+        </a>
+        <a class="feature-grid-item feature-grid-link" href="/chicks.html">
+          <h4>Chicks</h4>
+          <p>See which fluffballs are coming out of the brooder and what care they receive before pickup.</p>
+        </a>
+        <a class="feature-grid-item feature-grid-link" href="/grown-birds.html">
+          <h4>Grown birds</h4>
+          <p>Meet the trained pullets, breeder pairs, and coop ambassadors available this season.</p>
+        </a>
       </div>
     </section>
     <section class="feature-card">
@@ -142,17 +126,6 @@
     </section>
   </main>
 
-  <div class="photo-modal" data-photo-modal role="dialog" aria-modal="true" aria-labelledby="howdyPhotoTitle" hidden>
-    <div class="photo-modal-panel">
-      <div class="photo-modal-header">
-        <h2 id="howdyPhotoTitle">Howdy Y&rsquo;all tee gallery</h2>
-        <button type="button" class="photo-modal-close" data-photo-close aria-label="Close gallery">&times;</button>
-      </div>
-      <p class="photo-modal-copy">Select any frame to open the high-resolution placeholder in a new tab.</p>
-      <div class="photo-modal-grid" data-photo-list></div>
-    </div>
-  </div>
-
   <div class="login-overlay" data-login-overlay role="dialog" aria-modal="true" aria-labelledby="merchOverlayTitle" hidden>
     <div class="login-overlay-panel">
       <h2 id="merchOverlayTitle">Login required</h2>
@@ -171,7 +144,7 @@
   </script>
   <script src="/config.js"></script>
   <script src="/static/js/support_config.js"></script>
-  <script src="/static/js/merch.js" defer></script>
+  <script src="/static/js/nav.js" defer></script>
   <script src="/static/js/auth_config.js" defer></script>
   <script src="/static/js/authz.js" defer></script>
   <script src="/static/js/trish.js" defer></script>
