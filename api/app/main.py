@@ -12,7 +12,7 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
 import asyncpg
-from asyncpg import UniqueViolationError
+from asyncpg import PostgresError, UniqueViolationError
 from fastapi import Depends, FastAPI, HTTPException, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from email.message import EmailMessage
@@ -221,6 +221,44 @@ async def get_pool(request: Request) -> asyncpg.Pool:
 
 async def get_settings(request: Request) -> Settings:
     return request.app.state.settings
+
+
+async def create_pool_with_retry(
+    dsn: str,
+    *,
+    attempts: int = 10,
+    base_delay: float = 0.5,
+    max_delay: float = 5.0,
+) -> asyncpg.Pool:
+    """Establish an asyncpg pool with retry/backoff.
+
+    Podman sometimes launches the API before DNS entries are published which
+    triggers ``socket.gaierror`` (a subclass of ``OSError``). Rather than
+    failing the service startup we retry with exponential backoff until the
+    database hostname resolves and accepts connections.
+    """
+
+    delay = base_delay
+    last_error: Optional[BaseException] = None
+
+    for attempt in range(1, attempts + 1):
+        try:
+            return await asyncpg.create_pool(dsn=dsn)
+        except (OSError, PostgresError) as exc:
+            last_error = exc
+            logger.warning(
+                "Failed to create database pool (attempt %s/%s): %s",
+                attempt,
+                attempts,
+                exc,
+            )
+            if attempt == attempts:
+                break
+            await asyncio.sleep(delay)
+            delay = min(delay * 2, max_delay)
+
+    assert last_error is not None  # help type-checkers
+    raise last_error
 
 
 app = FastAPI(title="Madd Hatchery API")
@@ -615,7 +653,7 @@ def merge_groups(user: Optional[asyncpg.Record], ldap_groups: List[str]) -> List
 async def startup_event():
     settings = Settings.load()
     app.state.settings = settings
-    app.state.pool = await asyncpg.create_pool(dsn=settings.database_url)
+    app.state.pool = await create_pool_with_retry(dsn=settings.database_url)
     await ensure_bootstrap_admin(app.state.pool, settings)
     if settings.ldap_enabled:
         loop = asyncio.get_event_loop()

@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="gradHoodieDetail" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#dbeafe"/>
+      <stop offset="100%" stop-color="#1d4ed8"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="800" fill="url(#gradHoodieDetail)"/>
+  <text x="50%" y="42%" fill="#0f172a" font-family="'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="74" text-anchor="middle" font-weight="700">Detail View</text>
+  <text x="50%" y="60%" fill="#1e40af" font-family="'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="40" text-anchor="middle">Egg crest embroidery + pocket</text>
+  <text x="50%" y="74%" fill="#0ea5e9" font-family="'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="30" text-anchor="middle">Cozy drawstring hood</text>
+</svg>

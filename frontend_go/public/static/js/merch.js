@@ -1,16 +1,14 @@
 (function(){
-  const featureImage = document.querySelector('[data-feature-photo]');
-  if (!featureImage) {
+  const productSections = document.querySelectorAll('[data-merch-product]');
+  if (!productSections.length) {
     return;
   }
 
-  const captionEl = document.querySelector('[data-feature-caption]');
   const modal = document.querySelector('[data-photo-modal]');
-  const modalList = document.querySelector('[data-photo-list]');
-  const modalTrigger = document.querySelector('[data-photo-trigger]');
-  const modalClose = document.querySelector('[data-photo-close]');
-  const statusEl = document.querySelector('[data-merch-status]');
-  const orderForm = document.querySelector('[data-merch-order-form]');
+  const modalList = modal ? modal.querySelector('[data-photo-list]') : null;
+  const modalTitleEl = modal ? modal.querySelector('[data-photo-title]') : null;
+  const modalNote = modal ? modal.querySelector('[data-photo-note]') : null;
+  const modalClose = modal ? modal.querySelector('[data-photo-close]') : null;
 
   const svgPlaceholder = (title, subtitle) => {
     const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" preserveAspectRatio="xMidYMid slice">` +
@@ -25,36 +23,149 @@
     return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
   };
 
-  const photoData = [
-    { src: svgPlaceholder('Back view', 'WT2025001 patch detail'), alt: 'Rear view of the Howdy Y\'all tee showing patch detail', caption: 'Back view with coop patch.' },
-    { src: svgPlaceholder('Back angle', 'Relaxed shoulder seam'), alt: 'Angled rear photo of the Howdy Y\'all tee', caption: 'Angled back highlighting shoulder seams.' },
-    { src: svgPlaceholder('Flat lay', 'Treats & tulips styling'), alt: 'Flat lay of the Howdy Y\'all tee with sweets', caption: 'Flat lay styling inspiration.' },
-    { src: svgPlaceholder('Front walk', 'Everyday movement'), alt: 'Model walking in the Howdy Y\'all tee', caption: 'Lifestyle walk-and-talk moment.' },
-    { src: svgPlaceholder('Lounge fit', 'Customer service ready'), alt: 'Smiling model wearing the tee indoors', caption: 'Cozy headset hero shot.' },
-    { src: svgPlaceholder('Front graphic', 'Howdy Y\'all artwork'), alt: 'Front-on product photo of the tee', caption: 'Front graphic close-up.' },
-    { src: svgPlaceholder('Smile pose', 'Ready for the market'), alt: 'Model smiling in the tee', caption: 'Smile-and-wave pose.' },
-    { src: svgPlaceholder('Flat lay plus', 'Tulips, donuts & cocoa'), alt: 'Flat lay with flowers and treats', caption: 'Seasonal booth styling.' },
-    { src: svgPlaceholder('Side profile', 'Relaxed sleeves'), alt: 'Side profile of the tee', caption: 'Side profile showing drape.' },
-    { src: svgPlaceholder('Sleeve angle', 'Ready for fulfillment'), alt: 'Angled side shot of the tee sleeve', caption: 'Angled sleeve focus.' }
-  ];
-
-  let photoIndex = 0;
-
-  const renderFeature = () => {
-    const current = photoData[photoIndex];
-    featureImage.src = current.src;
-    featureImage.alt = current.alt;
-    if (captionEl) {
-      captionEl.textContent = current.caption;
+  const ensureDirectorySuffix = (directory) => {
+    if (!directory) {
+      return '';
     }
+    return directory.endsWith('/') ? directory : `${directory}/`;
   };
 
-  const buildModalGallery = () => {
+  const galleryCache = new Map();
+  const galleryStates = new Map();
+
+  function normalisePhotos(rawEntries, section, directory) {
+    if (!Array.isArray(rawEntries)) {
+      return [];
+    }
+    const productName = section.dataset.productName || 'Merch photo';
+    return rawEntries
+      .map((entry, index) => {
+        if (!entry) {
+          return null;
+        }
+
+        let src = '';
+        let alt = '';
+        let caption = '';
+
+        if (typeof entry === 'string') {
+          src = entry;
+        } else {
+          src = entry.src || entry.file || '';
+          alt = entry.alt || '';
+          caption = entry.caption || '';
+        }
+
+        if (!src) {
+          return null;
+        }
+
+        if (!/^https?:/i.test(src) && !src.startsWith('/')) {
+          src = `${directory}${src}`;
+        }
+
+        return {
+          src,
+          alt: alt || `${productName} ${index + 1}`,
+          caption
+        };
+      })
+      .filter(Boolean);
+  }
+
+  async function loadGallery(section) {
+    const directory = ensureDirectorySuffix(section.dataset.photoDirectory || '');
+    if (!directory) {
+      return [];
+    }
+
+    if (galleryCache.has(directory)) {
+      return galleryCache.get(directory);
+    }
+
+    const galleryUrl = `${directory}gallery.json`;
+    try {
+      const response = await fetch(galleryUrl, { cache: 'no-cache' });
+      if (response.ok) {
+        const payload = await response.json();
+        const photos = normalisePhotos(Array.isArray(payload) ? payload : payload && Array.isArray(payload.photos) ? payload.photos : [], section, directory);
+        if (photos.length) {
+          galleryCache.set(directory, photos);
+          return photos;
+        }
+      } else if (response.status && response.status !== 404) {
+        console.warn('Gallery request failed', galleryUrl, response.status);
+      }
+    } catch (error) {
+      console.warn('Gallery manifest fetch failed; will try static manifest.', galleryUrl, error);
+    }
+
+    const manifestUrl = `${directory}manifest.json`;
+    try {
+      const response = await fetch(manifestUrl, { cache: 'no-cache' });
+      if (response.ok) {
+        const manifest = await response.json();
+        const manifestEntries = Array.isArray(manifest)
+          ? manifest
+          : manifest && Array.isArray(manifest.photos)
+          ? manifest.photos
+          : [];
+        const photos = normalisePhotos(manifestEntries, section, directory);
+        if (photos.length) {
+          galleryCache.set(directory, photos);
+          return photos;
+        }
+      } else if (response.status && response.status !== 404) {
+        console.warn('Static manifest request failed', manifestUrl, response.status);
+      }
+    } catch (error) {
+      console.warn('Static manifest load failed.', manifestUrl, error);
+    }
+
+    const productName = section.dataset.productName || 'Merch preview';
+    console.warn('Unable to load gallery assets; falling back to placeholders.', directory);
+    const fallback = [
+      {
+        src: svgPlaceholder(productName, 'Front view'),
+        alt: `${productName} front view`,
+        caption: 'Front preview placeholder.'
+      },
+      {
+        src: svgPlaceholder(productName, 'Back view'),
+        alt: `${productName} back view`,
+        caption: 'Back preview placeholder.'
+      },
+      {
+        src: svgPlaceholder(productName, 'Detail view'),
+        alt: `${productName} detail view`,
+        caption: 'Detail preview placeholder.'
+      }
+    ];
+    galleryCache.set(directory, fallback);
+    return fallback;
+  }
+
+  function renderFeature(section, photo) {
+    if (!photo) {
+      return;
+    }
+    const img = section.querySelector('[data-feature-photo]');
+    if (img) {
+      img.src = photo.src;
+      img.alt = photo.alt;
+    }
+    const caption = section.querySelector('[data-feature-caption]');
+    if (caption) {
+      caption.textContent = photo.caption || '';
+    }
+  }
+
+  function buildModalGallery(photos) {
     if (!modalList) {
       return;
     }
     modalList.innerHTML = '';
-    photoData.forEach((photo) => {
+    photos.forEach((photo) => {
       const figure = document.createElement('figure');
       figure.className = 'photo-modal-item';
       const link = document.createElement('a');
@@ -67,40 +178,109 @@
       img.loading = 'lazy';
       link.appendChild(img);
       figure.appendChild(link);
-      const figcaption = document.createElement('figcaption');
-      figcaption.textContent = photo.caption;
-      figure.appendChild(figcaption);
+      if (photo.caption) {
+        const figcaption = document.createElement('figcaption');
+        figcaption.textContent = photo.caption;
+        figure.appendChild(figcaption);
+      }
       modalList.appendChild(figure);
     });
-  };
+  }
 
-  const openModal = () => {
+  function openModal() {
     if (!modal) {
       return;
     }
     modal.hidden = false;
     document.body.classList.add('is-photo-modal-open');
-  };
+  }
 
-  const closeModal = () => {
+  function closeModal() {
     if (!modal) {
       return;
     }
     modal.hidden = true;
     document.body.classList.remove('is-photo-modal-open');
-  };
-
-  renderFeature();
-  buildModalGallery();
-
-  setInterval(() => {
-    photoIndex = (photoIndex + 1) % photoData.length;
-    renderFeature();
-  }, 60000);
-
-  if (modalTrigger) {
-    modalTrigger.addEventListener('click', openModal);
   }
+
+  function setStatus(statusEl, message, type) {
+    if (!statusEl) {
+      return;
+    }
+    statusEl.hidden = false;
+    statusEl.textContent = message;
+    statusEl.className = 'status-message merch-status ' + (type || 'status-info');
+  }
+
+  productSections.forEach((section) => {
+    let currentIndex = 0;
+    loadGallery(section).then((photos) => {
+      if (!photos.length) {
+        return;
+      }
+      renderFeature(section, photos[currentIndex]);
+      const intervalId = window.setInterval(() => {
+        currentIndex = (currentIndex + 1) % photos.length;
+        renderFeature(section, photos[currentIndex]);
+      }, 60000);
+      galleryStates.set(section, { photos, intervalId });
+    });
+
+    const trigger = section.querySelector('[data-photo-trigger]');
+    if (trigger) {
+      trigger.addEventListener('click', async () => {
+        const state = galleryStates.get(section);
+        const photos = state ? state.photos : await loadGallery(section);
+        if (!photos || !photos.length) {
+          return;
+        }
+        buildModalGallery(photos);
+        if (modalTitleEl) {
+          modalTitleEl.textContent =
+            section.dataset.galleryTitle || section.dataset.productName || 'Product gallery';
+        }
+        if (modalNote) {
+          modalNote.textContent =
+            section.dataset.galleryNote || 'Choose a frame to open the high-resolution preview in a new tab.';
+        }
+        openModal();
+      });
+    }
+
+    const form = section.querySelector('[data-merch-order-form]');
+    if (form) {
+      const statusEl = form.querySelector('[data-merch-status]');
+      const defaultItemNumber = form.dataset.merchItem || '';
+      form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const formData = new FormData(form);
+        const order = Object.fromEntries(formData.entries());
+        order.quantity = Number(order.quantity || 1);
+        if (!order.merch_item_number && defaultItemNumber) {
+          order.merch_item_number = defaultItemNumber;
+        }
+        setStatus(statusEl, 'Submitting your order…', 'status-info');
+        try {
+          await uploadOrderToPrintful(order, form);
+          await submitMerchOrder(order);
+          setStatus(statusEl, 'Order received! Check your inbox for confirmation shortly.', 'status-success');
+          form.reset();
+          const merchField = form.querySelector('[name="merch_item_number"]');
+          if (merchField && defaultItemNumber) {
+            merchField.value = defaultItemNumber;
+          }
+        } catch (error) {
+          console.error('Merch order submission failed', error);
+          setStatus(
+            statusEl,
+            error && error.message ? error.message : 'Unable to submit order right now. Please try again later.',
+            'status-error'
+          );
+        }
+      });
+    }
+  });
+
   if (modalClose) {
     modalClose.addEventListener('click', closeModal);
   }
@@ -117,43 +297,24 @@
     }
   });
 
-  const setStatus = (message, type) => {
-    if (!statusEl) {
-      return;
-    }
-    statusEl.hidden = false;
-    statusEl.textContent = message;
-    statusEl.className = 'status-message merch-status ' + (type || 'status-info');
-  };
+  async function uploadOrderToPrintful(order, form) {
+    const sizeCode = (order.size_code || '').toUpperCase();
+    const basePrice = Number(form.dataset.priceBase || order.retail_price || '25.00');
+    const plusPrice = Number(form.dataset.pricePlus || basePrice);
+    const plusSizes = (form.dataset.plusSizes || '2X,3X,2XL,3XL')
+      .split(',')
+      .map((value) => value.trim().toUpperCase())
+      .filter(Boolean);
+    const retailPrice = plusSizes.includes(sizeCode) ? plusPrice : basePrice;
+    const itemNumber = form.dataset.merchItem || order.merch_item_number || `MH-${Date.now()}`;
+    const productName = form.dataset.productName || 'Madd Hatchery Merch';
+    const sanitizedPrefix = `${itemNumber}-${productName}`
+      .replace(/[^A-Za-z0-9]+/g, '')
+      .toUpperCase()
+      .slice(0, 30);
 
-  if (orderForm) {
-    orderForm.addEventListener('submit', async (event) => {
-      event.preventDefault();
-      const formData = new FormData(orderForm);
-      const order = Object.fromEntries(formData.entries());
-      order.quantity = Number(order.quantity || 1);
-
-      setStatus('Submitting your order…', 'status-info');
-      try {
-        await uploadOrderToPrintful(order);
-        await submitMerchOrder(order);
-        setStatus('Order received! Check your inbox for confirmation shortly.', 'status-success');
-        orderForm.reset();
-        const merchField = orderForm.querySelector('[name="merch_item_number"]');
-        if (merchField) {
-          merchField.value = 'WT2025001';
-        }
-      } catch (error) {
-        console.error('Merch order submission failed', error);
-        setStatus(error && error.message ? error.message : 'Unable to submit order right now. Please try again later.', 'status-error');
-      }
-    });
-  }
-
-  async function uploadOrderToPrintful(order) {
-    const retailPrice = ['2X', '3X'].includes((order.size_code || '').toUpperCase()) ? '30.00' : '25.00';
     const payload = {
-      external_id: `WT2025001-${Date.now()}`,
+      external_id: `${sanitizedPrefix}-${Date.now()}`,
       recipient: {
         name: order.customer_name,
         address1: order.shipping_address,
@@ -164,17 +325,17 @@
       },
       items: [
         {
-          name: "Howdy Y'all - need some eggs? Women's Tee",
+          name: productName,
           quantity: Number(order.quantity || 1),
-          retail_price: retailPrice,
-          sku: order.merch_item_number,
+          retail_price: retailPrice.toFixed(2),
+          sku: itemNumber,
           size: order.size_code,
-          color: order.color
+          color: order.color || form.dataset.defaultColor || 'Default'
         }
       ]
     };
 
-    console.info('Printful API placeholder payload', payload);
+    console.info('Printful API payload', payload);
     if (!window.PRINTFUL_API_ENABLED) {
       return { ok: true, simulated: true };
     }

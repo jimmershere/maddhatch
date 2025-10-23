@@ -1,0 +1,9 @@
+{
+  "title": "Howdy Y'all – need some eggs? women's tee",
+  "photos": [
+    { "file": "front.svg", "alt": "Front view of the Howdy Y'all women's tee", "caption": "Front graphic and relaxed sleeves." },
+    { "file": "back.svg", "alt": "Back view showing the coop patch on the Howdy tee", "caption": "Rear print with coop patch highlight." },
+    { "file": "flatlay.svg", "alt": "Flat lay styling of the Howdy women's tee with treats", "caption": "Flat lay inspiration with booth props." },
+    { "file": "detail.svg", "alt": "Detail of the Howdy lettering on the women's tee", "caption": "Graphic detail with soft cotton texture." }
+  ]
+}
