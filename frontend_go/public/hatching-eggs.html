@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Hatching Eggs • Madd Hatchery</title>
+  <link rel="stylesheet" href="/assets/styles.css">
+</head>
+<body>
+  <header class="mh-header">
+    <div class="brand">
+      <img src="/assets/MaddHatchery.jpg" class="logo" alt="Madd Hatchery">
+      <div>
+        <h1>Hatching Eggs</h1>
+        <p class="tag">21-day incubation logs and lockdown planning</p>
+      </div>
+    </div>
+    <nav class="nav" aria-label="Main navigation">
+      <a class="nav-link" href="/">Home</a>
+      <a class="nav-link" href="/house-jams.html">House Jams</a>
+      <div class="nav-dropdown is-current" data-nav-dropdown>
+        <button class="nav-toggle" type="button" data-nav-toggle aria-expanded="false" aria-controls="nav-merch-menu">Merch &amp; Flock</button>
+        <div class="nav-menu" id="nav-merch-menu" data-nav-menu role="menu">
+          <a class="nav-menu-link" href="/t-shirt.html" role="menuitem">Howdy Y&rsquo;all Tee</a>
+          <a class="nav-menu-link" href="/eating-eggs.html" role="menuitem">Eating Eggs</a>
+          <a class="nav-menu-link" href="/hatching-eggs.html" role="menuitem" aria-current="page">Hatching Eggs</a>
+          <a class="nav-menu-link" href="/chicks.html" role="menuitem">Chicks</a>
+          <a class="nav-menu-link" href="/grown-birds.html" role="menuitem">Grown Birds</a>
+        </div>
+      </div>
+      <a class="nav-link" href="/order.html">Order</a>
+      <a class="nav-link" href="/support.html">Support</a>
+      <a class="nav-link" href="/admin.html">Admin</a>
+      <a class="nav-link" data-nav-auth="login" data-login-link data-login-target="/hatching-eggs.html" href="/login.html">Login</a>
+      <a class="nav-link nav-link--logout" data-nav-auth="logout" href="/oauth2/logout">Logout</a>
+    </nav>
+    <span class="badge-user" data-user-name hidden>Guest</span>
+  </header>
+
+  <section class="trish-tip-card" aria-label="Trish’s incubation tip">
+    <img src="/assets/trish.svg" alt="Trish, customer advocate" class="trish-tip-photo">
+    <div class="trish-tip-bubble">
+      <p class="trish-tip-title">Trish’s Tip</p>
+      <p class="trish-tip-text">Log in to sync your incubator with ours. I post humidity logs twice per shift and note every egg turn.</p>
+      <p class="trish-tip-text">Need lockdown reminders? Add your hatch date to the order notes and I&rsquo;ll ping you the moment we candle.</p>
+    </div>
+  </section>
+
+  <main class="content content-stack" data-gated-content aria-hidden="true">
+    <section class="feature-card">
+      <h2>21 days to hatch, then hands-on care</h2>
+      <p>Healthy chicks take patience. Our incubators run a strict 21-day cycle with logs on temperature, humidity, and egg turning.</p>
+      <h3>Daily care schedule</h3>
+      <ul>
+        <li><strong>Incubation:</strong> Automatic turners keep eggs moving until lockdown, while we chart humidity twice per shift.</li>
+        <li><strong>Hatch window:</strong> We candle at day 18, boost humidity, and keep the brooder warmed and ready.</li>
+        <li><strong>First 72 hours:</strong> Chicks are checked three times a day for water refreshes, crumble top-offs, and bedding swaps.</li>
+      </ul>
+      <p>Only after those care rounds do we clear birds for pickup or delivery. Logged-in members can see available dates, care notes, and add-on starter kits.</p>
+      <a class="cta" href="/order.html">Schedule hatching eggs</a>
+    </section>
+
+    <section class="feature-card">
+      <h2>Prep your home incubator</h2>
+      <ul>
+        <li><strong>Calibration check:</strong> Compare your thermometer with ours before day 1 using the logs posted here.</li>
+        <li><strong>Lockdown supplies:</strong> Reserve non-slip shelf liner, extra hygrometers, or hatch trays right from the order form.</li>
+        <li><strong>Post-hatch support:</strong> After you sign in, download our brooder checklist to keep humidity drops and drafts at bay.</li>
+      </ul>
+      <p class="muted">Message Trish if you want a custom rotation schedule or help choosing a breed mix for your incubator capacity.</p>
+    </section>
+  </main>
+
+  <div class="login-overlay" data-login-overlay role="dialog" aria-modal="true" aria-labelledby="hatchingOverlay" hidden>
+    <div class="login-overlay-panel">
+      <h2 id="hatchingOverlay">Login required</h2>
+      <p>Our hatch schedules and rotation logs are private to members. Sign in to reserve clutches, download logs, and request reminders.</p>
+      <a class="cta" data-login-link data-login-target="/hatching-eggs.html" href="/login.html">Launch secure login</a>
+      <p class="muted">Need access? Request an account from the login screen and I&rsquo;ll approve you quickly.</p>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <p>© <span id="y"></span> Madd Hatchery • Secure by HEDI</p>
+  </footer>
+  <script>document.getElementById('y').textContent = new Date().getFullYear();
+    const badge=document.querySelector('[data-user-name]');
+    if(badge){badge.hidden=false;}
+  </script>
+  <script src="/config.js"></script>
+  <script src="/static/js/support_config.js"></script>
+  <script src="/static/js/nav.js" defer></script>
+  <script src="/static/js/auth_config.js" defer></script>
+  <script src="/static/js/authz.js" defer></script>
+  <script src="/static/js/trish.js" defer></script>
+  <script src="/static/js/gated.js" defer></script>
+</body>
+</html>

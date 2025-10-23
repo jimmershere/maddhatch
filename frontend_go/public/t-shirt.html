@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Howdy Y'all Tee • Madd Hatchery</title>
+  <link rel="stylesheet" href="/assets/styles.css">
+</head>
+<body>
+  <header class="mh-header">
+    <div class="brand">
+      <img src="/assets/MaddHatchery.jpg" class="logo" alt="Madd Hatchery">
+      <div>
+        <h1>Howdy Y&rsquo;all Tee</h1>
+        <p class="tag">Soft ringspun comfort straight from Trish&rsquo;s tasting table</p>
+      </div>
+    </div>
+    <nav class="nav" aria-label="Main navigation">
+      <a class="nav-link" href="/">Home</a>
+      <a class="nav-link" href="/house-jams.html">House Jams</a>
+      <div class="nav-dropdown is-current" data-nav-dropdown>
+        <button class="nav-toggle" type="button" data-nav-toggle aria-expanded="false" aria-controls="nav-merch-menu">Merch &amp; Flock</button>
+        <div class="nav-menu" id="nav-merch-menu" data-nav-menu role="menu">
+          <a class="nav-menu-link" href="/t-shirt.html" role="menuitem" aria-current="page">Howdy Y&rsquo;all Tee</a>
+          <a class="nav-menu-link" href="/eating-eggs.html" role="menuitem">Eating Eggs</a>
+          <a class="nav-menu-link" href="/hatching-eggs.html" role="menuitem">Hatching Eggs</a>
+          <a class="nav-menu-link" href="/chicks.html" role="menuitem">Chicks</a>
+          <a class="nav-menu-link" href="/grown-birds.html" role="menuitem">Grown Birds</a>
+        </div>
+      </div>
+      <a class="nav-link" href="/order.html">Order</a>
+      <a class="nav-link" href="/support.html">Support</a>
+      <a class="nav-link" href="/admin.html">Admin</a>
+      <a class="nav-link" data-nav-auth="login" data-login-link data-login-target="/t-shirt.html" href="/login.html">Login</a>
+      <a class="nav-link nav-link--logout" data-nav-auth="logout" href="/oauth2/logout">Logout</a>
+    </nav>
+    <span class="badge-user" data-user-name hidden>Guest</span>
+  </header>
+
+  <section class="trish-tip-card" aria-label="Trish’s tee ordering tip">
+    <img src="/assets/trish.svg" alt="Trish, customer advocate" class="trish-tip-photo">
+    <div class="trish-tip-bubble">
+      <p class="trish-tip-title">Trish’s Tip</p>
+      <p class="trish-tip-text">Log in to unlock bundle pricing and save your preferred sizes. I keep a queue of blank tees ready so your repeat orders go out fast.</p>
+      <p class="trish-tip-text">Need a custom color? Drop it in the order notes once you’re signed in and I’ll tag it for the Printful crew.</p>
+    </div>
+  </section>
+
+  <main class="content content-stack" data-gated-content aria-hidden="true">
+    <section class="feature-card merch-feature" aria-labelledby="howdy-women-tee-heading">
+      <div class="merch-feature-layout">
+        <div class="merch-feature-media">
+          <button type="button" class="merch-photo-button" data-photo-trigger aria-label="Open Howdy Y'all tee photo gallery">
+            <img class="merch-feature-photo" data-feature-photo src="https://dummyimage.com/720x720/f3f4f6/1f2937&text=Howdy+Y'all+tee" alt="Howdy Y'all tee preview" loading="lazy">
+          </button>
+          <p class="merch-feature-caption"><span data-feature-caption>Tap to browse every angle.</span></p>
+          <p class="merch-feature-note">Feature photo refreshes every minute. Click to open the full gallery.</p>
+        </div>
+        <div class="merch-feature-body">
+          <h2 id="howdy-women-tee-heading">Howdy Y'all – need some eggs? women&rsquo;s tee</h2>
+          <p>Celebrate Trish&rsquo;s signature greeting on a soft ringspun tee tailored for women. It pairs bright illustration with a relaxed fit ready for farm stand shifts or video calls.</p>
+          <ul class="merch-price-list">
+            <li><strong>Sizes:</strong> Women&rsquo;s S&nbsp;&ndash;&nbsp;3X (relaxed fit)</li>
+            <li><strong>Pricing:</strong> $25 for S&nbsp;&ndash;&nbsp;XL • $30 for 2X&nbsp;&ndash;&nbsp;3X</li>
+            <li><strong>Merch item #:</strong> <code>WT2025001</code></li>
+          </ul>
+          <form class="merch-order-form" data-merch-order-form novalidate>
+            <h3>Reserve your tee</h3>
+            <p class="merch-order-copy">Share shipping details and we&rsquo;ll start your Printful fulfillment ticket instantly.</p>
+            <div class="merch-order-grid">
+              <label>Customer name
+                <input type="text" name="customer_name" autocomplete="name" required>
+              </label>
+              <label>Shipping address
+                <input type="text" name="shipping_address" autocomplete="street-address" required>
+              </label>
+              <label>City
+                <input type="text" name="city" autocomplete="address-level2" required>
+              </label>
+              <label>State / Province
+                <input type="text" name="state" autocomplete="address-level1" maxlength="64" required>
+              </label>
+              <label>ZIP / Postal code
+                <input type="text" name="zip_code" autocomplete="postal-code" pattern="[A-Za-z0-9\- ]{3,10}" required>
+              </label>
+              <label>Merch item #
+                <input type="text" name="merch_item_number" value="WT2025001" readonly>
+              </label>
+              <label>Size code
+                <select name="size_code" required>
+                  <option value="">Select a size</option>
+                  <option value="S">S</option>
+                  <option value="M">M</option>
+                  <option value="L">L</option>
+                  <option value="XL">XL</option>
+                  <option value="2X">2X</option>
+                  <option value="3X">3X</option>
+                </select>
+              </label>
+              <label>Color
+                <select name="color" required>
+                  <option value="">Choose a color</option>
+                  <option value="White">White</option>
+                  <option value="Athletic Heather">Athletic Heather</option>
+                  <option value="Custom Printful color">Custom Printful color</option>
+                </select>
+              </label>
+              <label>Quantity
+                <input type="number" name="quantity" min="1" max="24" value="1" required>
+              </label>
+            </div>
+            <button type="submit" class="cta">Submit order request</button>
+            <p class="muted merch-order-help">A Madd Hatchery specialist will confirm payment details before the shirt ships.</p>
+            <div class="status-message merch-status" data-merch-status role="status" aria-live="polite" hidden></div>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <section class="feature-card">
+      <h2>Next tee drops in the pipeline</h2>
+      <p>Trish has four more designs simmering. Leave a note in your order or message her after you log in if you want early access.</p>
+      <div class="feature-grid" aria-label="Upcoming tee placeholders">
+        <div class="feature-grid-item">
+          <h4>Market Day Tee</h4>
+          <p>Coming soon — bold produce art with a checklist for Trish&rsquo;s Saturday booth setup.</p>
+        </div>
+        <div class="feature-grid-item">
+          <h4>Security Squad Tee</h4>
+          <p>Placeholder for a Uggy and Seamus mash-up keeping the portal safe in style.</p>
+        </div>
+        <div class="feature-grid-item">
+          <h4>Peace, Love &amp; Pectin Tee</h4>
+          <p>Reserved for a retro font treatment celebrating our jam line. Watch for presales.</p>
+        </div>
+        <div class="feature-grid-item">
+          <h4>Coop Boss Tee</h4>
+          <p>Future slot for a unisex tee highlighting Khiah and the flock leadership playbook.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div class="photo-modal" data-photo-modal role="dialog" aria-modal="true" aria-labelledby="howdyPhotoTitle" hidden>
+    <div class="photo-modal-panel">
+      <div class="photo-modal-header">
+        <h2 id="howdyPhotoTitle">Howdy Y&rsquo;all tee gallery</h2>
+        <button type="button" class="photo-modal-close" data-photo-close aria-label="Close gallery">&times;</button>
+      </div>
+      <p class="photo-modal-copy">Select any frame to open the high-resolution placeholder in a new tab.</p>
+      <div class="photo-modal-grid" data-photo-list></div>
+    </div>
+  </div>
+
+  <div class="login-overlay" data-login-overlay role="dialog" aria-modal="true" aria-labelledby="teeOverlayTitle" hidden>
+    <div class="login-overlay-panel">
+      <h2 id="teeOverlayTitle">Login required</h2>
+      <p>Merch catalogs, pricing, and bundle builder tools live behind the secure portal. Sign in to submit your tee reservation and view gallery updates.</p>
+      <a class="cta" data-login-link data-login-target="/t-shirt.html" href="/login.html">Launch secure login</a>
+      <p class="muted">Not registered yet? Request an account from the login screen and we’ll send your confirmation right away.</p>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <p>© <span id="y"></span> Madd Hatchery • Secure by HEDI</p>
+  </footer>
+  <script>document.getElementById('y').textContent = new Date().getFullYear();
+    const badge=document.querySelector('[data-user-name]');
+    if(badge){badge.hidden=false;}
+  </script>
+  <script src="/config.js"></script>
+  <script src="/static/js/support_config.js"></script>
+  <script src="/static/js/nav.js" defer></script>
+  <script src="/static/js/merch.js" defer></script>
+  <script src="/static/js/auth_config.js" defer></script>
+  <script src="/static/js/authz.js" defer></script>
+  <script src="/static/js/trish.js" defer></script>
+  <script src="/static/js/gated.js" defer></script>
+</body>
+</html>

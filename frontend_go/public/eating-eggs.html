@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Eating Eggs • Madd Hatchery</title>
+  <link rel="stylesheet" href="/assets/styles.css">
+</head>
+<body>
+  <header class="mh-header">
+    <div class="brand">
+      <img src="/assets/MaddHatchery.jpg" class="logo" alt="Madd Hatchery">
+      <div>
+        <h1>Eating Eggs</h1>
+        <p class="tag">Pasture-rich yolks ready for brunch and pickling</p>
+      </div>
+    </div>
+    <nav class="nav" aria-label="Main navigation">
+      <a class="nav-link" href="/">Home</a>
+      <a class="nav-link" href="/house-jams.html">House Jams</a>
+      <div class="nav-dropdown is-current" data-nav-dropdown>
+        <button class="nav-toggle" type="button" data-nav-toggle aria-expanded="false" aria-controls="nav-merch-menu">Merch &amp; Flock</button>
+        <div class="nav-menu" id="nav-merch-menu" data-nav-menu role="menu">
+          <a class="nav-menu-link" href="/t-shirt.html" role="menuitem">Howdy Y&rsquo;all Tee</a>
+          <a class="nav-menu-link" href="/eating-eggs.html" role="menuitem" aria-current="page">Eating Eggs</a>
+          <a class="nav-menu-link" href="/hatching-eggs.html" role="menuitem">Hatching Eggs</a>
+          <a class="nav-menu-link" href="/chicks.html" role="menuitem">Chicks</a>
+          <a class="nav-menu-link" href="/grown-birds.html" role="menuitem">Grown Birds</a>
+        </div>
+      </div>
+      <a class="nav-link" href="/order.html">Order</a>
+      <a class="nav-link" href="/support.html">Support</a>
+      <a class="nav-link" href="/admin.html">Admin</a>
+      <a class="nav-link" data-nav-auth="login" data-login-link data-login-target="/eating-eggs.html" href="/login.html">Login</a>
+      <a class="nav-link nav-link--logout" data-nav-auth="logout" href="/oauth2/logout">Logout</a>
+    </nav>
+    <span class="badge-user" data-user-name hidden>Guest</span>
+  </header>
+
+  <section class="trish-tip-card" aria-label="Trish’s egg counter tip">
+    <img src="/assets/trish.svg" alt="Trish, customer advocate" class="trish-tip-photo">
+    <div class="trish-tip-bubble">
+      <p class="trish-tip-title">Trish’s Tip</p>
+      <p class="trish-tip-text">Log in to see lay dates, flock diets, and pickup slots. I candle every dozen before you arrive so your poached eggs hold together like a dream.</p>
+      <p class="trish-tip-text">Need bulk cases for a cafe? Mention it in your order notes and I’ll stack cartons by color palette.</p>
+    </div>
+  </section>
+
+  <main class="content content-stack" data-gated-content aria-hidden="true">
+    <section class="feature-card">
+      <h2>Table eggs ready for brunch</h2>
+      <p>Pasture time and curated feed keep our eating eggs rich, bright, and sturdy enough for poaching or pickling. We candle every dozen before pickup and track lay dates so your cartons stay consistent.</p>
+      <div class="feature-grid" aria-label="Flocks producing eating eggs">
+        <div class="feature-grid-item">
+          <h4>Silver &amp; Gold Spangled Spitzhauben</h4>
+          <p>Swiss mountain birds with speckled shells that bring a nutty depth to quiches. Their roomy aviary keeps combs pristine and yolks naturally golden.</p>
+        </div>
+        <div class="feature-grid-item">
+          <h4>Easter Eggers</h4>
+          <p>Rainbow baskets, zero dye kits. Our Easter Eggers lay blues, greens, and creams after a forage-heavy diet of seasonal greens and garden herbs.</p>
+        </div>
+        <div class="feature-grid-item">
+          <h4>Silky Curly Frizzles</h4>
+          <p>Yes, the curls lay, too. These gentle birds produce smaller but ultra-rich eggs perfect for baking — we rotate vitamins to keep shells strong.</p>
+        </div>
+      </div>
+      <a class="cta" href="/order.html">Reserve eating eggs</a>
+    </section>
+
+    <section class="feature-card">
+      <h2>Pickup &amp; delivery details</h2>
+      <ul>
+        <li><strong>Cooler packs:</strong> Share your travel time so we can chill cartons or pack insulated sleeves.</li>
+        <li><strong>Flavor notes:</strong> Logged-in members see the weekly feed mix and suggested recipe pairings.</li>
+        <li><strong>Color sorting:</strong> Want rainbow dozens or all-gold shells? Add a note and we&rsquo;ll tag cartons accordingly.</li>
+      </ul>
+      <p class="muted">Questions about storage or shipping? Message Trish after you sign in — she keeps safe-handling guides on standby.</p>
+    </section>
+  </main>
+
+  <div class="login-overlay" data-login-overlay role="dialog" aria-modal="true" aria-labelledby="eatingEggOverlay" hidden>
+    <div class="login-overlay-panel">
+      <h2 id="eatingEggOverlay">Login required</h2>
+      <p>Egg availability and lay-date history stay behind the portal. Sign in to lock in cartons, arrange delivery, and read flock notes.</p>
+      <a class="cta" data-login-link data-login-target="/eating-eggs.html" href="/login.html">Launch secure login</a>
+      <p class="muted">Need access? Request an account on the login screen and I&rsquo;ll send approval asap.</p>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <p>© <span id="y"></span> Madd Hatchery • Secure by HEDI</p>
+  </footer>
+  <script>document.getElementById('y').textContent = new Date().getFullYear();
+    const badge=document.querySelector('[data-user-name]');
+    if(badge){badge.hidden=false;}
+  </script>
+  <script src="/config.js"></script>
+  <script src="/static/js/support_config.js"></script>
+  <script src="/static/js/nav.js" defer></script>
+  <script src="/static/js/auth_config.js" defer></script>
+  <script src="/static/js/authz.js" defer></script>
+  <script src="/static/js/trish.js" defer></script>
+  <script src="/static/js/gated.js" defer></script>
+</body>
+</html>
