@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="gradHowdyDetail" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#fef9c3"/>
+      <stop offset="100%" stop-color="#fcd34d"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="800" fill="url(#gradHowdyDetail)"/>
+  <text x="50%" y="40%" fill="#713f12" font-family="'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="72" text-anchor="middle" font-weight="600">Graphic Detail</text>
+  <text x="50%" y="58%" fill="#a16207" font-family="'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="38" text-anchor="middle">Need some eggs? lettering</text>
+  <text x="50%" y="72%" fill="#92400e" font-family="'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="30" text-anchor="middle">Soft ringspun cotton texture</text>
+</svg>
