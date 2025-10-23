@@ -73,14 +73,43 @@
       .filter(Boolean);
   }
 
+  const globToRegExp = (pattern) => {
+    if (!pattern) {
+      return null;
+    }
+    const escaped = pattern
+      .replace(/[.+^${}()|[\]\\]/g, '\\$&')
+      .replace(/\*/g, '.*')
+      .replace(/\?/g, '.');
+    return new RegExp(`^${escaped}$`, 'i');
+  };
+
+  const filterByPattern = (photos, matcher) => {
+    if (!Array.isArray(photos) || !photos.length || !matcher) {
+      return photos;
+    }
+    const filtered = photos.filter((photo) => {
+      const src = photo && photo.src ? photo.src : '';
+      const fileName = src.split('?')[0].split('#')[0].split('/').pop() || '';
+      return matcher.test(fileName);
+    });
+    if (filtered.length === 0 && photos.length > 0) {
+      console.warn('No gallery images matched pattern; using unfiltered list.', matcher);
+      return photos;
+    }
+    return filtered;
+  };
+
   async function loadGallery(section) {
     const directory = ensureDirectorySuffix(section.dataset.photoDirectory || '');
     if (!directory) {
       return [];
     }
 
+    const patternMatcher = globToRegExp(section.dataset.photoPattern || '');
+
     if (galleryCache.has(directory)) {
-      return galleryCache.get(directory);
+      return filterByPattern(galleryCache.get(directory), patternMatcher);
     }
 
     const galleryUrl = `${directory}gallery.json`;
@@ -88,10 +117,14 @@
       const response = await fetch(galleryUrl, { cache: 'no-cache' });
       if (response.ok) {
         const payload = await response.json();
-        const photos = normalisePhotos(Array.isArray(payload) ? payload : payload && Array.isArray(payload.photos) ? payload.photos : [], section, directory);
+        const photos = normalisePhotos(
+          Array.isArray(payload) ? payload : payload && Array.isArray(payload.photos) ? payload.photos : [],
+          section,
+          directory
+        );
         if (photos.length) {
           galleryCache.set(directory, photos);
-          return photos;
+          return filterByPattern(photos, patternMatcher);
         }
       } else if (response.status && response.status !== 404) {
         console.warn('Gallery request failed', galleryUrl, response.status);
@@ -113,7 +146,7 @@
         const photos = normalisePhotos(manifestEntries, section, directory);
         if (photos.length) {
           galleryCache.set(directory, photos);
-          return photos;
+          return filterByPattern(photos, patternMatcher);
         }
       } else if (response.status && response.status !== 404) {
         console.warn('Static manifest request failed', manifestUrl, response.status);
@@ -142,7 +175,7 @@
       }
     ];
     galleryCache.set(directory, fallback);
-    return fallback;
+    return filterByPattern(fallback, patternMatcher);
   }
 
   function renderFeature(section, photo) {
@@ -219,10 +252,14 @@
         return;
       }
       renderFeature(section, photos[currentIndex]);
-      const intervalId = window.setInterval(() => {
-        currentIndex = (currentIndex + 1) % photos.length;
-        renderFeature(section, photos[currentIndex]);
-      }, 60000);
+      const rotateInterval = Math.max(Number.parseInt(section.dataset.photoInterval, 10) || 60000, 1000);
+      let intervalId = null;
+      if (photos.length > 1) {
+        intervalId = window.setInterval(() => {
+          currentIndex = (currentIndex + 1) % photos.length;
+          renderFeature(section, photos[currentIndex]);
+        }, rotateInterval);
+      }
       galleryStates.set(section, { photos, intervalId });
     });
 
