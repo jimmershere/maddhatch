@@ -68,6 +68,11 @@ for line in index_path.read_text().splitlines():
     ext, base = key.split(":", 1)
     asset_map.setdefault(base, {})[ext] = value
 
+FORCED_REPLACEMENTS: Dict[str, str] = {
+    "/assets/trish.svg": "/assets/trish_site_assets/png/trish_laptop@1x.png",
+    "/assets/MaddHatchery.jpg": "/assets/trish_site_assets/jpg/MaddHatchery.jpg",
+}
+
 pattern = re.compile(r"[^\"'\s>]+\.(?:png|jpe?g|svg)", re.IGNORECASE)
 
 
@@ -101,6 +106,10 @@ for file_name in files:
 
     original = file_path.read_text()
     replacements: Dict[str, str] = {}
+    for old, new in FORCED_REPLACEMENTS.items():
+        if old in original and old != new:
+            replacements[old] = new
+
     for match in set(pattern.findall(original)):
         replacement = replacement_for(match)
         if replacement and replacement != match:
