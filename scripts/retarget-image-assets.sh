@@ -69,7 +69,7 @@ for line in index_path.read_text().splitlines():
     asset_map.setdefault(base, {})[ext] = value
 
 FORCED_REPLACEMENTS: Dict[str, str] = {
-    "/assets/trish.svg": "/assets/trish_site_assets/png/trish_laptop@1x.png",
+    "/assets/trish.svg": "/assets/trish_site_assets/png/trish.png",
     "/assets/MaddHatchery.jpg": "/assets/trish_site_assets/jpg/MaddHatchery.jpg",
 }
 
