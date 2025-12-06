@@ -134,7 +134,7 @@
       <div class="trish-panel" hidden>
         <div class="trish-header">
           <div class="trish-identity">
-            <img src="/assets/trish.svg" alt="Trish, customer advocate" class="trish-avatar">
+            <img src="/assets/trish_site_assets/png/trish.png" alt="Trish, customer advocate" class="trish-avatar">
             <div>
               <strong>Trish — Customer Advocate</strong>
               <p>Live support ${support.escalationHours || ''}</p>
