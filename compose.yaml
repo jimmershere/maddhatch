@@ -40,6 +40,30 @@ services:
       - ldap_config:/etc/ldap/slapd.d
       - ./config/certs:/container/service/slapd/assets/certs:rw,z
 
+  smtp:
+    build: ./smtp
+    hostname: smtp.maddhatchery.com
+    env_file: .env
+    environment:
+      SMTP_RELAY_HOST: ${SMTP_RELAY_HOST:-}
+      SMTP_RELAY_PORT: ${SMTP_RELAY_PORT:-587}
+      SMTP_RELAY_USER: ${SMTP_RELAY_USER:-}
+      SMTP_RELAY_PASSWORD: ${SMTP_RELAY_PASSWORD:-}
+      SMTP_FROM: ${SMTP_FROM:-alerts@maddhatchery.com}
+      SMTP_ACCOUNT: ${SMTP_ACCOUNT:-default}
+      SMTP_DOMAIN: ${SMTP_DOMAIN:-smtp.maddhatchery.com}
+      SMTP_TLS: ${SMTP_TLS:-on}
+      SMTP_STARTTLS: ${SMTP_STARTTLS:-on}
+      SMTP_TLS_CERTCHECK: ${SMTP_TLS_CERTCHECK:-on}
+      SMTP_TLS_TRUST_FILE: ${SMTP_TLS_TRUST_FILE:-}
+      SMTP_TLS_FINGERPRINT: ${SMTP_TLS_FINGERPRINT:-}
+      SMTP_LISTEN_HOST: ${SMTP_LISTEN_HOST:-0.0.0.0}
+      SMTP_LISTEN_PORT: ${SMTP_LISTEN_PORT:-1025}
+    ports:
+      - "${SMTP_HOST_PORT:-1025}:1025"
+    volumes:
+      - ./smtp/config:/etc/msmtp
+
   api:
     build: ./api
     env_file: .env
