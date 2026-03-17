@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Find Us — Madd Hatchery</title>
+  <meta name="description" content="Find Madd Hatchery jams, eggs, and merch. House pickup, farm markets, and online orders available.">
+  <link rel="stylesheet" href="/assets/styles.css">
+  <style>
+    .ways { display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1.5rem;max-width:1100px;margin:3rem auto;padding:0 2rem; }
+    .way  { background:white;border-radius:16px;padding:1.75rem;box-shadow:var(--shadow);transition:transform .2s; }
+    .way:hover { transform:translateY(-3px); }
+    .way-icon  { font-size:2.5rem;margin-bottom:.75rem; }
+    .way-title { font-family:var(--font-h);font-size:1.3rem;color:var(--teal-dk);margin-bottom:.3rem; }
+    .way-tag   { display:inline-block;padding:3px 10px;border-radius:999px;font-size:.7rem;font-weight:700;text-transform:uppercase;background:#d4f0e8;color:var(--teal-dk);margin-bottom:.7rem; }
+    .way-tag.orange  { background:#fde8d4;color:#c05a20; }
+    .way-tag.purple  { background:#e8dff5;color:var(--purple); }
+    .way-desc  { color:#666;font-size:.92rem;line-height:1.65;margin-bottom:1rem; }
+    .way-detail { background:var(--cream-dk);border-radius:10px;padding:1rem;font-size:.85rem;color:#555;line-height:1.6;margin-bottom:1rem; }
+    .contact-form { max-width:560px;margin:0 auto; }
+    .form-row { margin-bottom:1rem; }
+    .form-row label { display:block;font-size:.85rem;font-weight:600;color:var(--teal-dk);margin-bottom:.3rem; }
+  </style>
+</head>
+<body>
+  <header class="mh-header">
+    <a href="/" class="brand">
+      <img src="/assets/trish_site_assets/jpg/MaddHatchery.jpg" alt="Madd Hatchery Logo" class="logo">
+      <div><h1>Madd Hatchery</h1><p class="tag">Handmade Jams &bull; Farm Fresh Goods &bull; Merch</p></div>
+    </a>
+    <button class="nav-mobile-toggle" onclick="this.closest('.mh-header').querySelector('.nav').classList.toggle('is-open')" aria-label="Menu">☰</button>
+    <nav class="nav">
+      <a class="nav-link" href="/">Home</a>
+      <a class="nav-link" href="/house-jams.html">House Jams</a>
+      <div class="nav-dropdown" data-nav-dropdown>
+        <button class="nav-toggle" data-nav-toggle aria-expanded="false">Flock &amp; Farm ▾</button>
+        <div class="nav-menu" data-nav-menu>
+          <a class="nav-menu-link" href="/farm-life.html">Farm Life &amp; Gallery</a>
+          <a class="nav-menu-link" href="/eating-eggs.html">Eating Eggs</a>
+          <a class="nav-menu-link" href="/hatching-eggs.html">Hatching Eggs</a>
+          <a class="nav-menu-link" href="/chicks.html">Baby Chicks</a>
+          <a class="nav-menu-link" href="/grown-birds.html">Grown Birds</a>
+        </div>
+      </div>
+      <div class="nav-dropdown" data-nav-dropdown>
+        <button class="nav-toggle" data-nav-toggle aria-expanded="false">Shop ▾</button>
+        <div class="nav-menu" data-nav-menu>
+          <a class="nav-menu-link" href="/t-shirt.html">Howdy Y'all Tee</a>
+          <a class="nav-menu-link" href="/merch.html">All Merch &amp; Swag</a>
+          <a class="nav-menu-link" href="/art-projects.html">Art Projects</a>
+          <a class="nav-menu-link" href="/order.html">Place an Order</a>
+        </div>
+      </div>
+      <a class="nav-link" href="/find-us.html" aria-current="page">Find Us</a>
+    </nav>
+  </header>
+
+  <section class="page-hero" style="background:linear-gradient(135deg,var(--teal-dk) 0%,var(--teal) 60%,#3d9e70 100%);">
+    <h1>📍 Find Us</h1>
+    <p>We're not in a big box store and we wouldn't have it any other way. Here's how to get your hands on the good stuff.</p>
+  </section>
+
+  <div class="ways">
+    <div class="way">
+      <div class="way-icon">🏡</div>
+      <div class="way-title">House Pickup</div>
+      <span class="way-tag">Local</span>
+      <p class="way-desc">The original and best way — come right to the source. Pick up your jams, eggs, or merch direct. Cash or Venmo, no shipping fees.</p>
+      <div class="way-detail"><strong>How it works:</strong><br>Send us a message with what you want. We'll confirm availability and set up a time. Easy as that.</div>
+      <a href="mailto:maddhatchery@gmail.com?subject=House pickup order" class="btn btn-primary" style="font-size:.85rem;">Message to Order</a>
+    </div>
+    <div class="way">
+      <div class="way-icon">🌽</div>
+      <div class="way-title">Farm Markets</div>
+      <span class="way-tag orange">Seasonal</span>
+      <p class="way-desc">We set up at local farm markets when the season's right. Come find us in person, taste before you buy, and meet the crew. Cash and card accepted.</p>
+      <div class="way-detail"><strong>Schedule:</strong><br>Follow us on social media for market dates — we post as soon as they're confirmed. Usually spring through fall.</div>
+      <a href="#" class="btn btn-outline" style="font-size:.85rem;">Follow for Updates</a>
+    </div>
+    <div class="way">
+      <div class="way-icon">✉️</div>
+      <div class="way-title">Word of Mouth</div>
+      <span class="way-tag">Always Open</span>
+      <p class="way-desc">Our best customers are people who heard about us from someone they trust. Place an order any time by reaching out directly.</p>
+      <div class="way-detail"><strong>Email:</strong> maddhatchery@gmail.com<br><br>We respond fast and we're friendly. Just ask what's available.</div>
+      <a href="mailto:maddhatchery@gmail.com" class="btn btn-primary" style="font-size:.85rem;">Send a Message</a>
+    </div>
+    <div class="way">
+      <div class="way-icon">📦</div>
+      <div class="way-title">Shipping</div>
+      <span class="way-tag purple">Coming Soon</span>
+      <p class="way-desc">We're working on making jams and shelf-stable goods available for shipping. Not local? Get on the list — you'll be first to know.</p>
+      <div class="way-detail"><strong>Interested?</strong> Drop us an email and let us know where you're located. We'll reach out when shipping launches.</div>
+      <a href="mailto:maddhatchery@gmail.com?subject=Shipping waitlist" class="btn btn-outline" style="font-size:.85rem;">Join the Waitlist</a>
+    </div>
+  </div>
+
+  <div style="max-width:900px;margin:0 auto 3rem;padding:0 2rem;">
+    <div style="display:flex;gap:1.5rem;align-items:flex-start;background:white;border-radius:16px;padding:2rem;box-shadow:var(--shadow);">
+      <img src="/assets/trish_site_assets/png/trish_clipboard@1x.png"
+           srcset="/assets/trish_site_assets/webp/trish_clipboard@1x.webp"
+           alt="Trish"
+           style="width:80px;height:80px;border-radius:50%;object-fit:cover;flex-shrink:0;border:3px solid var(--coral-lt);"
+           onerror="this.style.display='none'">
+      <div>
+        <h3 style="font-family:var(--font-h);color:var(--coral);font-size:1.15rem;margin-bottom:.5rem;">A note from Trish</h3>
+        <p style="color:#666;font-size:.93rem;line-height:1.65;">"I love meeting our customers in person — at the house, at a market, wherever. Everything I make here I'm genuinely proud of. Don't overthink it. Just send me a message and we'll figure it out. Looking forward to hearing from you."</p>
+      </div>
+    </div>
+  </div>
+
+  <section style="background:var(--cream-dk);padding:3.5rem 2rem;text-align:center;">
+    <h2 style="font-family:var(--font-h);color:var(--teal);font-size:1.7rem;margin-bottom:.75rem;">Send us a message</h2>
+    <p style="color:#666;max-width:500px;margin:0 auto 2rem;">For orders, questions, custom requests, or just to say hello. We read every message.</p>
+    <form class="contact-form" onsubmit="sendContact(event)">
+      <div class="form-row"><label>Your name<input type="text" id="cf-name" placeholder="First name is fine" required></label></div>
+      <div class="form-row"><label>Email<input type="email" id="cf-email" placeholder="your@email.com" required></label></div>
+      <div class="form-row"><label>What's this about?
+        <select id="cf-subject">
+          <option value="Order: Jams">Order jams / preserves</option>
+          <option value="Order: Eggs">Order eggs</option>
+          <option value="Order: Merch">Order merch</option>
+          <option value="Custom order">Custom / bulk order</option>
+          <option value="Art inquiry">Art commission</option>
+          <option value="Shipping waitlist">Shipping waitlist</option>
+          <option value="General question">General question</option>
+          <option value="Just saying hi">Just saying hi 👋</option>
+        </select>
+      </label></div>
+      <div class="form-row"><label>Message<textarea id="cf-message" placeholder="What can we help with?"></textarea></label></div>
+      <button type="submit" class="btn btn-primary" style="width:100%;">Send Message 📩</button>
+    </form>
+  </section>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div>
+        <div class="footer-logo"><img src="/assets/trish_site_assets/jpg/MaddHatchery.jpg" alt="Madd Hatchery"><div class="footer-logo-text">Madd Hatchery</div></div>
+        <p class="footer">Small-batch jams, farm-fresh eggs, and handmade goods.</p>
+        <p class="footer" style="margin-top:.75rem;">📧 <a href="mailto:maddhatchery@gmail.com" style="color:rgba(255,255,255,0.75);">maddhatchery@gmail.com</a></p>
+      </div>
+      <nav class="footer-nav"><h4>Quick Links</h4><ul>
+        <li><a href="/">Home</a></li><li><a href="/house-jams.html">House Jams</a></li>
+        <li><a href="/farm-life.html">Farm Life</a></li><li><a href="/merch.html">Merch</a></li>
+        <li><a href="/art-projects.html">Art Projects</a></li><li><a href="/find-us.html">Find Us</a></li>
+      </ul></nav>
+      <div class="footer-social"><h4>Follow Along</h4><div class="social-links"><a href="#" class="social-link">📷</a><a href="#" class="social-link">📘</a></div></div>
+    </div>
+    <div class="footer-bottom"><p>© 2025 Madd Hatchery.</p><p>Made with love on the farm 🐓</p></div>
+  </footer>
+  <script>
+    document.querySelectorAll('[data-nav-dropdown]').forEach(function(dd){dd.querySelector('[data-nav-toggle]').addEventListener('click',function(){dd.classList.toggle('is-open');this.setAttribute('aria-expanded',dd.classList.contains('is-open'));});});
+    document.addEventListener('click',function(e){if(!e.target.closest('[data-nav-dropdown]'))document.querySelectorAll('[data-nav-dropdown].is-open').forEach(function(dd){dd.classList.remove('is-open');dd.querySelector('[data-nav-toggle]').setAttribute('aria-expanded','false');});});
+    function sendContact(e){e.preventDefault();var n=document.getElementById('cf-name').value.trim(),em=document.getElementById('cf-email').value.trim(),s=document.getElementById('cf-subject').value,m=document.getElementById('cf-message').value.trim();window.location.href='mailto:maddhatchery@gmail.com?subject='+encodeURIComponent(s)+'&body='+encodeURIComponent('Name: '+n+'\nEmail: '+em+'\n\n'+m);}
+  </script>
+</body>
+</html>
