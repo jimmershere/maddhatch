@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Farm Life — Madd Hatchery</title>
+  <meta name="description" content="Life on the Madd Hatchery urban farm — chickens, chicks, fresh eggs, goats, geese, guinea hens, cats, and a garden that never stops growing.">
+  <link rel="stylesheet" href="/assets/styles.css">
+  <style>
+    .animal-row { display:flex;flex-wrap:wrap;gap:1rem;justify-content:center;max-width:900px;margin:2rem auto;padding:0 2rem; }
+    .animal-chip { background:white;border-radius:12px;padding:1rem 1.5rem;text-align:center;box-shadow:0 3px 15px rgba(0,0,0,.06);min-width:110px; }
+    .animal-chip .icon { font-size:2rem;margin-bottom:.25rem; }
+    .animal-chip .count { font-weight:800;color:var(--teal);font-family:var(--font-h);font-size:1.1rem; }
+    .animal-chip .lbl { font-size:.78rem;color:#888; }
+    .gallery-section { max-width:1100px;margin:0 auto 3rem;padding:0 2rem; }
+    .gallery-section h2 { font-family:var(--font-h);font-size:1.6rem;color:var(--purple);text-align:center;margin-bottom:1.25rem; }
+    .photo-mosaic { display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px; }
+    .photo-mosaic .p { border-radius:12px;overflow:hidden;aspect-ratio:4/3; }
+    .photo-mosaic .p img { width:100%;height:100%;object-fit:cover;transition:transform .3s; }
+    .photo-mosaic .p:hover img { transform:scale(1.04); }
+    .emoji-ph { width:100%;height:100%;background:var(--cream-dk);display:flex;align-items:center;justify-content:center;font-size:3.5rem; }
+  </style>
+</head>
+<body>
+
+  <header class="mh-header">
+    <a href="/" class="brand">
+      <img src="/assets/trish_site_assets/jpg/MaddHatchery.jpg" alt="Madd Hatchery Logo" class="logo">
+      <div><h1>Madd Hatchery</h1><p class="tag">Handmade Jams &bull; Farm Fresh Goods &bull; Merch</p></div>
+    </a>
+    <button class="nav-mobile-toggle" onclick="this.closest('.mh-header').querySelector('.nav').classList.toggle('is-open')" aria-label="Menu">☰</button>
+    <nav class="nav">
+      <a class="nav-link" href="/">Home</a>
+      <a class="nav-link" href="/house-jams.html">House Jams</a>
+      <div class="nav-dropdown" data-nav-dropdown>
+        <button class="nav-toggle" data-nav-toggle aria-expanded="false">Flock &amp; Farm ▾</button>
+        <div class="nav-menu" data-nav-menu role="menu">
+          <a class="nav-menu-link" href="/farm-life.html" aria-current="page">Farm Life &amp; Gallery</a>
+          <a class="nav-menu-link" href="/eating-eggs.html">Eating Eggs</a>
+          <a class="nav-menu-link" href="/hatching-eggs.html">Hatching Eggs</a>
+          <a class="nav-menu-link" href="/chicks.html">Baby Chicks</a>
+          <a class="nav-menu-link" href="/grown-birds.html">Grown Birds</a>
+        </div>
+      </div>
+      <div class="nav-dropdown" data-nav-dropdown>
+        <button class="nav-toggle" data-nav-toggle aria-expanded="false">Shop ▾</button>
+        <div class="nav-menu" data-nav-menu role="menu">
+          <a class="nav-menu-link" href="/t-shirt.html">Howdy Y'all Tee</a>
+          <a class="nav-menu-link" href="/merch.html">All Merch &amp; Swag</a>
+          <a class="nav-menu-link" href="/art-projects.html">Art Projects</a>
+          <a class="nav-menu-link" href="/order.html">Place an Order</a>
+        </div>
+      </div>
+      <a class="nav-link" href="/find-us.html">Find Us</a>
+    </nav>
+  </header>
+
+  <section class="page-hero" style="background:linear-gradient(135deg,var(--teal) 0%,#3d9e70 100%);">
+    <h1>🐓 Life on the Farm</h1>
+    <p>Urban farming, controlled chaos, and a whole lot of love. Meet the crew.</p>
+  </section>
+
+  <div style="max-width:860px;margin:3rem auto;padding:0 2rem;display:grid;grid-template-columns:1fr 2fr;gap:2rem;align-items:center;">
+    <img src="/assets/trish_site_assets/png/trish_peace@1x.png"
+         srcset="/assets/trish_site_assets/webp/trish_peace@1x.webp"
+         alt="Trish on the farm"
+         style="border-radius:50%;border:5px solid rgba(255,255,255,.6);box-shadow:var(--shadow-lg);max-height:340px;object-fit:contain;"
+         onerror="this.style.display='none'">
+    <div>
+      <h2 style="font-family:var(--font-h);color:var(--teal);font-size:1.7rem;margin-bottom:.75rem;">Our little urban farm</h2>
+      <p style="color:#555;line-height:1.7;margin-bottom:.75rem;">What started with a few chickens turned into a full operation — and we wouldn't have it any other way. Every morning starts with feeding, every evening ends with checking in on everyone.</p>
+      <p style="color:#555;line-height:1.7;">The animals here aren't just livestock — they're characters. Each one has a personality. You'll meet them all if you follow along.</p>
+    </div>
+  </div>
+
+  <div class="animal-row">
+    <div class="animal-chip"><div class="icon">🐔</div><div class="count">Chickens</div><div class="lbl">The originals</div></div>
+    <div class="animal-chip"><div class="icon">🐇</div><div class="count">2 Rabbits</div><div class="lbl">Fluffy &amp; fast</div></div>
+    <div class="animal-chip"><div class="icon">🐐</div><div class="count">2 Goats</div><div class="lbl">Professional troublemakers</div></div>
+    <div class="animal-chip"><div class="icon">🦢</div><div class="count">3 Geese</div><div class="lbl">Loudest alarm system</div></div>
+    <div class="animal-chip"><div class="icon">🐦</div><div class="count">5 Guinea Hens</div><div class="lbl">Bug patrol</div></div>
+    <div class="animal-chip"><div class="icon">🐱</div><div class="count">10 Cats</div><div class="lbl">Senior staff</div></div>
+  </div>
+
+  <div class="gallery-section">
+    <h2>🐔 The Chickens</h2>
+    <div class="photo-mosaic">
+      <div class="p"><img src="/assets/trish_site_assets/img/chickens/image000003.jpg" alt="Chickens" onerror="this.closest('.p').innerHTML='<div class=\'emoji-ph\'>🐔</div>'"></div>
+      <div class="p"><img src="/assets/trish_site_assets/img/chickens/image000000 (1).jpg" alt="Chicken" onerror="this.closest('.p').innerHTML='<div class=\'emoji-ph\'>🐔</div>'"></div>
+      <div class="p"><img src="/assets/trish_site_assets/img/chickens/image000005 (1).jpg" alt="Chickens" onerror="this.closest('.p').innerHTML='<div class=\'emoji-ph\'>🐔</div>'"></div>
+      <div class="p"><img src="/assets/trish_site_assets/img/chickens/image000009 (2).jpg" alt="Chicken" onerror="this.closest('.p').innerHTML='<div class=\'emoji-ph\'>🐔</div>'"></div>
+      <div class="p"><img src="/assets/trish_site_assets/img/chickens/image000000 (2).jpg" alt="Chickens" onerror="this.closest('.p').innerHTML='<div class=\'emoji-ph\'>🐔</div>'"></div>
+    </div>
+  </div>
+
+  <div class="gallery-section">
+    <h2>🐣 Baby Chicks</h2>
+    <div class="photo-mosaic">
+      <div class="p"><img src="/assets/trish_site_assets/img/chicks/image000001 (1).jpg" alt="Baby chick" onerror="this.closest('.p').innerHTML='<div class=\'emoji-ph\'>🐣</div>'"></div>
+      <div class="p"><img src="/assets/trish_site_assets/img/chicks/image000004 (1).jpg" alt="Chicks" onerror="this.closest('.p').innerHTML='<div class=\'emoji-ph\'>🐣</div>'"></div>
+      <div class="p"><img src="/assets/trish_site_assets/img/chicks/image000006 (1).jpg" alt="Chick" onerror="this.closest('.p').innerHTML='<div class=\'emoji-ph\'>🐣</div>'"></div>
+    </div>
+  </div>
+
+  <div class="gallery-section">
+    <h2>🥚 Fresh Eggs</h2>
+    <div class="photo-mosaic">
+      <div class="p"><img src="/assets/trish_site_assets/img/eggs/image000001 (2).jpg" alt="Fresh eggs" onerror="this.closest('.p').innerHTML='<div class=\'emoji-ph\'>🥚</div>'"></div>
+      <div class="p"><img src="/assets/trish_site_assets/img/eggs/image000005 (2).jpg" alt="Eggs" onerror="this.closest('.p').innerHTML='<div class=\'emoji-ph\'>🥚</div>'"></div>
+      <div class="p"><img src="/assets/trish_site_assets/img/eggs/image000006 (2).jpg" alt="Farm eggs" onerror="this.closest('.p').innerHTML='<div class=\'emoji-ph\'>🥚</div>'"></div>
+    </div>
+  </div>
+
+  <div style="text-align:center;background:var(--cream-dk);padding:3rem 2rem;margin-bottom:3rem;">
+    <h2 style="font-family:var(--font-h);color:var(--coral);font-size:1.6rem;margin-bottom:.75rem;">Want fresh eggs? 🥚</h2>
+    <p style="color:#666;max-width:500px;margin:0 auto 1.5rem;">We sell eating eggs locally. Message us to check availability — they go fast in spring.</p>
+    <a href="mailto:maddhatchery@gmail.com?subject=Egg inquiry" class="btn btn-primary">Ask About Eggs</a>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div>
+        <div class="footer-logo"><img src="/assets/trish_site_assets/jpg/MaddHatchery.jpg" alt="Madd Hatchery"><div class="footer-logo-text">Madd Hatchery</div></div>
+        <p class="footer">Small-batch jams, farm-fresh eggs, and handmade goods.</p>
+        <p class="footer" style="margin-top:.75rem;">📧 <a href="mailto:maddhatchery@gmail.com" style="color:rgba(255,255,255,0.75);">maddhatchery@gmail.com</a></p>
+      </div>
+      <nav class="footer-nav"><h4>Quick Links</h4><ul>
+        <li><a href="/">Home</a></li><li><a href="/house-jams.html">House Jams</a></li>
+        <li><a href="/farm-life.html">Farm Life</a></li><li><a href="/merch.html">Merch</a></li>
+        <li><a href="/art-projects.html">Art Projects</a></li><li><a href="/find-us.html">Find Us</a></li>
+      </ul></nav>
+      <div class="footer-social"><h4>Follow Along</h4><div class="social-links"><a href="#" class="social-link">📷</a><a href="#" class="social-link">📘</a></div></div>
+    </div>
+    <div class="footer-bottom"><p>© 2025 Madd Hatchery.</p><p>Made with love on the farm 🐓</p></div>
+  </footer>
+
+  <script>
+    document.querySelectorAll('[data-nav-dropdown]').forEach(function(dd){dd.querySelector('[data-nav-toggle]').addEventListener('click',function(){dd.classList.toggle('is-open');this.setAttribute('aria-expanded',dd.classList.contains('is-open'));});});
+    document.addEventListener('click',function(e){if(!e.target.closest('[data-nav-dropdown]'))document.querySelectorAll('[data-nav-dropdown].is-open').forEach(function(dd){dd.classList.remove('is-open');dd.querySelector('[data-nav-toggle]').setAttribute('aria-expanded','false');});});
+  </script>
+</body>
+</html>

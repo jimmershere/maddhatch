@@ -7,34 +7,39 @@
   <link rel="stylesheet" href="/assets/styles.css">
 </head>
 <body>
-  <header class="mh-header">
-    <div class="brand">
-      <img src="/assets/trish_site_assets/jpg/MaddHatchery.jpg" class="logo" alt="Madd Hatchery">
+    <header class="mh-header">
+    <a href="/" class="brand">
+      <img src="/assets/trish_site_assets/jpg/MaddHatchery.jpg" alt="Madd Hatchery Logo" class="logo">
       <div>
-        <h1>House Jams</h1>
-        <p class="tag">Small-batch jars, sun-ripened berries, and Trish-approved sweetness</p>
+        <h1>Madd Hatchery</h1>
+        <p class="tag">Handmade Jams &bull; Farm Fresh Goods &bull; Merch</p>
       </div>
-    </div>
+    </a>
+    <button class="nav-mobile-toggle" onclick="this.closest('.mh-header').querySelector('.nav').classList.toggle('is-open')" aria-label="Menu">☰</button>
     <nav class="nav" aria-label="Main navigation">
       <a class="nav-link" href="/">Home</a>
-      <a class="nav-link" href="/house-jams.html" aria-current="page">House Jams</a>
+      <a class="nav-link" href="/house-jams.html">House Jams</a>
       <div class="nav-dropdown" data-nav-dropdown>
-        <button class="nav-toggle" type="button" data-nav-toggle aria-expanded="false" aria-controls="nav-merch-menu">Merch &amp; Flock</button>
-        <div class="nav-menu" id="nav-merch-menu" data-nav-menu role="menu">
-          <a class="nav-menu-link" href="/t-shirt.html" role="menuitem">Howdy Y&rsquo;all Tee</a>
+        <button class="nav-toggle" type="button" data-nav-toggle aria-expanded="false" aria-controls="nav-flock-menu">Flock &amp; Farm &#9660;</button>
+        <div class="nav-menu" id="nav-flock-menu" data-nav-menu role="menu">
+          <a class="nav-menu-link" href="/farm-life.html" role="menuitem">Farm Life &amp; Gallery</a>
           <a class="nav-menu-link" href="/eating-eggs.html" role="menuitem">Eating Eggs</a>
           <a class="nav-menu-link" href="/hatching-eggs.html" role="menuitem">Hatching Eggs</a>
-          <a class="nav-menu-link" href="/chicks.html" role="menuitem">Chicks</a>
+          <a class="nav-menu-link" href="/chicks.html" role="menuitem">Baby Chicks</a>
           <a class="nav-menu-link" href="/grown-birds.html" role="menuitem">Grown Birds</a>
         </div>
       </div>
-      <a class="nav-link" href="/order.html">Order</a>
-      <a class="nav-link" href="/support.html">Support</a>
-      <a class="nav-link" href="/admin.html">Admin</a>
-      <a class="nav-link" data-nav-auth="login" data-login-link data-login-target="/house-jams.html" href="/login.html">Login</a>
-      <a class="nav-link nav-link--logout" data-nav-auth="logout" href="/oauth2/logout">Logout</a>
+      <div class="nav-dropdown" data-nav-dropdown>
+        <button class="nav-toggle" type="button" data-nav-toggle aria-expanded="false" aria-controls="nav-shop-menu">Shop &#9660;</button>
+        <div class="nav-menu" id="nav-shop-menu" data-nav-menu role="menu">
+          <a class="nav-menu-link" href="/t-shirt.html" role="menuitem">Howdy Y&rsquo;all Tee</a>
+          <a class="nav-menu-link" href="/merch.html" role="menuitem">All Merch &amp; Swag</a>
+          <a class="nav-menu-link" href="/art-projects.html" role="menuitem">Art Projects</a>
+          <a class="nav-menu-link" href="/order.html" role="menuitem">Place an Order</a>
+        </div>
+      </div>
+      <a class="nav-link" href="/find-us.html">Find Us</a>
     </nav>
-    <span class="badge-user" data-user-name hidden>Guest</span>
   </header>
 
   <section class="trish-tip-card" aria-label="Trish’s jam kitchen welcome">
@@ -100,8 +105,40 @@
     </div>
   </div>
 
-  <footer class="footer">
-    <p>© <span id="y"></span> Madd Hatchery • Secure by HEDI</p>
+    <footer class="site-footer">
+    <div class="footer-inner">
+      <div>
+        <div class="footer-logo">
+          <img src="/assets/trish_site_assets/jpg/MaddHatchery.jpg" alt="Madd Hatchery">
+          <div class="footer-logo-text">Madd Hatchery</div>
+        </div>
+        <p class="footer">Small-batch jams, farm-fresh eggs, and handmade goods from our little urban farm.</p>
+        <p class="footer" style="margin-top:.75rem;">&#128231; <a href="mailto:maddhatchery@gmail.com" style="color:rgba(255,255,255,0.75);">maddhatchery@gmail.com</a></p>
+      </div>
+      <nav class="footer-nav">
+        <h4>Quick Links</h4>
+        <ul>
+          <li><a href="/">Home</a></li>
+          <li><a href="/house-jams.html">House Jams</a></li>
+          <li><a href="/farm-life.html">Farm Life</a></li>
+          <li><a href="/merch.html">Merch</a></li>
+          <li><a href="/art-projects.html">Art Projects</a></li>
+          <li><a href="/find-us.html">Find Us</a></li>
+          <li><a href="/order.html">Order</a></li>
+        </ul>
+      </nav>
+      <div class="footer-social">
+        <h4>Follow Along</h4>
+        <div class="social-links">
+          <a href="#" class="social-link" title="Instagram">&#128247;</a>
+          <a href="#" class="social-link" title="Facebook">&#128216;</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&#169; 2025 Madd Hatchery. All rights reserved.</p>
+      <p>Made with love on the farm &#128019;</p>
+    </div>
   </footer>
   <script>document.getElementById('y').textContent = new Date().getFullYear();
     const badge=document.querySelector('[data-user-name]');
@@ -109,11 +146,22 @@
   </script>
   <script src="/config.js"></script>
   <script src="/static/js/support_config.js"></script>
-  <script src="/static/js/nav.js" defer></script>
-  <script src="/static/js/auth_config.js" defer></script>
-  <script src="/static/js/authz.js" defer></script>
-  <script src="/static/js/trish.js" defer></script>
   <script src="/static/js/gallery-rotator.js" defer></script>
-  <script src="/static/js/gated.js" defer></script>
+    <script>
+    document.querySelectorAll('[data-nav-dropdown]').forEach(function(dd) {
+      dd.querySelector('[data-nav-toggle]').addEventListener('click', function() {
+        var isOpen = dd.classList.toggle('is-open');
+        this.setAttribute('aria-expanded', isOpen);
+      });
+    });
+    document.addEventListener('click', function(e) {
+      if (!e.target.closest('[data-nav-dropdown]')) {
+        document.querySelectorAll('[data-nav-dropdown].is-open').forEach(function(dd) {
+          dd.classList.remove('is-open');
+          dd.querySelector('[data-nav-toggle]').setAttribute('aria-expanded', 'false');
+        });
+      }
+    });
+  </script>
 </body>
 </html>
