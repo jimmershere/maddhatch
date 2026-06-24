@@ -65,27 +65,26 @@ CREATE INDEX IF NOT EXISTS idx_products_category ON products(category);
 CREATE INDEX IF NOT EXISTS idx_products_active ON products(active);
 `);
 
-/* slug, name, category, description, price_cents, image_url, fulfillment, sort, qty */
+/* slug, name, category, description, price_cents, image_url, fulfillment, sort, qty
+   NOTE: jams/eggs/chicks seed at qty 0 — they're being physically inventoried
+   before they go on sale. Apparel/mugs/stickers (tee / madd-tee / mug / sticker)
+   are NOT seeded here: they are published from tee-empire via the admin API
+   (POST /api/admin/product) → see core/maddhatchery.py in the tee-empire repo. */
 const seedProducts = [
-  // ── Jams & jellies (ship) ─────────────────────────────────────────────
-  ['peace-jam', 'Peace Jam', 'jams', 'Our flagship small-batch jam — mellow, golden, and made for sharing. The jar everybody asks for again.', 800, '/assets/v3/jars/jar_peace_jam.png', 'ship', 10, 24],
-  ['sassy-strawberry-jam', 'Sassy Strawberry Jam', 'jams', 'Sweet strawberry with a little wink of heat. Sass in a jar.', 800, '/assets/v3/jars/jar_sassy_strawberry.png', 'ship', 11, 18],
-  ['strawberry-jam', 'Strawberry Jam', 'jams', 'Classic, ripe-picked strawberry. Spoon it onto everything.', 800, '/assets/v3/jars/jar_strawberry.png', 'ship', 12, 20],
-  ['blueberry-jam', 'Blueberry Jam', 'jams', 'Plump summer blueberries cooked down slow and simple.', 800, '/assets/v3/jars/jar_blueberry.png', 'ship', 13, 16],
-  ['muscadine-jam', 'Muscadine Jam', 'jams', 'Deep, Southern-grape muscadine — a taste of the back porch.', 800, '/assets/v3/jars/jar_muscadine.png', 'ship', 14, 14],
-  ['spicy-pepper-jam', 'Spicy Pepper Jam', 'jams', 'Sweet-hot pepper jam that loves a block of cream cheese.', 800, '/assets/v3/jars/jar_spicy_pepper.png', 'ship', 15, 16],
-  ['coffee-jelly', 'Coffee Jelly', 'jams', 'A cult favorite — rich coffee jelly for the brave at breakfast.', 800, '/assets/v3/jars/jar_coffee_jelly.png', 'ship', 16, 12],
-  ['jam-variety-pack', 'Jam Variety Pack (3)', 'jams', "Pick-your-poison trio of our small-batch favorites. The perfect gift.", 2200, '/assets/v3/jars/jar_variety.png', 'ship', 9, 10],
-
-  // ── Merch & tees (ship) ───────────────────────────────────────────────
-  ['howdy-yall-tee', "Howdy Y'all Tee", 'merch', 'Soft relaxed-fit tee with Trish waving you in. Need some eggs?', 2500, '/assets/img/merch/howdy-tee/howdy-03.jpg', 'ship', 20, 14],
-  ['all-jammed-up-tee', 'All Jammed Up Tee', 'merch', 'Blue-lagoon relaxed tee — sweet, sassy, and all jammed up.', 2500, '/assets/img/merch/sassy-tee/sassy-04.jpg', 'ship', 21, 12],
-  ['eggstra-special-hoodie', 'EGGstra-Special Hoodie', 'merch', 'Cozy oversized heavyweight hoodie. You are, in fact, eggstra special.', 4500, '/assets/img/merch/eggstra-hoodie/hoodie-00.jpg', 'ship', 22, 8],
+  // ── Jams & jellies (ship) — inventory pending, seeded at 0 ─────────────
+  ['peace-jam', 'Peace Jam', 'jams', 'Our flagship small-batch jam — mellow, golden, and made for sharing. The jar everybody asks for again.', 800, '/assets/v3/jars/jar_peace_jam.png', 'ship', 10, 0],
+  ['sassy-strawberry-jam', 'Sassy Strawberry Jam', 'jams', 'Sweet strawberry with a little wink of heat. Sass in a jar.', 800, '/assets/v3/jars/jar_sassy_strawberry.png', 'ship', 11, 0],
+  ['strawberry-jam', 'Strawberry Jam', 'jams', 'Classic, ripe-picked strawberry. Spoon it onto everything.', 800, '/assets/v3/jars/jar_strawberry.png', 'ship', 12, 0],
+  ['blueberry-jam', 'Blueberry Jam', 'jams', 'Plump summer blueberries cooked down slow and simple.', 800, '/assets/v3/jars/jar_blueberry.png', 'ship', 13, 0],
+  ['muscadine-jam', 'Muscadine Jam', 'jams', 'Deep, Southern-grape muscadine — a taste of the back porch.', 800, '/assets/v3/jars/jar_muscadine.png', 'ship', 14, 0],
+  ['spicy-pepper-jam', 'Spicy Pepper Jam', 'jams', 'Sweet-hot pepper jam that loves a block of cream cheese.', 800, '/assets/v3/jars/jar_spicy_pepper.png', 'ship', 15, 0],
+  ['coffee-jelly', 'Coffee Jelly', 'jams', 'A cult favorite — rich coffee jelly for the brave at breakfast.', 800, '/assets/v3/jars/jar_coffee_jelly.png', 'ship', 16, 0],
+  ['jam-variety-pack', 'Jam Variety Pack (3)', 'jams', "Pick-your-poison trio of our small-batch favorites. The perfect gift.", 2200, '/assets/v3/jars/jar_variety.png', 'ship', 9, 0],
 
   // ── Farm pickup ───────────────────────────────────────────────────────
-  ['farm-fresh-eggs-dozen', 'Farm-Fresh Eggs (Dozen)', 'eggs', 'A dozen rainbow eggs from our spoiled, happy hens. Farm pickup.', 700, '/assets/img/eggs/eggs-01.jpg', 'pickup', 30, 12],
+  ['farm-fresh-eggs-dozen', 'Farm-Fresh Eggs (Dozen)', 'eggs', 'A dozen rainbow eggs from our spoiled, happy hens. Farm pickup.', 700, '/assets/img/eggs/eggs-01.jpg', 'pickup', 30, 0],
   ['hatching-eggs-half-dozen', 'Hatching Eggs (Half Dozen)', 'hatching-eggs', 'Fertile hatching eggs from our heritage flock — incubator-ready.', 2500, '/assets/img/eggs/eggs-02.jpg', 'ship', 32, 8],
-  ['baby-chicks', 'Baby Chicks (Straight Run)', 'chicks', 'Seasonal fuzzy baby chicks. Reserve now, pick up at the farm.', 1500, '/assets/img/chicks/chicks-01.jpg', 'pickup', 34, 10],
+  ['baby-chicks', 'Baby Chicks (Straight Run)', 'chicks', 'Seasonal fuzzy baby chicks. Reserve now, pick up at the farm.', 1500, '/assets/img/chicks/chicks-01.jpg', 'pickup', 34, 0],
   ['started-pullet', 'Started Pullet', 'birds', 'Point-of-lay young hen, ready to join your coop. Farm pickup.', 3500, '/assets/img/chickens/chickens-01.jpg', 'pickup', 36, 6],
 ];
 
@@ -114,8 +113,33 @@ const PRODUCT_COLS = `
   p.id, p.slug, p.name, p.category, p.description, p.price_cents, p.image_url,
   p.fulfillment_type, p.sort, p.active, COALESCE(i.quantity_available,0) AS quantity_available`;
 
+const _upsertBySlug = db.prepare(`
+  INSERT INTO products (slug, name, category, description, price_cents, image_url, fulfillment_type, sort, active)
+  VALUES (@slug, @name, @category, @description, @price_cents, @image_url, @fulfillment_type, @sort, 1)
+  ON CONFLICT(slug) DO UPDATE SET
+    name=excluded.name, category=excluded.category, description=excluded.description,
+    price_cents=excluded.price_cents, image_url=excluded.image_url,
+    fulfillment_type=excluded.fulfillment_type, sort=excluded.sort, active=1, updated_at=CURRENT_TIMESTAMP
+`);
+const _idBySlug = db.prepare('SELECT id FROM products WHERE slug = ?');
+const _rowBySlug = db.prepare(`SELECT ${PRODUCT_COLS} FROM products p LEFT JOIN inventory i ON i.product_id=p.id WHERE p.slug = ?`);
+
+/* Publish (insert or update) a product from the tee-empire site publisher. */
+function publishProduct(p) {
+  _upsertBySlug.run({
+    slug: p.slug, name: p.name, category: p.category, description: p.description || '',
+    price_cents: Math.max(0, parseInt(p.price_cents, 10) || 0), image_url: p.image_url || '',
+    fulfillment_type: p.fulfillment_type === 'pickup' ? 'pickup' : 'ship', sort: parseInt(p.sort, 10) || 50,
+  });
+  const id = _idBySlug.get(p.slug).id;
+  module.exports.setInventory.run(id, Math.max(0, parseInt(p.quantity, 10) || 0));
+  return _rowBySlug.get(p.slug);
+}
+
 module.exports = {
   db,
+  publishProduct,
+  retireBySlug: db.prepare(`UPDATE products SET active=0, updated_at=CURRENT_TIMESTAMP WHERE slug=?`),
   listProducts: db.prepare(`SELECT ${PRODUCT_COLS} FROM products p LEFT JOIN inventory i ON i.product_id=p.id ORDER BY p.sort, p.name`),
   listActiveProducts: db.prepare(`SELECT ${PRODUCT_COLS} FROM products p LEFT JOIN inventory i ON i.product_id=p.id WHERE p.active=1 ORDER BY p.sort, p.name`),
   listActiveByIds: db.prepare(`SELECT ${PRODUCT_COLS} FROM products p LEFT JOIN inventory i ON i.product_id=p.id WHERE p.active=1 AND p.id IN (SELECT value FROM json_each(?)) ORDER BY p.sort`),

@@ -8,11 +8,7 @@
     { key: 'home',  label: 'Home',      href: '/' },
     { key: 'shop',  label: 'Shop',      href: '/shop.html' },
     { key: 'jams',  label: 'House Jams', href: '/jams.html' },
-    { key: 'merch', label: 'Merch', menu: [
-      { key: 'merch', label: 'All Merch & Swag', href: '/merch.html' },
-      { key: 'tees',  label: "Howdy & Friends Tees", href: '/merch.html#tees' },
-      { key: 'nickle', label: "Nickle T's (novelty)", href: '/tees.html' },
-    ] },
+    { key: 'nickel', label: "Nickel T's", href: '/nickel-ts.html' },
     { key: 'farm',  label: 'Farm & Flock', menu: [
       { key: 'farm', label: 'Farm Life & Gallery', href: '/farm.html' },
       { key: 'art',  label: 'Art Projects', href: '/art.html' },
@@ -88,8 +84,8 @@
         <ul>
           <li><a href="/shop.html">Everything</a></li>
           <li><a href="/jams.html">House Jams</a></li>
-          <li><a href="/merch.html">Merch &amp; Tees</a></li>
-          <li><a href="/tees.html">Nickle T's</a></li>
+          <li><a href="/nickel-ts.html">Nickel T's</a></li>
+          <li><a href="/nickel-ts.html#mug">Mugs &amp; Stickers</a></li>
         </ul>
       </div>
       <div>
