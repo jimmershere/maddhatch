@@ -232,7 +232,7 @@ app.post('/admin/products/:id', (req, res) => {
 });
 
 /* ---------------- publish API (token-guarded) — tee-empire "site" port ---------------- */
-const ALLOWED_CATEGORIES = new Set(['nickel-tee', 'madd-tee', 'mug', 'sticker']);
+const ALLOWED_CATEGORIES = new Set(['nickel-tee', 'madd-tee', 'mug', 'sticker', 'bottle']);
 const EXT_OK = { png: 'png', jpg: 'jpg', jpeg: 'jpg', webp: 'webp' };
 
 // Upsert a product from tee-empire. Image arrives as base64 (image_base64 + image_ext) or a ready image_url.
