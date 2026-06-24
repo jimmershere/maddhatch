@@ -11,7 +11,7 @@
     { key: 'nickel', label: "Nickel T's", href: '/nickel-ts.html' },
     { key: 'farm',  label: 'Farm & Flock', menu: [
       { key: 'farm', label: 'Farm Life & Gallery', href: '/farm.html' },
-      { key: 'art',  label: 'Art Projects', href: '/art.html' },
+      { key: 'art',  label: 'Madd Art', href: '/maddart.html' },
     ] },
     { key: 'find',  label: 'Find Us',    href: '/find-us.html' },
   ];
@@ -92,7 +92,7 @@
         <h4>The Farm</h4>
         <ul>
           <li><a href="/farm.html">Farm &amp; Flock</a></li>
-          <li><a href="/art.html">Art Projects</a></li>
+          <li><a href="/maddart.html">Madd Art</a></li>
           <li><a href="/find-us.html">Find Us</a></li>
           <li><a href="mailto:${CONTACT}">Wholesale &amp; Custom</a></li>
         </ul>
