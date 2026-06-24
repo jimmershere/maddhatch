@@ -20,13 +20,18 @@ if [ -f package-lock.json ]; then "$NPM_BIN" ci --omit=dev; else "$NPM_BIN" inst
 echo "→ Seeding / migrating catalog…"
 "$NODE_BIN" $FLAGS db.js >/dev/null 2>&1 || true
 
-if command -v systemctl >/dev/null 2>&1 && systemctl list-unit-files 2>/dev/null | grep -q '^maddhatchery\.service'; then
+# Prefer systemd, detected by the unit FILE (robust in a minimal CI shell).
+# The fallback can orphan a process that fights systemd for the port, so only
+# use it when there is genuinely no unit.
+SYSTEMCTL="$(command -v systemctl 2>/dev/null || echo /usr/bin/systemctl)"
+if [ -x "$SYSTEMCTL" ] && [ -f /etc/systemd/system/maddhatchery.service ]; then
   echo "→ Restarting via systemd…"
-  sudo systemctl restart maddhatchery
+  "$SYSTEMCTL" reset-failed maddhatchery 2>/dev/null || true
+  "$SYSTEMCTL" restart maddhatchery
 else
-  echo "→ Restarting via port ($PORT)…"
-  pid="$(ss -tlnp 2>/dev/null | grep ":${PORT} " | grep -oP 'pid=\K[0-9]+' | head -1 || true)"
-  [ -n "${pid:-}" ] && { kill "$pid" 2>/dev/null || true; sleep 1; }
+  echo "→ No systemd unit; restarting via port ($PORT)…"
+  for p in $(ss -tlnp 2>/dev/null | grep ":${PORT} " | grep -oP 'pid=\K[0-9]+'); do kill "$p" 2>/dev/null || true; done
+  sleep 1
   nohup setsid bash scripts/start.sh >/tmp/maddhatchery.log 2>&1 &
   disown || true
 fi
