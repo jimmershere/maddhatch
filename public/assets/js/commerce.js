@@ -118,16 +118,19 @@
   function renderShop() {
     const grid = $('[data-shop-grid]'); if (!grid) return;
     const filterBar = $('[data-shop-filters]');
-    const cats = [...new Set(CATALOG.map((p) => p.category))];
-    const LABELS = { jams: '🍯 Jams', merch: '👕 Merch', eggs: '🥚 Eggs', chicks: '🐣 Chicks', 'hatching-eggs': '🥚 Hatching Eggs', birds: '🐓 Grown Birds' };
+    const LABELS = { jams: '🍯 Jams', eggs: '🥚 Eggs', chicks: '🐣 Chicks', 'hatching-eggs': '🥚 Hatching Eggs', birds: '🐓 Grown Birds', 'nickel-tee': "🦝 Nickel T's", 'madd-tee': '👕 Madd Hatchery', mug: '☕ Mugs', sticker: '✨ Stickers' };
+    // Optional scope: data-shop-categories="nickel-tee,madd-tee,mug,sticker"
+    const scope = (grid.dataset.shopCategories || '').split(',').map((s) => s.trim()).filter(Boolean);
+    let POOL = scope.length ? CATALOG.filter((p) => scope.includes(p.category)) : CATALOG;
+    const cats = scope.length ? scope.filter((c) => POOL.some((p) => p.category === c)) : [...new Set(POOL.map((p) => p.category))];
     let active = (location.hash || '').replace('#', '') || 'all';
     if (filterBar) {
       filterBar.innerHTML = ['all', ...cats].map((c) =>
         `<button class="btn ${c === active ? '' : 'btn--ghost'}" data-filter="${c}">${c === 'all' ? '✨ Everything' : (LABELS[c] || c)}</button>`).join('');
     }
     const draw = () => {
-      const items = active === 'all' ? CATALOG : CATALOG.filter((p) => p.category === active);
-      grid.innerHTML = items.length ? items.map(productCard).join('') : '<p class="lede">Nothing here yet — check back soon!</p>';
+      const items = active === 'all' ? POOL : POOL.filter((p) => p.category === active);
+      grid.innerHTML = items.length ? items.map(productCard).join('') : '<p class="lede">Fresh designs landing soon — check back!</p>';
       if (filterBar) filterBar.querySelectorAll('[data-filter]').forEach((b) =>
         b.classList.toggle('btn--ghost', b.dataset.filter !== active));
     };

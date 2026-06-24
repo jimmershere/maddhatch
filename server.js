@@ -2,6 +2,7 @@
 /* Madd Hatchery — Express storefront with Stripe Checkout. */
 const express = require('express');
 const path = require('path');
+const fs = require('fs');
 const crypto = require('crypto');
 const store = require('./db');
 
@@ -38,9 +39,15 @@ app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), (req,
   res.json({ received: true });
 });
 
-app.use(express.json());
+app.use(express.json({ limit: '14mb' })); // base64 design images arrive via the publisher
 app.use(express.urlencoded({ extended: false }));
+
+// Retired pages → consolidated storefront (old links keep working)
+app.get(['/merch.html', '/merch', '/tees.html', '/tees'], (req, res) => res.redirect(301, '/nickel-ts.html'));
+
 app.use(express.static(path.join(__dirname, 'public'), { extensions: ['html'] }));
+const UPLOAD_DIR = path.join(__dirname, 'public', 'assets', 'uploads');
+fs.mkdirSync(UPLOAD_DIR, { recursive: true });
 
 /* ---------------- helpers ---------------- */
 function publicProduct(p) {
@@ -222,6 +229,45 @@ app.post('/admin/products/:id', (req, res) => {
   store.setActive.run(req.body.active ? 1 : 0, id);
   store.setInventory.run(id, Math.max(0, parseInt(req.body.quantity_available, 10) || 0));
   res.redirect('/admin?token=' + encodeURIComponent(req.body.token || ''));
+});
+
+/* ---------------- publish API (token-guarded) — tee-empire "site" port ---------------- */
+const ALLOWED_CATEGORIES = new Set(['nickel-tee', 'madd-tee', 'mug', 'sticker']);
+const EXT_OK = { png: 'png', jpg: 'jpg', jpeg: 'jpg', webp: 'webp' };
+
+// Upsert a product from tee-empire. Image arrives as base64 (image_base64 + image_ext) or a ready image_url.
+app.post('/api/admin/product', (req, res) => {
+  if (!adminOK(req)) return res.status(401).json({ ok: false, message: 'Unauthorized' });
+  const b = req.body || {};
+  const slug = String(b.slug || '').trim().toLowerCase().replace(/[^a-z0-9-]+/g, '-').replace(/^-+|-+$/g, '');
+  if (!slug || !b.name) return res.status(400).json({ ok: false, message: 'slug and name are required' });
+  const category = ALLOWED_CATEGORIES.has(b.category) ? b.category : 'nickel-tee';
+
+  let image_url = b.image_url || '';
+  if (b.image_base64) {
+    const ext = EXT_OK[String(b.image_ext || 'png').toLowerCase()] || 'png';
+    try {
+      const data = String(b.image_base64).replace(/^data:image\/[a-z+]+;base64,/, '');
+      fs.writeFileSync(path.join(UPLOAD_DIR, `${slug}.${ext}`), Buffer.from(data, 'base64'));
+      image_url = `/assets/uploads/${slug}.${ext}`;
+    } catch (e) { return res.status(400).json({ ok: false, message: 'bad image_base64: ' + e.message }); }
+  }
+  const row = store.publishProduct({
+    slug, name: b.name, category, description: b.description || '',
+    price_cents: b.price_cents, image_url,
+    fulfillment_type: 'ship', sort: b.sort, quantity: b.quantity != null ? b.quantity : 25,
+  });
+  console.log(`📦 published product: [${category}] ${row.name} ($${(row.price_cents/100).toFixed(2)})`);
+  res.json({ ok: true, product: { ...row, url: `${SITE_URL}/nickel-ts.html#${category}` } });
+});
+
+// Retire (hide) a product by slug.
+app.post('/api/admin/retire', (req, res) => {
+  if (!adminOK(req)) return res.status(401).json({ ok: false, message: 'Unauthorized' });
+  const slug = String((req.body || {}).slug || '').trim();
+  if (!slug) return res.status(400).json({ ok: false, message: 'slug required' });
+  const r = store.retireBySlug.run(slug);
+  res.json({ ok: true, retired: r.changes });
 });
 
 app.get('/healthz', (req, res) => res.json({ ok: true, stripe: Boolean(stripe), products: store.listActiveProducts.all().length }));
