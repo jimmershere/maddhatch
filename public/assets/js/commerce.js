@@ -118,7 +118,7 @@
   function renderShop() {
     const grid = $('[data-shop-grid]'); if (!grid) return;
     const filterBar = $('[data-shop-filters]');
-    const LABELS = { jams: '🍯 Jams', eggs: '🥚 Eggs', chicks: '🐣 Chicks', 'hatching-eggs': '🥚 Hatching Eggs', birds: '🐓 Grown Birds', 'nickel-tee': "🦝 Nickel T's", 'madd-tee': '👕 Madd Hatchery', mug: '☕ Mugs', sticker: '✨ Stickers' };
+    const LABELS = { jams: '🍯 Jams', eggs: '🥚 Eggs', chicks: '🐣 Chicks', 'hatching-eggs': '🥚 Hatching Eggs', birds: '🐓 Grown Birds', 'nickel-tee': "🦝 Nickel T's", 'madd-tee': '👕 Madd Hatchery', mug: '☕ Mugs', sticker: '✨ Stickers', bottle: '💧 Water Bottles' };
     // Optional scope: data-shop-categories="nickel-tee,madd-tee,mug,sticker"
     const scope = (grid.dataset.shopCategories || '').split(',').map((s) => s.trim()).filter(Boolean);
     let POOL = scope.length ? CATALOG.filter((p) => scope.includes(p.category)) : CATALOG;
