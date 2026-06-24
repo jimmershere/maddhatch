@@ -34,7 +34,7 @@
   header.innerHTML = `
     <div class="wrap site-header__bar">
       <a class="brand" href="/">
-        <img src="/assets/v3/trish/trish_peace.png" alt="" width="44" height="44">
+        <img src="/assets/v3/logo_2026_sm.png" alt="Madd Hatchery" width="40" height="46">
         <span><b>Madd Hatchery</b><span>Jams · Eggs · Flock</span></span>
       </a>
       <button class="nav__toggle" aria-label="Menu" aria-expanded="false">☰</button>
@@ -73,7 +73,7 @@
     <div class="wrap site-footer__grid">
       <div>
         <a class="brand" href="/" style="margin-bottom:.9rem">
-          <img src="/assets/v3/trish/trish_peace.png" alt="" width="44" height="44">
+          <img src="/assets/v3/logo_2026_sm.png" alt="Madd Hatchery" width="40" height="46">
           <span><b>Madd Hatchery</b><span>Trish's Urban Farm</span></span>
         </a>
         <p style="opacity:.85;max-width:34ch">Small-batch jams, farm-fresh eggs, baby chicks, and handmade goods — made by hand, sold with heart.</p>

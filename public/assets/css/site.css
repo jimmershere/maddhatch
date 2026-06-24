@@ -106,7 +106,7 @@ p  { margin: 0 0 1rem; }
 }
 .site-header__bar { display: flex; align-items: center; gap: 1rem; min-height: 70px; }
 .brand { display: flex; align-items: center; gap: .65rem; margin-right: auto; }
-.brand img { width: 44px; height: 44px; border-radius: 50%; object-fit: cover; box-shadow: var(--shadow-sm); }
+.brand img { height: 46px; width: auto; object-fit: contain; }
 .brand b { font-family: var(--font-display); font-weight: 600; font-size: 1.25rem; letter-spacing: -.01em; }
 .brand span { display: block; font-size: .66rem; letter-spacing: .14em; text-transform: uppercase; color: var(--amber-dk); font-weight: 800; }
 .nav { display: flex; align-items: center; gap: .2rem; }
