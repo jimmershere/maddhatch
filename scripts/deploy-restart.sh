@@ -7,11 +7,18 @@ APP_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$APP_DIR"
 PORT="${PORT:-3200}"
 
+# Resolve a Node >= 22 (isolated /opt/node22 preferred) + node:sqlite flag.
+NODE_BIN="${MH_NODE:-$([ -x /opt/node22/bin/node ] && echo /opt/node22/bin/node || command -v node)}"
+NPM_BIN="$(dirname "$NODE_BIN")/npm"; [ -x "$NPM_BIN" ] || NPM_BIN="$(command -v npm)"
+NODE_MAJOR="$("$NODE_BIN" -p 'process.versions.node.split(".")[0]')"
+FLAGS=""; [ "$NODE_MAJOR" -lt 23 ] && FLAGS="--experimental-sqlite"
+echo "→ Using Node $("$NODE_BIN" -v) ($NODE_BIN)"
+
 echo "→ Installing production dependencies…"
-if [ -f package-lock.json ]; then npm ci --omit=dev; else npm install --omit=dev; fi
+if [ -f package-lock.json ]; then "$NPM_BIN" ci --omit=dev; else "$NPM_BIN" install --omit=dev; fi
 
 echo "→ Seeding / migrating catalog…"
-node db.js >/dev/null 2>&1 || true
+"$NODE_BIN" $FLAGS db.js >/dev/null 2>&1 || true
 
 if command -v systemctl >/dev/null 2>&1 && systemctl list-unit-files 2>/dev/null | grep -q '^maddhatchery\.service'; then
   echo "→ Restarting via systemd…"

@@ -18,4 +18,11 @@ fi
 export PORT="${PORT:-3200}"
 export SITE_URL="${SITE_URL:-https://maddhatchery.com}"
 
-exec node server.js
+# Resolve a Node >= 22. Prefer an isolated /opt/node22 if present (so we don't
+# depend on a system Node that other services pin). node:sqlite needs the
+# --experimental-sqlite flag before Node 23; it's unflagged from 23+.
+NODE_BIN="${MH_NODE:-$([ -x /opt/node22/bin/node ] && echo /opt/node22/bin/node || command -v node)}"
+NODE_MAJOR="$("$NODE_BIN" -p 'process.versions.node.split(".")[0]')"
+FLAGS=""; [ "$NODE_MAJOR" -lt 23 ] && FLAGS="--experimental-sqlite"
+
+exec "$NODE_BIN" $FLAGS server.js
