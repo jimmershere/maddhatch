@@ -1,0 +1,294 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Madd Art — One-of-a-Kind Foraged Wreaths &amp; Nature Art by Trish</title>
+  <meta name="description" content="Madd Art: high-end, one-of-a-kind wreaths and nature pieces hand-foraged and built by Trish — driftwood, shells, lichen, Spanish moss, grapevine and humanely-gathered feathers. Each piece is signed, personalized on request, and ready to hang.">
+  <meta property="og:title" content="Madd Art — Foraged, one-of-a-kind nature pieces">
+  <meta property="og:description" content="Heirloom wreaths and nature art, hand-foraged and built one piece at a time by Trish.">
+  <meta property="og:image" content="/assets/v3/logo_2026.png">
+  <link rel="icon" href="/assets/icons/favicon-32x32.png">
+  <link rel="apple-touch-icon" href="/assets/icons/apple-touch-icon.png">
+  <link rel="stylesheet" href="/assets/css/site.css">
+  <style>
+    /* ---- Madd Art — page-scoped refinements (on the shared design system) ---- */
+    .madd-hero {
+      background:
+        radial-gradient(120% 90% at 85% -10%, color-mix(in srgb, var(--plum-lt) 55%, transparent), transparent 60%),
+        radial-gradient(110% 90% at 0% 110%, color-mix(in srgb, var(--teal-lt) 50%, transparent), transparent 55%),
+        linear-gradient(180deg, var(--cream-2), var(--cream));
+      border-bottom: 1px solid var(--line);
+      padding-block: clamp(2.6rem, 6vw, 4.4rem);
+      text-align: center;
+    }
+    .madd-hero h1 { font-size: clamp(2.7rem, 6.4vw, 4.6rem); font-weight: 700; }
+    .madd-hero .lede { margin-inline: auto; }
+    .madd-rule { display:flex; align-items:center; justify-content:center; gap:.75rem; color:var(--plum); margin:.4rem 0 .2rem; }
+    .madd-rule::before, .madd-rule::after { content:""; width:46px; height:1.5px; background:currentColor; opacity:.5; border-radius:2px; }
+
+    /* signature-piece tiles (photography-free, art-directed placeholders) */
+    .madd-collection { display:grid; grid-template-columns:repeat(3,1fr); gap:clamp(1rem,2.5vw,1.6rem); }
+    .madd-piece {
+      position:relative; border-radius:var(--radius-lg); overflow:hidden; min-height:300px;
+      display:flex; flex-direction:column; justify-content:flex-end;
+      border:1px solid var(--line); box-shadow:var(--shadow-sm); color:#fff;
+      transition:transform .18s ease, box-shadow .18s ease;
+    }
+    .madd-piece:hover { transform:translateY(-4px); box-shadow:var(--shadow); }
+    .madd-piece__bg { position:absolute; inset:0; z-index:0; }
+    .madd-piece__bg::after { /* faint foraged-texture vignette */
+      content:""; position:absolute; inset:0;
+      background: radial-gradient(80% 60% at 50% 25%, rgba(255,255,255,.18), transparent 60%),
+                  linear-gradient(to top, rgba(28,18,12,.82), rgba(28,18,12,.12) 55%, transparent);
+    }
+    .madd-piece__glyph { position:absolute; top:1rem; right:1.1rem; z-index:1; font-size:1.9rem; opacity:.9; }
+    .madd-piece__tag {
+      position:absolute; top:1rem; left:1rem; z-index:1;
+      background:rgba(255,255,255,.92); color:var(--ink);
+      font-size:.66rem; font-weight:800; letter-spacing:.08em; text-transform:uppercase;
+      padding:.32rem .6rem; border-radius:var(--radius-pill); box-shadow:var(--shadow-sm);
+    }
+    .madd-piece__body { position:relative; z-index:1; padding:1.3rem 1.3rem 1.4rem; }
+    .madd-piece__body h3 { color:#fff; margin:0 0 .25rem; font-size:1.4rem; }
+    .madd-piece__mats { margin:0; font-size:.82rem; line-height:1.5; color:rgba(255,255,255,.86); }
+    .madd-piece__price { margin:.7rem 0 0; font-family:var(--font-script); font-size:1.45rem; line-height:1; color:var(--amber-lt); }
+
+    /* the six palettes — each a different foraged story */
+    .bg-driftwood { background:linear-gradient(150deg,#6f7d74,#3c4a44 70%); }
+    .bg-raven     { background:linear-gradient(150deg,#3a3550,#16131f 75%); }
+    .bg-moss      { background:linear-gradient(150deg,var(--sage),var(--sage-dk) 72%); }
+    .bg-grapevine { background:linear-gradient(150deg,#8a6a4b,#523924 72%); }
+    .bg-feather   { background:linear-gradient(150deg,var(--teal),var(--teal-dk) 72%); }
+    .bg-vintage   { background:linear-gradient(150deg,var(--plum),var(--plum-dk) 72%); }
+
+    /* provenance / sourcing list */
+    .madd-source { display:flex; gap:.9rem; align-items:flex-start; }
+    .madd-source .ico {
+      flex:none; width:46px; height:46px; border-radius:50%; display:grid; place-items:center;
+      font-size:1.3rem; background:color-mix(in srgb, var(--teal-lt) 40%, var(--cream-2)); border:1px solid var(--line);
+    }
+    .madd-source h4 { margin:.1rem 0 .2rem; font-size:1.05rem; }
+    .madd-source p { margin:0; font-size:.9rem; color:var(--ink-soft); }
+    .madd-source .at { font-weight:700; color:var(--teal-dk); }
+
+    /* standards / promises */
+    .madd-std { display:flex; gap:.7rem; align-items:flex-start; }
+    .madd-std .dot { flex:none; color:var(--plum); font-size:1.1rem; line-height:1.5; }
+    .madd-std b { font-family:var(--font-display); font-weight:600; }
+
+    @media (max-width:880px){ .madd-collection{ grid-template-columns:repeat(2,1fr);} }
+    @media (max-width:540px){ .madd-collection{ grid-template-columns:1fr;} }
+  </style>
+</head>
+<body data-page="art">
+  <main>
+    <!-- Hero -->
+    <section class="madd-hero">
+      <div class="wrap">
+        <span class="eyebrow" style="justify-content:center">One of a kind · Foraged by hand</span>
+        <h1>Madd&nbsp;Art</h1>
+        <div class="madd-rule"><span class="script">nature is beautiful</span></div>
+        <p class="lede">Heirloom wreaths and nature pieces, hand-foraged and built one at a time by Trish. Driftwood pulled from the Gulf, lichen and pinecones off the farm, grapevine, Spanish moss, sea-glass-smooth shells and humanely-gathered feathers — composed into something you'll never see twice.</p>
+        <div class="hero__cta" style="justify-content:center;margin-top:1.4rem">
+          <a class="btn btn--lg btn--plum" href="#collection">View the collection</a>
+          <a class="btn btn--ghost btn--lg" href="mailto:maddhatchery@gmail.com?subject=Madd%20Art%20commission">Commission a piece</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Artist statement -->
+    <section class="section">
+      <div class="wrap split">
+        <div>
+          <span class="eyebrow">Flora &amp; fauna, foraged &amp; finished</span>
+          <h2>Every piece carries where it came from</h2>
+          <p class="lede" style="max-width:50ch">There's no factory and no two alike. Trish gathers her own materials — off the farm, along the coast, and from a small circle of trusted local hands — then composes each wreath by feel until it's ready to hang on your door.</p>
+          <p>The speckled bits, the unexpected texture, the tiny vintage trinket tucked into the grapevine — that's the part you can't mass-produce. It's <strong>flora &amp; fauna</strong>, made into art.</p>
+          <a class="btn btn--terra" href="#standards">How each piece is made →</a>
+        </div>
+        <div class="panel" style="background:linear-gradient(160deg,var(--cream-2),var(--linen));">
+          <p class="script" style="font-size:1.9rem;color:var(--plum);margin:0">"Making things beautiful is just what she does."</p>
+          <ul style="list-style:none;margin:1.1rem 0 0;padding:0;display:flex;flex-direction:column;gap:.7rem">
+            <li class="madd-std"><span class="dot">✦</span><span><b>One of a kind</b> — every piece is OOAK, signed by Trish.</span></li>
+            <li class="madd-std"><span class="dot">✦</span><span><b>Personalize it</b> — colors, names &amp; requests warmly welcomed.</span></li>
+            <li class="madd-std"><span class="dot">✦</span><span><b>Ready to hang</b> — arrives with a complimentary S-hook.</span></li>
+            <li class="madd-std"><span class="dot">✦</span><span><b>Humanely gathered</b> — feathers collected mostly at moulting.</span></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- The collection -->
+    <section class="section bg-cream2" id="collection">
+      <div class="wrap">
+        <div class="center" style="margin-bottom:2.2rem">
+          <span class="eyebrow" style="justify-content:center">The collection</span>
+          <h2>Signature styles</h2>
+          <p class="lede" style="margin-inline:auto">Each style below is a starting point — yours will be foraged and built fresh, so the materials and palette shift with the season. Reserve one as-is or commission your own.</p>
+        </div>
+
+        <div class="madd-collection">
+          <article class="madd-piece">
+            <div class="madd-piece__bg bg-driftwood"></div>
+            <span class="madd-piece__tag">One of a kind</span>
+            <span class="madd-piece__glyph">🐚</span>
+            <div class="madd-piece__body">
+              <h3>Driftwood &amp; Shell</h3>
+              <p class="madd-piece__mats">Coastal driftwood and seashells gathered on Gulf &amp; Carolina trips, set on grapevine.</p>
+              <p class="madd-piece__price">by commission</p>
+            </div>
+          </article>
+
+          <article class="madd-piece">
+            <div class="madd-piece__bg bg-raven"></div>
+            <span class="madd-piece__tag">Statement piece</span>
+            <span class="madd-piece__glyph">🪶</span>
+            <div class="madd-piece__body">
+              <h3>The Raven &amp; Crow</h3>
+              <p class="madd-piece__mats">All-black wreath layered from different fowl feathers for depth — dramatic, moody, striking.</p>
+              <p class="madd-piece__price">by commission</p>
+            </div>
+          </article>
+
+          <article class="madd-piece">
+            <div class="madd-piece__bg bg-moss"></div>
+            <span class="madd-piece__tag">Farm foraged</span>
+            <span class="madd-piece__glyph">🍃</span>
+            <div class="madd-piece__body">
+              <h3>Moss &amp; Lichen</h3>
+              <p class="madd-piece__mats">Spanish moss, tree lichen, pinecones &amp; turkey-tail fungi — soft woodland greens off the farm.</p>
+              <p class="madd-piece__price">by commission</p>
+            </div>
+          </article>
+
+          <article class="madd-piece">
+            <div class="madd-piece__bg bg-feather"></div>
+            <span class="madd-piece__tag">Speckled &amp; soft</span>
+            <span class="madd-piece__glyph">🐓</span>
+            <div class="madd-piece__body">
+              <h3>Fowl Feather</h3>
+              <p class="madd-piece__mats">Chicken, guinea &amp; goose feathers from the Madd Hatchery flock — those pretty speckled details.</p>
+              <p class="madd-piece__price">by commission</p>
+            </div>
+          </article>
+
+          <article class="madd-piece">
+            <div class="madd-piece__bg bg-grapevine"></div>
+            <span class="madd-piece__tag">Rustic base</span>
+            <span class="madd-piece__glyph">🌿</span>
+            <div class="madd-piece__body">
+              <h3>Grapevine Classic</h3>
+              <p class="madd-piece__mats">Locally-sourced grapevine foundation dressed with the season's best farm &amp; coast finds.</p>
+              <p class="madd-piece__price">by commission</p>
+            </div>
+          </article>
+
+          <article class="madd-piece">
+            <div class="madd-piece__bg bg-vintage"></div>
+            <span class="madd-piece__tag">OOAK accents</span>
+            <span class="madd-piece__glyph">🔘</span>
+            <div class="madd-piece__body">
+              <h3>Vintage Treasure</h3>
+              <p class="madd-piece__mats">One-of-a-kind vintage trinkets &amp; buttons tucked among foraged textures. A little story in every piece.</p>
+              <p class="madd-piece__price">by commission</p>
+            </div>
+          </article>
+        </div>
+
+        <div class="center" style="margin-top:2.2rem">
+          <a class="btn btn--lg btn--plum" href="mailto:maddhatchery@gmail.com?subject=Madd%20Art%20commission&amp;body=Hi%20Trish%2C%20I'd%20love%20a%20Madd%20Art%20piece.%20Here's%20what%20I'm%20dreaming%20up%3A">Reserve or commission a piece →</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Provenance / sourcing -->
+    <section class="section">
+      <div class="wrap">
+        <div class="center" style="margin-bottom:2.2rem">
+          <span class="eyebrow" style="justify-content:center">Honestly sourced</span>
+          <h2>Where the materials come from</h2>
+          <p class="lede" style="margin-inline:auto">Trish forages it all herself or trades with a small circle of local makers — so every piece is genuinely of this place.</p>
+        </div>
+        <div class="grid grid--3">
+          <div class="panel madd-source">
+            <span class="ico">🌾</span>
+            <div>
+              <h4>From the farm</h4>
+              <p>Tree lichen, pinecones &amp; turkey-tail fungi gathered right here at <span class="at">@MaddHatchery</span>.</p>
+            </div>
+          </div>
+          <div class="panel madd-source">
+            <span class="ico">🪶</span>
+            <div>
+              <h4>From the flock</h4>
+              <p>Chicken, guinea &amp; goose feathers — humanely collected, mostly at moulting, from <span class="at">@MaddHatchery</span> birds.</p>
+            </div>
+          </div>
+          <div class="panel madd-source">
+            <span class="ico">🌊</span>
+            <div>
+              <h4>From the coast</h4>
+              <p>Driftwood &amp; seashells from FL &amp; NC trips aboard <span class="at">@Reel Tangled Charters</span>.</p>
+            </div>
+          </div>
+          <div class="panel madd-source">
+            <span class="ico">🍇</span>
+            <div>
+              <h4>Grapevine</h4>
+              <p>Most wreath foundations are grapevine, locally sourced from <span class="at">@GiGi's Farm</span>.</p>
+            </div>
+          </div>
+          <div class="panel madd-source">
+            <span class="ico">🐚</span>
+            <div>
+              <h4>Rare shells</h4>
+              <p>Some special shells come through Trish's <span class="at">Seashell Sisterhood</span> swap.</p>
+            </div>
+          </div>
+          <div class="panel madd-source">
+            <span class="ico">🔘</span>
+            <div>
+              <h4>Vintage finds</h4>
+              <p>Unique OOAK trinkets, buttons &amp; vintage bits — the little surprises tucked into each piece.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Standards / the maker's promise -->
+    <section class="section bg-cream2" id="standards">
+      <div class="wrap split">
+        <div>
+          <span class="eyebrow">The maker's promise</span>
+          <h2>Built to Trish's standards</h2>
+          <p class="lede" style="max-width:48ch">The details that make a Madd Art piece an heirloom and not a craft-store wreath.</p>
+        </div>
+        <div class="panel">
+          <ul style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:.95rem">
+            <li class="madd-std"><span class="dot">✦</span><span><b>One of a kind.</b> No two pieces are ever the same — each is composed by hand and signed.</span></li>
+            <li class="madd-std"><span class="dot">✦</span><span><b>High-quality adhesives.</b> Built to hold, with materials secured to last.</span></li>
+            <li class="madd-std"><span class="dot">✦</span><span><b>Humanely gathered feathers.</b> Sourced from the flock, mostly at natural moulting.</span></li>
+            <li class="madd-std"><span class="dot">✦</span><span><b>Personalize anything.</b> Colors, names, a theme — requests are genuinely welcomed.</span></li>
+            <li class="madd-std"><span class="dot">✦</span><span><b>Ready to hang.</b> Every piece ships with a complimentary S-hook for easy hanging.</span></li>
+            <li class="madd-std"><span class="dot">✦</span><span><b>Care note.</b> Safe for a covered door — these are natural pieces and not waterproof.</span></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- Commission CTA -->
+    <section class="section center">
+      <div class="wrap">
+        <span class="script" style="font-size:1.7rem">let's make something</span>
+        <h2 style="margin-top:-.2rem">Commission your own Madd Art</h2>
+        <p class="lede" style="margin-inline:auto">Tell Trish the colors you love, the room it's for, or a wild idea — she'll forage and build a one-of-a-kind piece just for you.</p>
+        <a class="btn btn--lg btn--plum" href="mailto:maddhatchery@gmail.com?subject=Madd%20Art%20commission&amp;body=Hi%20Trish%2C%20I'd%20love%20a%20custom%20Madd%20Art%20piece.%20Here's%20what%20I'm%20dreaming%20up%3A" style="margin-top:1rem">Start a commission →</a>
+      </div>
+    </section>
+  </main>
+  <script src="/assets/js/site.js" defer></script>
+  <script src="/assets/js/commerce.js" defer></script>
+</body>
+</html>
