@@ -1,0 +1,9 @@
+node_modules/
+data/*.db
+data/*.db-wal
+data/*.db-shm
+data/*.db.bak
+data/*.db.jimmer.bak
+*.log
+.env
+.DS_Store
