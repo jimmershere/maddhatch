@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Find Us — Madd Hatchery</title>
+  <meta name="description" content="How to get Madd Hatchery goods: order online for shipping, arrange farm pickup, or catch us at the local market. Send us a message any time.">
+  <link rel="icon" href="/assets/icons/favicon-32x32.png">
+  <link rel="apple-touch-icon" href="/assets/icons/apple-touch-icon.png">
+  <link rel="stylesheet" href="/assets/css/site.css">
+</head>
+<body data-page="find">
+  <main>
+    <section class="page-band">
+      <div class="wrap">
+        <span class="eyebrow" style="justify-content:center">Three easy ways</span>
+        <h1>Find us</h1>
+        <p>Order online, pick up at the farm, or catch us at the market when the season's right.</p>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="wrap grid grid--3">
+        <div class="panel">
+          <h3>📦 Order online</h3>
+          <p class="card__desc">Jams &amp; tees ship flat-rate anywhere in the US. Add to your basket and check out securely.</p>
+          <a class="btn" href="/shop.html">Shop now</a>
+        </div>
+        <div class="panel">
+          <h3>🚜 Farm pickup</h3>
+          <p class="card__desc">Eggs, chicks &amp; birds are pickup-only. Reserve online, then we'll find a time that works for both of us.</p>
+          <a class="btn btn--sage" href="mailto:maddhatchery@gmail.com?subject=Farm%20pickup">Arrange pickup</a>
+        </div>
+        <div class="panel">
+          <h3>🧺 At the market</h3>
+          <p class="card__desc">We pop up at local farm markets in season. Email us and we'll let you know where to find the booth.</p>
+          <a class="btn btn--terra" href="mailto:maddhatchery@gmail.com?subject=Market%20schedule">Get the schedule</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="section bg-cream2">
+      <div class="wrap split">
+        <div class="panel trish-note" style="grid-template-columns:auto 1fr">
+          <img src="/assets/v3/trish/trish_peace.png" alt="Trish">
+          <div class="bubble"><p>I read every message myself and answer fast. Whether it's a jar, a custom box, chicks, or just a question about the farm — <strong>holler any time.</strong></p></div>
+        </div>
+        <div class="panel">
+          <h3 style="margin-top:0">Send a message</h3>
+          <form id="contact">
+            <div class="field"><label for="cf-name">Your name</label><input id="cf-name" name="name" required></div>
+            <div class="field"><label for="cf-email">Email</label><input id="cf-email" name="email" type="email" placeholder="you@example.com" required></div>
+            <div class="field"><label for="cf-subject">About</label>
+              <select id="cf-subject" name="subject">
+                <option>General question</option>
+                <option>Order / pickup</option>
+                <option>Wholesale or bulk</option>
+                <option>Custom art</option>
+                <option>Market schedule</option>
+              </select>
+            </div>
+            <div class="field"><label for="cf-msg">Message</label><textarea id="cf-msg" name="message" rows="4" required></textarea></div>
+            <button class="btn btn--block btn--lg" type="submit">Open email →</button>
+            <p class="note center" style="margin-top:.6rem">Opens your mail app, addressed to maddhatchery@gmail.com.</p>
+          </form>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    document.getElementById('contact').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const v = (id) => document.getElementById(id).value.trim();
+      const subject = `${v('cf-subject')} — ${v('cf-name')}`;
+      const body = `From: ${v('cf-name')} (${v('cf-email')})\n\n${v('cf-msg')}`;
+      window.location = `mailto:maddhatchery@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    });
+  </script>
+  <script src="/assets/js/site.js" defer></script>
+  <script src="/assets/js/commerce.js" defer></script>
+</body>
+</html>

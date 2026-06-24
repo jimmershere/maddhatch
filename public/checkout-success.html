@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Thank you! — Madd Hatchery</title>
+  <meta name="robots" content="noindex">
+  <link rel="icon" href="/assets/icons/favicon-32x32.png">
+  <link rel="stylesheet" href="/assets/css/site.css">
+</head>
+<body data-page="">
+  <main>
+    <section class="section center" style="min-height:60vh;display:grid;place-items:center">
+      <div class="wrap" style="max-width:640px">
+        <img src="/assets/v3/trish/trish_peace.png" alt="" width="140" height="140" style="margin:0 auto 1rem">
+        <span class="script">thank you, sugar</span>
+        <h1 style="margin-top:-.3rem">Your order's in! 🧺</h1>
+        <p class="lede" style="margin-inline:auto" id="msg">We're confirming your order…</p>
+        <div class="panel" id="receipt" hidden style="max-width:420px;margin:1.5rem auto;text-align:left"></div>
+        <p class="note">A receipt is on its way to your email. Shipped items go out in a few days; pickup orders — we'll be in touch to set a time.</p>
+        <div class="hero__cta" style="justify-content:center;margin-top:1.4rem">
+          <a class="btn btn--lg" href="/shop.html">Keep shopping</a>
+          <a class="btn btn--ghost btn--lg" href="/">Back home</a>
+        </div>
+      </div>
+    </section>
+  </main>
+  <script>
+    (async () => {
+      localStorage.removeItem('mh_cart_v1');
+      const sid = new URLSearchParams(location.search).get('session_id');
+      const msg = document.getElementById('msg');
+      if (!sid) { msg.textContent = "Thanks for your order — we'll be in touch shortly!"; return; }
+      try {
+        const r = await fetch('/api/checkout/status?session_id=' + encodeURIComponent(sid));
+        const d = await r.json();
+        if (d.order_number) {
+          msg.textContent = "We got it — here's your confirmation.";
+          const rc = document.getElementById('receipt'); rc.hidden = false;
+          rc.innerHTML = `<div class="row"><span>Order</span><strong>${d.order_number}</strong></div>
+            <div class="row"><span>Total paid</span><span class="total">${d.total_display || ''}</span></div>
+            ${d.email ? `<p class="note" style="margin:.4rem 0 0">Receipt sent to ${d.email}</p>` : ''}`;
+        } else {
+          msg.textContent = "Payment received — your confirmation email is on the way!";
+        }
+      } catch { msg.textContent = "Payment received — thank you!"; }
+    })();
+  </script>
+  <script src="/assets/js/site.js" defer></script>
+</body>
+</html>

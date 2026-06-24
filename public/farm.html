@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Farm & Flock — Madd Hatchery</title>
+  <meta name="description" content="Meet the Madd Hatchery flock: heritage hens, fuzzy chicks, rainbow eggs and the whole barnyard crew on Trish's urban farm.">
+  <link rel="icon" href="/assets/icons/favicon-32x32.png">
+  <link rel="apple-touch-icon" href="/assets/icons/apple-touch-icon.png">
+  <link rel="stylesheet" href="/assets/css/site.css">
+</head>
+<body data-page="farm">
+  <main>
+    <section class="page-band">
+      <div class="wrap">
+        <span class="eyebrow" style="justify-content:center">Life on the farm</span>
+        <h1>Farm &amp; flock</h1>
+        <p>Heritage hens, fuzzy chicks, rainbow eggs, and a garden that never sleeps — this is where it all starts.</p>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="wrap split">
+        <div>
+          <span class="eyebrow">The crew</span>
+          <h2>A happy flock makes the best eggs</h2>
+          <p class="lede">Our birds are spoiled rotten — pasture time, treats, and names they actually answer to. Healthy, happy hens lay the kind of rich, rainbow eggs you can't buy in a store.</p>
+          <div class="hero__chips">
+            <span class="chip">🐔 Heritage hens</span>
+            <span class="chip">🐣 Spring chicks</span>
+            <span class="chip">🥚 Rainbow eggs</span>
+            <span class="chip">🌻 Kitchen garden</span>
+          </div>
+          <a class="btn" href="/shop.html#eggs">Reserve eggs &amp; chicks</a>
+        </div>
+        <div class="panel" style="padding:0;overflow:hidden"><img src="/assets/img/chickens/chickens-01.jpg" alt="Hens scratching in the yard"></div>
+      </div>
+    </section>
+
+    <section class="section bg-cream2">
+      <div class="wrap">
+        <div class="center" style="margin-bottom:2rem">
+          <span class="eyebrow" style="justify-content:center">Around the farm</span>
+          <h2>Snapshots from the yard</h2>
+        </div>
+        <div class="gallery" id="farm-gallery"></div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="wrap panel trish-note">
+        <img src="/assets/v3/trish/trish_badge.png" alt="Trish">
+        <div class="bubble"><p><strong>Thinking about chicks?</strong> Tell me about your coop and brooder setup and I'll match you with breeds that'll thrive. New to it all? I'll walk you through it. <a href="/find-us.html">Come find us.</a></p></div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const PHOTOS = [
+      ['chickens', 5], ['chicks', 6], ['eggs', 3], ['jam', 12],
+    ].flatMap(([cat, n]) => Array.from({length: n}, (_, i) => `/assets/img/${cat}/${cat}-${String(i + 1).padStart(2, '0')}.jpg`));
+    document.getElementById('farm-gallery').innerHTML =
+      PHOTOS.map((src) => `<img src="${src}" alt="Madd Hatchery farm life" loading="lazy" onerror="this.remove()">`).join('');
+  </script>
+  <script src="/assets/js/site.js" defer></script>
+  <script src="/assets/js/commerce.js" defer></script>
+</body>
+</html>

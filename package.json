@@ -1,0 +1,23 @@
+{
+  "name": "maddhatchery",
+  "version": "3.0.0",
+  "private": true,
+  "description": "MaddHatchery.com — small-batch jams, farm-fresh eggs, baby chicks, tees & handmade goods from Trish's urban farm.",
+  "main": "server.js",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "seed": "node db.js",
+    "lint:html": "htmlhint \"public/**/*.html\""
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "stripe": "^17.5.0"
+  },
+  "devDependencies": {
+    "htmlhint": "^1.1.4"
+  }
+}
