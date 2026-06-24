@@ -7,3 +7,6 @@ data/*.db.jimmer.bak
 *.log
 .env
 .DS_Store
+
+# dynamically published design images (live on droplet)
+public/assets/uploads/

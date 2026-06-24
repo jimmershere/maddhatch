@@ -79,6 +79,7 @@ jobs:
           rsync -avz --delete \
             --exclude '.git' --exclude 'node_modules' --exclude 'data' \
             --exclude '.env' --exclude '.claude' \
+            --exclude 'public/assets/uploads' \
             -e "ssh -i ~/.ssh/deploy_key -o IdentitiesOnly=yes" \
             ./ "${DEPLOY_USER}@${HOST}:${REMOTE_PATH}/"
           echo "Synced app to ${HOST}:${REMOTE_PATH}"
