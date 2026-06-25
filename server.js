@@ -50,23 +50,38 @@ const UPLOAD_DIR = path.join(__dirname, 'public', 'assets', 'uploads');
 fs.mkdirSync(UPLOAD_DIR, { recursive: true });
 
 /* ---------------- helpers ---------------- */
+const N8N_ORDER_WEBHOOK = process.env.N8N_ORDER_WEBHOOK || '';
+
+// Product enriched with variants (color/size → Printify variant ids + per-color photos).
 function publicProduct(p) {
-  return {
+  const base = {
     id: p.id, slug: p.slug, name: p.name, category: p.category, description: p.description,
-    price_cents: p.price_cents, price_display: money(p.price_cents), image_url: p.image_url,
     fulfillment_type: p.fulfillment_type, quantity_available: p.quantity_available,
-    in_stock: p.quantity_available > 0,
+  };
+  const variants = store.listVariants(p.id);
+  if (!variants.length) {
+    return { ...base, has_variants: false, price_cents: p.price_cents, price_display: money(p.price_cents),
+      image_url: p.image_url, in_stock: p.quantity_available > 0 };
+  }
+  const colors = []; const seen = new Set();
+  for (const v of variants) if (v.color && !seen.has(v.color)) { seen.add(v.color); colors.push({ name: v.color, hex: v.color_hex, image_url: v.image_url, front_image_url: v.front_image_url || '' }); }
+  const sizes = [...new Set(variants.map((v) => v.size).filter(Boolean))];
+  const minP = Math.min(...variants.map((v) => v.price_cents));
+  return {
+    ...base, has_variants: true, price_cents: minP, price_display: money(minP), price_from: true,
+    image_url: (colors[0] && colors[0].image_url) || p.image_url, in_stock: true, colors, sizes,
+    variants: variants.map((v) => ({ printify_variant_id: v.printify_variant_id, color: v.color, color_hex: v.color_hex, size: v.size, price_cents: v.price_cents, price_display: money(v.price_cents), image_url: v.image_url })),
   };
 }
 
 function normalizeItems(items) {
   if (!Array.isArray(items)) return [];
   return items
-    .map((i) => ({ product_id: Number(i.product_id), quantity: Math.max(0, parseInt(i.quantity, 10) || 0) }))
+    .map((i) => ({ product_id: Number(i.product_id), printify_variant_id: i.printify_variant_id != null ? Number(i.printify_variant_id) : null, quantity: Math.max(0, parseInt(i.quantity, 10) || 0) }))
     .filter((i) => Number.isInteger(i.product_id) && i.product_id > 0 && i.quantity > 0);
 }
 
-/* Validate a cart against live inventory; clamp quantities to what's in stock. */
+/* Validate a cart. Variant items (color/size) resolve to a Printify variant + its price; plain items clamp to stock. */
 function buildQuote(rawItems) {
   const items = normalizeItems(rawItems);
   if (!items.length) return { ok: false, message: 'Your basket is empty.', lines: [], subtotal_cents: 0 };
@@ -77,23 +92,47 @@ function buildQuote(rawItems) {
   for (const item of items) {
     const p = map.get(item.product_id);
     if (!p) { warnings.push(`Item ${item.product_id} is no longer available.`); continue; }
-    const qty = Math.min(item.quantity, Math.max(0, p.quantity_available));
-    if (qty <= 0) { warnings.push(`${p.name} is sold out.`); continue; }
-    if (qty < item.quantity) warnings.push(`${p.name} limited to ${qty} (current stock).`);
-    lines.push({ product: p, quantity: qty, line_total_cents: p.price_cents * qty });
+    if (item.printify_variant_id) {
+      const v = store.listVariants(p.id).find((x) => x.printify_variant_id === item.printify_variant_id);
+      if (!v) { warnings.push(`${p.name}: that option is unavailable.`); continue; }
+      const name = `${p.name} — ${v.color}${v.size ? ` / ${v.size}` : ''}`;
+      lines.push({ product: p, variant: v, name, image_url: v.image_url || p.image_url, unit_cents: v.price_cents, quantity: item.quantity, line_total_cents: v.price_cents * item.quantity, fulfillment_type: 'ship' });
+    } else {
+      const qty = Math.min(item.quantity, Math.max(0, p.quantity_available));
+      if (qty <= 0) { warnings.push(`${p.name} is sold out.`); continue; }
+      if (qty < item.quantity) warnings.push(`${p.name} limited to ${qty} (current stock).`);
+      lines.push({ product: p, variant: null, name: p.name, image_url: p.image_url, unit_cents: p.price_cents, quantity: qty, line_total_cents: p.price_cents * qty, fulfillment_type: p.fulfillment_type });
+    }
   }
   const subtotal = lines.reduce((a, l) => a + l.line_total_cents, 0);
   return { ok: lines.length > 0, message: lines.length ? null : 'Nothing in stock remains in your basket.', lines, warnings, subtotal_cents: subtotal, subtotal_display: money(subtotal) };
 }
 
+// Hand a paid order to floor2's n8n, which stages a DRAFT Printify order for approval.
+async function notifyN8nDraftOrder(order, printifyLines, session) {
+  if (!N8N_ORDER_WEBHOOK || !printifyLines.length) return;
+  const ship = (session.shipping_details && session.shipping_details.address) || (session.customer_details && session.customer_details.address) || {};
+  try {
+    await fetch(N8N_ORDER_WEBHOOK, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        order_number: order.order_number, stripe_session_id: session.id,
+        customer: { name: order.customer_name, email: order.customer_email,
+          phone: (session.customer_details && session.customer_details.phone) || '' },
+        address: ship, line_items: printifyLines, amount_total_cents: order.amount_total_cents,
+      }),
+    });
+    console.log(`📤 n8n notified for ${order.order_number} (${printifyLines.length} POD lines → draft order)`);
+  } catch (e) { console.error('n8n notify failed:', e.message); }
+}
+
 function finalizeOrder(session) {
   if (store.orderBySession.get(session.id)) return; // already finalized
   let cart = [];
-  try { cart = JSON.parse(session.metadata && session.metadata.cart || '[]'); } catch {}
-  const ids = cart.map(([id]) => id);
+  try { cart = JSON.parse((session.metadata && session.metadata.cart) || '[]'); } catch {}
+  const ids = cart.map((r) => r[0]);
   const products = ids.length ? store.listActiveByIds.all(JSON.stringify(ids)) : [];
   const map = new Map(products.map((p) => [p.id, p]));
-  const summaryParts = [];
   const orderNo = 'MH-' + Date.now().toString(36).toUpperCase() + '-' + crypto.randomBytes(2).toString('hex').toUpperCase();
   const info = store.insertOrder.run(
     orderNo, session.id,
@@ -102,13 +141,25 @@ function finalizeOrder(session) {
     'paid', session.amount_total || 0, ''
   );
   const orderId = info.lastInsertRowid;
-  for (const [id, qty] of cart) {
+  const summaryParts = []; const printifyLines = [];
+  for (const row of cart) {
+    const [id, pvid, qty] = row;
     const p = map.get(id); if (!p) continue;
-    store.insertOrderItem.run(orderId, p.id, p.name, p.price_cents, qty, p.fulfillment_type);
-    store.decrementInventory.run(qty, p.id);
-    summaryParts.push(`${qty}× ${p.name} (${p.fulfillment_type})`);
+    if (pvid) {
+      const v = store.listVariants(p.id).find((x) => x.printify_variant_id === pvid);
+      const nm = v ? `${p.name} — ${v.color}${v.size ? ` / ${v.size}` : ''}` : p.name;
+      store.insertOrderItem.run(orderId, p.id, nm, v ? v.price_cents : p.price_cents, qty, 'ship');
+      printifyLines.push({ printify_product_id: p.printify_product_id || null, variant_id: pvid, quantity: qty, name: nm });
+      summaryParts.push(`${qty}× ${nm}`);
+    } else {
+      store.insertOrderItem.run(orderId, p.id, p.name, p.price_cents, qty, p.fulfillment_type);
+      store.decrementInventory.run(qty, p.id);
+      summaryParts.push(`${qty}× ${p.name} (${p.fulfillment_type})`);
+    }
   }
+  const order = store.orderBySession.get(session.id);
   console.log(`✅ Order ${orderNo} paid: ${summaryParts.join(', ')}`);
+  notifyN8nDraftOrder(order, printifyLines, session);
 }
 
 /* ---------------- API ---------------- */
@@ -116,12 +167,23 @@ app.get('/api/products', (req, res) => {
   res.json({ products: store.listActiveProducts.all().map(publicProduct) });
 });
 
+// Full product (with variants) for the product detail page.
+app.get('/api/product/:slug', (req, res) => {
+  const p = store.listActiveProducts.all().find((x) => x.slug === req.params.slug);
+  if (!p) return res.status(404).json({ ok: false, message: 'Not found' });
+  res.json({ ok: true, product: publicProduct(p) });
+});
+
 app.post('/api/cart/quote', (req, res) => {
   const q = buildQuote(req.body.items);
   res.status(q.ok ? 200 : 400).json({
     ok: q.ok, message: q.message, warnings: q.warnings,
     subtotal_cents: q.subtotal_cents, subtotal_display: q.subtotal_display,
-    lines: q.lines.map((l) => ({ ...publicProduct(l.product), quantity: l.quantity, line_total_display: money(l.line_total_cents) })),
+    lines: q.lines.map((l) => ({ product_id: l.product.id, slug: l.product.slug, name: l.name,
+      printify_variant_id: l.variant ? l.variant.printify_variant_id : null,
+      color: l.variant ? l.variant.color : null, size: l.variant ? l.variant.size : null,
+      image_url: l.image_url, price_cents: l.unit_cents, price_display: money(l.unit_cents),
+      fulfillment_type: l.fulfillment_type, quantity: l.quantity, line_total_display: money(l.line_total_cents) })),
   });
 });
 
@@ -134,16 +196,16 @@ app.post('/api/checkout/session', async (req, res) => {
     quantity: l.quantity,
     price_data: {
       currency: 'usd',
-      unit_amount: l.product.price_cents,
+      unit_amount: l.unit_cents,
       product_data: {
-        name: l.product.name,
+        name: l.name,
         description: (l.product.description || '').slice(0, 280) || undefined,
-        ...(httpsImages && l.product.image_url ? { images: [absUrl(l.product.image_url)] } : {}),
+        ...(httpsImages && l.image_url ? { images: [absUrl(l.image_url)] } : {}),
       },
     },
   }));
-  const hasShip = quote.lines.some((l) => l.product.fulfillment_type === 'ship');
-  const cart = quote.lines.map((l) => [l.product.id, l.quantity]);
+  const hasShip = quote.lines.some((l) => l.fulfillment_type === 'ship');
+  const cart = quote.lines.map((l) => [l.product.id, l.variant ? l.variant.printify_variant_id : 0, l.quantity]);
 
   try {
     const session = await stripe.checkout.sessions.create({
@@ -252,13 +314,52 @@ app.post('/api/admin/product', (req, res) => {
       image_url = `/assets/uploads/${slug}.${ext}`;
     } catch (e) { return res.status(400).json({ ok: false, message: 'bad image_base64: ' + e.message }); }
   }
+  // Per-color images (for variant products): [{name, hex, image_base64, image_ext}] → saved files
+  const colorImg = {};
+  if (Array.isArray(b.colors)) {
+    for (const c of b.colors) {
+      if (!c || !c.name) continue;
+      const cslug = String(c.name).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+      const ext = EXT_OK[String(c.image_ext || 'png').toLowerCase()] || 'png';
+      if (c.image_base64) {
+        try {
+          const data = String(c.image_base64).replace(/^data:image\/[a-z+]+;base64,/, '');
+          fs.writeFileSync(path.join(UPLOAD_DIR, `${slug}--${cslug}.${ext}`), Buffer.from(data, 'base64'));
+          colorImg[c.name] = `/assets/uploads/${slug}--${cslug}.${ext}`;
+        } catch (e) { /* skip bad color image */ }
+      }
+      if (c.front_image_base64) {  // front-of-shirt view (chest logo)
+        try {
+          const data = String(c.front_image_base64).replace(/^data:image\/[a-z+]+;base64,/, '');
+          fs.writeFileSync(path.join(UPLOAD_DIR, `${slug}--${cslug}-front.${ext}`), Buffer.from(data, 'base64'));
+          colorImg[c.name + '__front'] = `/assets/uploads/${slug}--${cslug}-front.${ext}`;
+        } catch (e) { /* skip */ }
+      }
+      if (c.hex) colorImg[c.name + '__hex'] = c.hex;
+    }
+  }
+  if (!image_url && Array.isArray(b.colors) && b.colors[0]) image_url = colorImg[b.colors[0].name] || '';
+
   const row = store.publishProduct({
     slug, name: b.name, category, description: b.description || '',
     price_cents: b.price_cents, image_url,
     fulfillment_type: 'ship', sort: b.sort, quantity: b.quantity != null ? b.quantity : 25,
   });
-  console.log(`📦 published product: [${category}] ${row.name} ($${(row.price_cents/100).toFixed(2)})`);
-  res.json({ ok: true, product: { ...row, url: `${SITE_URL}/nickel-ts.html#${category}` } });
+
+  // Variants: [{printify_variant_id, color, size, price_cents}] → attach per-color image + hex
+  let nVariants = 0;
+  if (Array.isArray(b.variants) && b.variants.length) {
+    const variants = b.variants.map((v) => ({
+      printify_variant_id: v.printify_variant_id, color: v.color || '', size: v.size || '',
+      color_hex: colorImg[(v.color || '') + '__hex'] || v.color_hex || '',
+      price_cents: v.price_cents != null ? v.price_cents : b.price_cents,
+      image_url: colorImg[v.color] || image_url,
+      front_image_url: colorImg[(v.color || '') + '__front'] || '',
+    }));
+    nVariants = store.setVariants(slug, variants, b.printify_product_id);
+  }
+  console.log(`📦 published: [${category}] ${row.name} (${nVariants ? nVariants + ' variants' : '$' + (row.price_cents / 100).toFixed(2)})`);
+  res.json({ ok: true, product: { ...row, variants: nVariants }, url: `${SITE_URL}/nickel-ts.html#${category}` });
 });
 
 // Retire (hide) a product by slug.
