@@ -61,9 +61,26 @@ CREATE TABLE IF NOT EXISTS stripe_events (
   event_type TEXT NOT NULL,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
+CREATE TABLE IF NOT EXISTS product_variants (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  product_id INTEGER NOT NULL,
+  printify_variant_id INTEGER,
+  color TEXT DEFAULT '',
+  color_hex TEXT DEFAULT '',
+  size TEXT DEFAULT '',
+  price_cents INTEGER NOT NULL DEFAULT 0,
+  image_url TEXT DEFAULT '',
+  sort INTEGER NOT NULL DEFAULT 100,
+  active INTEGER NOT NULL DEFAULT 1,
+  UNIQUE(product_id, printify_variant_id),
+  FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
+);
 CREATE INDEX IF NOT EXISTS idx_products_category ON products(category);
 CREATE INDEX IF NOT EXISTS idx_products_active ON products(active);
+CREATE INDEX IF NOT EXISTS idx_variants_product ON product_variants(product_id);
 `);
+// products.printify_product_id (added post-hoc; guard for existing DBs)
+try { db.exec("ALTER TABLE products ADD COLUMN printify_product_id TEXT DEFAULT ''"); } catch (e) {}
 
 /* slug, name, category, description, price_cents, image_url, fulfillment, sort, qty
    NOTE: jams/eggs/chicks seed at qty 0 — they're being physically inventoried
@@ -136,9 +153,38 @@ function publishProduct(p) {
   return _rowBySlug.get(p.slug);
 }
 
+/* ---- variants (color/size, mapped to Printify variant ids) ---- */
+const _setPrintifyPid = db.prepare(`UPDATE products SET printify_product_id=? WHERE id=?`);
+const _delVariants = db.prepare(`DELETE FROM product_variants WHERE product_id=?`);
+const _insVariant = db.prepare(`INSERT INTO product_variants
+  (product_id, printify_variant_id, color, color_hex, size, price_cents, image_url, sort, active)
+  VALUES (@product_id, @pvid, @color, @hex, @size, @price, @image, @sort, 1)`);
+const _listVariants = db.prepare(`SELECT * FROM product_variants WHERE product_id=? AND active=1 ORDER BY sort, id`);
+
+/* Replace a product's variants. variants: [{printify_variant_id,color,color_hex,size,price_cents,image_url}] */
+function setVariants(slug, variants, printifyProductId) {
+  const row = _idBySlug.get(slug);
+  if (!row) return 0;
+  if (printifyProductId != null) _setPrintifyPid.run(String(printifyProductId), row.id);
+  _delVariants.run(row.id);
+  let n = 0;
+  for (const v of (variants || [])) {
+    _insVariant.run({
+      product_id: row.id, pvid: parseInt(v.printify_variant_id, 10) || null,
+      color: v.color || '', hex: v.color_hex || '', size: v.size || '',
+      price: Math.max(0, parseInt(v.price_cents, 10) || 0), image: v.image_url || '', sort: n,
+    });
+    n++;
+  }
+  return n;
+}
+function listVariants(productId) { return _listVariants.all(productId); }
+
 module.exports = {
   db,
   publishProduct,
+  setVariants,
+  listVariants,
   retireBySlug: db.prepare(`UPDATE products SET active=0, updated_at=CURRENT_TIMESTAMP WHERE slug=?`),
   listProducts: db.prepare(`SELECT ${PRODUCT_COLS} FROM products p LEFT JOIN inventory i ON i.product_id=p.id ORDER BY p.sort, p.name`),
   listActiveProducts: db.prepare(`SELECT ${PRODUCT_COLS} FROM products p LEFT JOIN inventory i ON i.product_id=p.id WHERE p.active=1 ORDER BY p.sort, p.name`),
