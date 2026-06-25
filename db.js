@@ -196,6 +196,7 @@ module.exports = {
   decrementInventory: db.prepare(`UPDATE inventory SET quantity_available = MAX(0, quantity_available - ?), updated_at=CURRENT_TIMESTAMP WHERE product_id = ?`),
   insertOrder: db.prepare(`INSERT INTO orders (order_number, stripe_session_id, customer_name, customer_email, status, amount_total_cents, fulfillment_summary) VALUES (?, ?, ?, ?, ?, ?, ?)`),
   orderBySession: db.prepare(`SELECT * FROM orders WHERE stripe_session_id = ?`),
+  setOrderFulfillment: db.prepare(`UPDATE orders SET fulfillment_summary = ?, updated_at=CURRENT_TIMESTAMP WHERE id = ?`),
   insertOrderItem: db.prepare(`INSERT INTO order_items (order_id, product_id, product_name, unit_price_cents, quantity, fulfillment_type) VALUES (?, ?, ?, ?, ?, ?)`),
   recordEvent: db.prepare(`INSERT OR IGNORE INTO stripe_events (stripe_event_id, event_type) VALUES (?, ?)`),
 };

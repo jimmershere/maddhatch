@@ -108,6 +108,67 @@ function buildQuote(rawItems) {
   return { ok: lines.length > 0, message: lines.length ? null : 'Nothing in stock remains in your basket.', lines, warnings, subtotal_cents: subtotal, subtotal_display: money(subtotal) };
 }
 
+const PRINTIFY_API_KEY = process.env.PRINTIFY_API_KEY || '';
+const PRINTIFY_SHOP_ID = process.env.PRINTIFY_SHOP_ID || '';
+
+// Create a DRAFT Printify order directly (no n8n). Printify holds API-created orders
+// until you "send to production" in the dashboard — that send IS your approval step.
+async function createPrintifyDraftOrder(order, printifyLines, session) {
+  const lines = (printifyLines || []).filter((l) => l.printify_product_id && l.variant_id);
+  if (!PRINTIFY_API_KEY || !PRINTIFY_SHOP_ID) {
+    if (lines.length) console.log(`ℹ️ ${order.order_number}: Printify creds not set — skipping draft order`);
+    return;
+  }
+  if (!lines.length) {
+    if ((printifyLines || []).length) console.log(`ℹ️ ${order.order_number}: items not Printify-linked — manual fulfillment`);
+    return;
+  }
+  const a = (session.shipping_details && session.shipping_details.address)
+    || (session.customer_details && session.customer_details.address) || {};
+  const cd = session.customer_details || {};
+  const parts = (order.customer_name || cd.name || 'Madd Customer').trim().split(/\s+/);
+  const first = parts.shift() || 'Madd';
+  const last = parts.join(' ') || 'Customer';
+  const body = {
+    external_id: order.order_number,
+    label: order.order_number,
+    line_items: lines.map((l) => ({ product_id: l.printify_product_id, variant_id: l.variant_id, quantity: l.quantity })),
+    shipping_method: 1,
+    send_shipping_notification: false,
+    address_to: {
+      first_name: first, last_name: last,
+      email: order.customer_email || cd.email || '', phone: cd.phone || '',
+      country: a.country || 'US', region: a.state || '', address1: a.line1 || '',
+      address2: a.line2 || '', city: a.city || '', zip: a.postal_code || '',
+    },
+  };
+  try {
+    const r = await fetch(`https://api.printify.com/v1/shops/${PRINTIFY_SHOP_ID}/orders.json`, {
+      method: 'POST', headers: { Authorization: `Bearer ${PRINTIFY_API_KEY}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    const txt = await r.text(); let j = {}; try { j = JSON.parse(txt); } catch {}
+    if (r.ok && (j.id || typeof j === 'string')) {
+      const pid = j.id || j;
+      store.setOrderFulfillment.run(`printify:${pid} (DRAFT — approve in Printify to fulfill)`, order.id);
+      console.log(`🖨️ Printify DRAFT order ${pid} for ${order.order_number} (${lines.length} line(s)) — approve to ship`);
+    } else {
+      console.error(`Printify order failed for ${order.order_number}: ${r.status} ${txt.slice(0, 240)}`);
+    }
+  } catch (e) { console.error('Printify order error:', e.message); }
+}
+
+// Ask Stripe to email the customer a receipt (no SMTP needed on our side).
+async function sendStripeReceipt(order, session) {
+  if (!stripe || !session.payment_intent) return;
+  const email = order.customer_email || (session.customer_details && session.customer_details.email);
+  if (!email) return;
+  try {
+    await stripe.paymentIntents.update(session.payment_intent, { receipt_email: email });
+    console.log(`✉️ Stripe receipt requested for ${order.order_number} → ${email}`);
+  } catch (e) { console.error('receipt email failed:', e.message); }
+}
+
 // Hand a paid order to floor2's n8n, which stages a DRAFT Printify order for approval.
 async function notifyN8nDraftOrder(order, printifyLines, session) {
   if (!N8N_ORDER_WEBHOOK || !printifyLines.length) return;
@@ -159,7 +220,9 @@ function finalizeOrder(session) {
   }
   const order = store.orderBySession.get(session.id);
   console.log(`✅ Order ${orderNo} paid: ${summaryParts.join(', ')}`);
-  notifyN8nDraftOrder(order, printifyLines, session);
+  sendStripeReceipt(order, session);
+  createPrintifyDraftOrder(order, printifyLines, session);  // direct Printify draft (no n8n dependency)
+  notifyN8nDraftOrder(order, printifyLines, session);       // also fires only if N8N_ORDER_WEBHOOK is set
 }
 
 /* ---------------- API ---------------- */
