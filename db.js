@@ -81,6 +81,7 @@ CREATE INDEX IF NOT EXISTS idx_variants_product ON product_variants(product_id);
 `);
 // products.printify_product_id (added post-hoc; guard for existing DBs)
 try { db.exec("ALTER TABLE products ADD COLUMN printify_product_id TEXT DEFAULT ''"); } catch (e) {}
+try { db.exec("ALTER TABLE product_variants ADD COLUMN front_image_url TEXT DEFAULT ''"); } catch (e) {}
 
 /* slug, name, category, description, price_cents, image_url, fulfillment, sort, qty
    NOTE: jams/eggs/chicks seed at qty 0 — they're being physically inventoried
@@ -157,8 +158,8 @@ function publishProduct(p) {
 const _setPrintifyPid = db.prepare(`UPDATE products SET printify_product_id=? WHERE id=?`);
 const _delVariants = db.prepare(`DELETE FROM product_variants WHERE product_id=?`);
 const _insVariant = db.prepare(`INSERT INTO product_variants
-  (product_id, printify_variant_id, color, color_hex, size, price_cents, image_url, sort, active)
-  VALUES (@product_id, @pvid, @color, @hex, @size, @price, @image, @sort, 1)`);
+  (product_id, printify_variant_id, color, color_hex, size, price_cents, image_url, front_image_url, sort, active)
+  VALUES (@product_id, @pvid, @color, @hex, @size, @price, @image, @front, @sort, 1)`);
 const _listVariants = db.prepare(`SELECT * FROM product_variants WHERE product_id=? AND active=1 ORDER BY sort, id`);
 
 /* Replace a product's variants. variants: [{printify_variant_id,color,color_hex,size,price_cents,image_url}] */
@@ -172,7 +173,8 @@ function setVariants(slug, variants, printifyProductId) {
     _insVariant.run({
       product_id: row.id, pvid: parseInt(v.printify_variant_id, 10) || null,
       color: v.color || '', hex: v.color_hex || '', size: v.size || '',
-      price: Math.max(0, parseInt(v.price_cents, 10) || 0), image: v.image_url || '', sort: n,
+      price: Math.max(0, parseInt(v.price_cents, 10) || 0), image: v.image_url || '',
+      front: v.front_image_url || '', sort: n,
     });
     n++;
   }

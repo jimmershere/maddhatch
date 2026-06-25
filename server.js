@@ -64,7 +64,7 @@ function publicProduct(p) {
       image_url: p.image_url, in_stock: p.quantity_available > 0 };
   }
   const colors = []; const seen = new Set();
-  for (const v of variants) if (v.color && !seen.has(v.color)) { seen.add(v.color); colors.push({ name: v.color, hex: v.color_hex, image_url: v.image_url }); }
+  for (const v of variants) if (v.color && !seen.has(v.color)) { seen.add(v.color); colors.push({ name: v.color, hex: v.color_hex, image_url: v.image_url, front_image_url: v.front_image_url || '' }); }
   const sizes = [...new Set(variants.map((v) => v.size).filter(Boolean))];
   const minP = Math.min(...variants.map((v) => v.price_cents));
   return {
@@ -320,13 +320,20 @@ app.post('/api/admin/product', (req, res) => {
     for (const c of b.colors) {
       if (!c || !c.name) continue;
       const cslug = String(c.name).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+      const ext = EXT_OK[String(c.image_ext || 'png').toLowerCase()] || 'png';
       if (c.image_base64) {
-        const ext = EXT_OK[String(c.image_ext || 'jpg').toLowerCase()] || 'jpg';
         try {
           const data = String(c.image_base64).replace(/^data:image\/[a-z+]+;base64,/, '');
           fs.writeFileSync(path.join(UPLOAD_DIR, `${slug}--${cslug}.${ext}`), Buffer.from(data, 'base64'));
           colorImg[c.name] = `/assets/uploads/${slug}--${cslug}.${ext}`;
         } catch (e) { /* skip bad color image */ }
+      }
+      if (c.front_image_base64) {  // front-of-shirt view (chest logo)
+        try {
+          const data = String(c.front_image_base64).replace(/^data:image\/[a-z+]+;base64,/, '');
+          fs.writeFileSync(path.join(UPLOAD_DIR, `${slug}--${cslug}-front.${ext}`), Buffer.from(data, 'base64'));
+          colorImg[c.name + '__front'] = `/assets/uploads/${slug}--${cslug}-front.${ext}`;
+        } catch (e) { /* skip */ }
       }
       if (c.hex) colorImg[c.name + '__hex'] = c.hex;
     }
@@ -347,6 +354,7 @@ app.post('/api/admin/product', (req, res) => {
       color_hex: colorImg[(v.color || '') + '__hex'] || v.color_hex || '',
       price_cents: v.price_cents != null ? v.price_cents : b.price_cents,
       image_url: colorImg[v.color] || image_url,
+      front_image_url: colorImg[(v.color || '') + '__front'] || '',
     }));
     nVariants = store.setVariants(slug, variants, b.printify_product_id);
   }

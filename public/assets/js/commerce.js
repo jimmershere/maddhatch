@@ -152,8 +152,13 @@
     const variantFor = (c, s) => p.variants.find((v) => v.color === c.name && v.size === s);
     const draw = () => {
       const v = variantFor(color, size);
+      const views = [color.image_url, color.front_image_url].filter(Boolean);
+      const thumbs = views.length > 1 ? `<div style="display:flex;gap:.5rem;margin-top:.6rem">${views.map((u, i) => `<button class="pdp-th" data-u="${u}" style="width:64px;height:64px;border-radius:10px;border:2px solid ${i === 0 ? 'var(--teal-dk)' : 'var(--line)'};background:var(--cream-2) center/contain no-repeat url('${u}');cursor:pointer"></button>`).join('')}</div>` : '';
       root.innerHTML = `<div class="split">
-        <div class="panel" style="padding:0;overflow:hidden"><img id="pdp-img" src="${color.image_url}" alt="${esc(p.name)} — ${esc(color.name)}"></div>
+        <div>
+          <div class="panel" style="padding:1rem;overflow:hidden;background:var(--cream-2)"><img id="pdp-img" src="${color.image_url}" alt="${esc(p.name)} — ${esc(color.name)}" style="display:block;width:100%"></div>
+          ${thumbs}
+        </div>
         <div>
           <span class="eyebrow">Madd Hatchery</span><h1>${esc(p.name)}</h1>
           <p class="lede">${esc(p.description || '')}</p>
@@ -167,6 +172,10 @@
           <button class="btn btn--lg btn--block" id="pdp-add" ${v ? '' : 'disabled'}>${v ? 'Add to basket' : 'Unavailable'}</button>
           <p class="note" style="margin-top:.6rem">📦 Printed on demand & shipped from our partner. Soft, true-to-size.</p>
         </div></div>`;
+      root.querySelectorAll('.pdp-th').forEach((b) => b.addEventListener('click', () => {
+        const img = $('#pdp-img'); if (img) img.src = b.dataset.u;
+        root.querySelectorAll('.pdp-th').forEach((x) => x.style.borderColor = 'var(--line)'); b.style.borderColor = 'var(--teal-dk)';
+      }));
       root.querySelectorAll('.pdp-sw').forEach((b) => b.addEventListener('click', () => { color = p.colors[Number(b.dataset.ci)]; draw(); }));
       root.querySelectorAll('.pdp-sz').forEach((b) => b.addEventListener('click', () => { size = b.dataset.sz; draw(); }));
       $('#pdp-inc').addEventListener('click', () => { qty++; $('#pdp-qty').textContent = qty; });
