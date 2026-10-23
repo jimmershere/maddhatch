@@ -77,7 +77,11 @@ jobs:
           REMOTE_PATH="${REMOTE_PATH:-/var/www/maddhatchery}"
           ssh -i ~/.ssh/deploy_key -o IdentitiesOnly=yes "${DEPLOY_USER}@${HOST}" "mkdir -p '${REMOTE_PATH}'"
           rsync -avz --delete \
-            --exclude '.git' --exclude 'node_modules' --exclude 'data' \
+            # '/data' is ANCHORED on purpose: an unanchored 'data' matches any
+            # directory of that name at any depth, which silently dropped
+            # public/assets/data/ (content.json, drop-2026.json) from every
+            # deploy while still appearing to succeed. Verified 2026-10-23.
+            --exclude '.git' --exclude 'node_modules' --exclude '/data' \
             --exclude '.env' --exclude '.claude' \
             --exclude 'public/assets/uploads' \
             -e "ssh -i ~/.ssh/deploy_key -o IdentitiesOnly=yes" \
