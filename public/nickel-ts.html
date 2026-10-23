@@ -3,50 +3,74 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Nickel T's — Tees, Mugs & Stickers — Madd Hatchery</title>
-  <meta name="description" content="Nickel T's: Madd Hatchery's apparel & gift line — weird novelty tees, farm-fun Madd Hatchery tees, coffee mugs, and stickers. Printed in small batches.">
+  <title>Nickel T's — Tees, Mugs &amp; Stickers — Madd Hatchery</title>
+  <meta name="description" content="Nickel T's: Madd Hatchery's apparel and gift line — novelty tees, farm-fun designs, coffee mugs and stickers. Drawn in-house, printed in small batches, shipped nationwide.">
   <meta property="og:title" content="Nickel T's — Madd Hatchery">
-  <meta property="og:description" content="Weird, wonderful tees, mugs & stickers from Trish's urban farm.">
+  <meta property="og:description" content="Weird, wonderful tees, mugs and stickers from Trish's urban farm.">
   <link rel="icon" href="/assets/icons/favicon-32x32.png">
   <link rel="apple-touch-icon" href="/assets/icons/apple-touch-icon.png">
   <link rel="stylesheet" href="/assets/css/site.css">
 </head>
 <body data-page="nickel">
   <main>
-    <section class="page-band">
+    <section class="page-band on-dark">
       <div class="wrap">
-        <span class="eyebrow" style="justify-content:center">Wear it · sip it · stick it</span>
+        <span class="eyebrow eyebrow--center">Wear it · Sip it · Stick it</span>
         <h1>Nickel T's</h1>
-        <p>Trish's apparel &amp; gift line — weird little novelty tees, farm-fun Madd Hatchery designs, coffee mugs, and stickers. Printed in small batches and shipped to your door.</p>
+        <p class="lede lede--center">Trish's apparel and gift line — novelty tees, farm-fun designs, coffee mugs and stickers. Drawn in-house, printed in small batches.</p>
       </div>
     </section>
 
     <section class="section">
       <div class="wrap">
-        <div class="hero__chips" data-shop-filters style="gap:.6rem;margin-bottom:1.8rem"></div>
+        <div class="filters" data-shop-filters></div>
         <div class="grid grid--auto" data-shop-grid data-shop-categories="nickel-tee,madd-tee,mug,sticker,bottle">
           <p class="lede">Loading the merch rack…</p>
         </div>
       </div>
     </section>
 
-    <section class="section bg-cream2 center">
+    <section class="section bg-cream2" data-drop-section hidden>
       <div class="wrap">
-        <span class="script">got a wild idea?</span>
-        <h2 style="margin-top:-.3rem">Pitch your own Nickel T</h2>
-        <p class="lede" style="margin-inline:auto">We take requests — name the critter, the vibe, the bad pun. If it makes Trish laugh, it might make the next drop.</p>
-        <a class="btn btn--lg" href="mailto:maddhatchery@gmail.com?subject=Nickel%20T%20idea" style="margin-top:1rem">Send your idea →</a>
+        <div class="sec-head">
+          <div>
+            <span class="eyebrow">Coming to the rack</span>
+            <h2>New critters in the works</h2>
+            <p>Ten new Nickel T's mash-ups on the drawing board right now.</p>
+          </div>
+          <a class="link-arrow" href="/drop.html#nickel-mashups">See the whole drop <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+        </div>
+        <div class="grid grid--4" data-drop-teaser="nickel" data-limit="4"></div>
+      </div>
+    </section>
+
+    <section class="section on-dark">
+      <div class="wrap split">
+        <div>
+          <span class="eyebrow">Got a wild idea?</span>
+          <h2>Pitch your own Nickel T</h2>
+          <p class="lede">Name the critter, the vibe, the bad pun. If it makes Trish laugh, it might make the next drop — and you'll get the first one off the press.</p>
+          <div class="hero__cta">
+            <a class="btn btn--amber btn--lg" href="mailto:maddhatchery@gmail.com?subject=Nickel%20T%20idea">Send your idea</a>
+          </div>
+        </div>
+        <div class="signup__art">
+          <img src="/assets/v3/trish/trish_laptop.png" alt="Trish at her laptop" loading="lazy">
+        </div>
       </div>
     </section>
 
     <section class="section">
-      <div class="wrap panel trish-note">
-        <img src="/assets/v3/trish/trish_laptop.png" alt="Trish at her laptop">
-        <div class="bubble"><p><strong>Sizing &amp; bundles:</strong> tees run relaxed and true to size; mugs are a roomy 15oz; stickers are weatherproof vinyl. Want a bulk batch for the market crew or a family reunion? <a href="mailto:maddhatchery@gmail.com">Just holler.</a></p></div>
+      <div class="wrap grid grid--3">
+        <div class="panel"><h3>Sizing</h3><p class="card__desc">Tees run relaxed and true to size. Mugs are a roomy 15oz. Stickers are weatherproof vinyl.</p></div>
+        <div class="panel"><h3>Printing</h3><p class="card__desc">Printed on demand by our partner and shipped direct, so every colour and size stays in stock.</p></div>
+        <div class="panel"><h3>Bulk &amp; crews</h3><p class="card__desc">Need a batch for the market crew or a family reunion? <a href="mailto:maddhatchery@gmail.com?subject=Bulk%20merch">Just holler.</a></p></div>
       </div>
     </section>
   </main>
   <script src="/assets/js/site.js" defer></script>
   <script src="/assets/js/commerce.js" defer></script>
+  <script src="/assets/js/content-blocks.js" defer></script>
+  <script src="/assets/js/drop.js" defer></script>
 </body>
 </html>

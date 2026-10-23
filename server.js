@@ -10,6 +10,8 @@ const app = express();
 const PORT = Number(process.env.PORT || 3200);
 const SITE_URL = (process.env.SITE_URL || `http://localhost:${PORT}`).replace(/\/$/, '');
 const SHIP_FLAT_CENTS = Number(process.env.SHIP_FLAT_CENTS || 800);
+// Shirts only — stickers, mugs and bottles still pay flat-rate shipping.
+const APPAREL = new Set(['nickel-tee', 'madd-tee', 'tie-dye']);
 const ADMIN_TOKEN = process.env.ADMIN_TOKEN || '';
 const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY || '';
 const STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET || '';
@@ -268,6 +270,12 @@ app.post('/api/checkout/session', async (req, res) => {
     },
   }));
   const hasShip = quote.lines.some((l) => l.fulfillment_type === 'ship');
+  // Shirts ship free (house policy, 2026-10-23). Jars and other shippable goods
+  // still carry the flat rate, so the free rate only applies when every shippable
+  // line in the basket is apparel.
+  const shipLines = quote.lines.filter((l) => l.fulfillment_type === 'ship');
+  const freeShipping = shipLines.length > 0 && shipLines.every((l) => APPAREL.has(l.product.category));
+  const shipCents = freeShipping ? 0 : SHIP_FLAT_CENTS;
   const cart = quote.lines.map((l) => [l.product.id, l.variant ? l.variant.printify_variant_id : 0, l.quantity]);
 
   try {
@@ -282,8 +290,8 @@ app.post('/api/checkout/session', async (req, res) => {
         shipping_options: [{
           shipping_rate_data: {
             type: 'fixed_amount',
-            fixed_amount: { amount: SHIP_FLAT_CENTS, currency: 'usd' },
-            display_name: 'Flat-rate shipping',
+            fixed_amount: { amount: shipCents, currency: 'usd' },
+            display_name: freeShipping ? 'Free shipping' : 'Flat-rate shipping',
             delivery_estimate: { minimum: { unit: 'business_day', value: 3 }, maximum: { unit: 'business_day', value: 7 } },
           },
         }],
@@ -358,6 +366,7 @@ app.post('/admin/products/:id', (req, res) => {
 
 /* ---------------- publish API (token-guarded) — tee-empire "site" port ---------------- */
 const ALLOWED_CATEGORIES = new Set(['nickel-tee', 'madd-tee', 'mug', 'sticker', 'bottle']);
+// Shirts only — stickers, mugs and bottles still pay flat-rate shipping.
 const EXT_OK = { png: 'png', jpg: 'jpg', jpeg: 'jpg', webp: 'webp' };
 
 // Upsert a product from tee-empire. Image arrives as base64 (image_base64 + image_ext) or a ready image_url.
@@ -434,7 +443,33 @@ app.post('/api/admin/retire', (req, res) => {
   res.json({ ok: true, retired: r.changes });
 });
 
-app.get('/healthz', (req, res) => res.json({ ok: true, stripe: Boolean(stripe), products: store.listActiveProducts.all().length }));
+/* ---- newsletter: "The Hatch List" ----
+   Stored locally in SQLite so the signup form on the site is real rather than
+   decorative. Export with: GET /api/admin/subscribers.csv?token=ADMIN_TOKEN */
+app.post('/api/subscribe', (req, res) => {
+  const email = String((req.body || {}).email || '').trim().toLowerCase();
+  const source = String((req.body || {}).source || '').slice(0, 120);
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email) || email.length > 254) {
+    return res.status(400).json({ ok: false, message: 'Please enter a valid email address.' });
+  }
+  try {
+    store.addSubscriber.run(email, source);   // INSERT OR IGNORE — repeat signups are a no-op
+    res.json({ ok: true });
+  } catch {
+    res.status(500).json({ ok: false, message: 'Could not save that right now.' });
+  }
+});
+
+app.get('/api/admin/subscribers.csv', (req, res) => {
+  if (!adminOK(req)) return res.status(401).type('text/plain').send('Unauthorized');
+  const rows = store.listSubscribers.all();
+  const csv = ['email,source,created_at']
+    .concat(rows.map((r) => [r.email, r.source, r.created_at].map((v) => `"${String(v == null ? '' : v).replace(/"/g, '""')}"`).join(',')))
+    .join('\n');
+  res.type('text/csv').attachment('hatch-list.csv').send(csv);
+});
+
+app.get('/healthz', (req, res) => res.json({ ok: true, stripe: Boolean(stripe), products: store.listActiveProducts.all().length, subscribers: store.listSubscribers.all().length }));
 
 app.listen(PORT, () => {
   console.log(`🐓 Madd Hatchery on http://localhost:${PORT}  (stripe: ${stripe ? 'live' : 'OFF'}, site: ${SITE_URL})`);

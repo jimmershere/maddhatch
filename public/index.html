@@ -4,110 +4,239 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Madd Hatchery — Small-Batch Jams, Farm-Fresh Eggs & Handmade Goods</title>
-  <meta name="description" content="Trish's urban farm: small-batch jams & jellies, farm-fresh eggs, baby chicks, tees and handmade goods. Order online, pick up at the farm, or find us at the market.">
-  <meta property="og:title" content="Madd Hatchery">
-  <meta property="og:description" content="Small-batch jams, farm-fresh eggs, baby chicks & handmade goods from Trish's urban farm.">
+  <meta name="description" content="Trish's urban farm: small-batch jams & jellies, farm-fresh eggs, baby chicks, tees and handmade goods. Woman-owned, cooked by hand. Ship nationwide or pick up at the farm.">
+  <meta property="og:title" content="Madd Hatchery — Trish's Urban Farm">
+  <meta property="og:description" content="Woman-owned urban farm: small-batch jams, farm-fresh eggs, baby chicks and handmade goods.">
   <meta property="og:image" content="/assets/v3/logo_2026.png">
+  <meta property="og:type" content="website">
   <link rel="icon" href="/assets/icons/favicon-32x32.png">
   <link rel="apple-touch-icon" href="/assets/icons/apple-touch-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="/assets/css/site.css">
 </head>
 <body data-page="home">
   <main>
-    <!-- Hero -->
-    <section class="hero">
+
+    <!-- ══ Hero: oversized display type on the night band ══ -->
+    <section class="hero on-dark">
       <div class="wrap hero__grid">
-        <div class="hero__copy">
-          <span class="eyebrow">Trish's Urban Farm · Made by hand</span>
+        <div>
+          <span class="eyebrow">Woman-owned · Urban farm · Made by hand</span>
           <h1>Sweet, spicy &amp; <span class="accent">straight from the farm</span></h1>
-          <p class="lede">Small-batch jams &amp; jellies, farm-fresh eggs, fuzzy baby chicks, and merch made with heart — everything here comes from our little urban farm.</p>
-          <div class="hero__chips">
-            <span class="chip">🍯 8 jam flavors</span>
-            <span class="chip">🥚 Rainbow eggs</span>
-            <span class="chip">🐣 Seasonal chicks</span>
-            <span class="chip">👕 Trish tees</span>
-          </div>
+          <p class="lede">Small-batch jams and jellies, rainbow eggs, fuzzy spring chicks and merch with a mouth on it — all of it made, packed and sent by one woman and a very spoiled flock.</p>
           <div class="hero__cta">
-            <a class="btn btn--lg" href="/shop.html">Shop the farm</a>
-            <a class="btn btn--ghost btn--lg" href="/jams.html">Meet the jams</a>
+            <a class="btn btn--amber btn--lg" href="/shop.html">Shop the farm</a>
+            <a class="btn btn--ghost btn--lg" href="/about.html">Meet Trish</a>
           </div>
         </div>
         <div class="hero__art">
-          <span class="hero__blob"></span>
-          <img class="trish" src="/assets/v3/trish/trish_peace_hero.png" alt="Trish, the farmer behind Madd Hatchery, flashing a peace sign" width="360" height="360">
+          <span class="hero__bloom" aria-hidden="true"></span>
+          <img class="trish" src="/assets/v3/trish/trish_peace_hero.png"
+               alt="Trish, the farmer behind Madd Hatchery, in a tie-dye shirt flashing a peace sign"
+               width="440" height="293" fetchpriority="high">
         </div>
       </div>
     </section>
 
-    <svg class="divider" viewBox="0 0 1200 30" preserveAspectRatio="none" aria-hidden="true"><path d="M0,18 C150,30 300,6 450,14 C600,22 750,2 900,12 C1050,22 1150,10 1200,16 L1200,30 L0,30 Z" fill="currentColor"/></svg>
+    <!-- ══ Trust strip ══ -->
+    <section class="trust">
+      <div class="wrap trust__row">
+        <div class="trust__item">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M12 12v8M9 17h6"/></svg>
+          <span><b>Woman-owned</b><span>Run by Trish, start to finish</span></span>
+        </div>
+        <div class="trust__item">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 10h12v7a3 3 0 0 1-3 3H9a3 3 0 0 1-3-3v-7Z"/><path d="M9 10V6.5a3 3 0 0 1 6 0V10M18 12h2a2 2 0 0 1 0 4h-2"/></svg>
+          <span><b>Small-batch</b><span>Cooked and sealed by hand</span></span>
+        </div>
+        <div class="trust__item">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3c3.2 0 6 5 6 9a6 6 0 0 1-12 0c0-4 2.8-9 6-9Z"/></svg>
+          <span><b>Farm-raised</b><span>Our own flock, named and spoiled</span></span>
+        </div>
+        <div class="trust__item">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h11v9H3zM14 10h4l3 3v3h-7z"/><circle cx="7" cy="18" r="1.6"/><circle cx="17.5" cy="18" r="1.6"/></svg>
+          <span><b>Free shipping on tees</b><span>Flat rate on jars, or farm pickup</span></span>
+        </div>
+      </div>
+    </section>
 
-    <!-- Featured jams (live, add-to-cart) -->
-    <section class="section bg-cream2">
+    <!-- ══ This week's jars ══ -->
+    <section class="section">
       <div class="wrap">
-        <div class="center" style="margin-bottom:2rem">
-          <span class="eyebrow" style="justify-content:center">Fresh from the kitchen</span>
-          <h2>This week's favorite jars</h2>
-          <p class="lede" style="margin-inline:auto">Cooked in small batches, sealed by hand, and shipped to your door.</p>
+        <div class="sec-head">
+          <div>
+            <span class="eyebrow">Fresh from the kitchen</span>
+            <h2>This week's jars</h2>
+            <p>Fruit cooked down slow, sealed by hand, labelled the same afternoon.</p>
+          </div>
+          <a class="link-arrow" href="/jams.html">All eight flavors <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
         </div>
         <div class="grid grid--4" data-featured="jams" data-limit="4">
           <p class="lede">Loading the good stuff…</p>
         </div>
-        <div class="center" style="margin-top:2rem"><a class="btn btn--terra" href="/shop.html#jams">See all jams &amp; jellies →</a></div>
       </div>
     </section>
 
-    <!-- Shop categories -->
-    <section class="section">
+    <!-- ══ Bundle / gift box — the average-order-value driver ══ -->
+    <section class="section section--tight">
       <div class="wrap">
-        <div class="center" style="margin-bottom:2rem">
-          <span class="eyebrow" style="justify-content:center">Shop by patch</span>
-          <h2>A little bit of everything</h2>
-        </div>
-        <div class="grid grid--4">
-          <a class="tile" href="/jams.html"><img src="/assets/v3/jars/jar_strawberry.png" alt="Jars of jam"><span class="tile__label">House Jams</span></a>
-          <a class="tile" href="/nickel-ts.html"><img src="/assets/img/merch/howdy-tee/howdy-03.jpg" alt="Madd Hatchery tee"><span class="tile__label">Nickel T's</span></a>
-          <a class="tile" href="/shop.html#eggs"><img src="/assets/img/eggs/eggs-01.jpg" alt="Fresh eggs"><span class="tile__label">Eggs &amp; Chicks</span></a>
-          <a class="tile" href="/farm.html"><img src="/assets/img/chickens/chickens-01.jpg" alt="Hens in the yard"><span class="tile__label">Farm &amp; Flock</span></a>
-        </div>
-      </div>
-    </section>
-
-    <!-- Trish note -->
-    <section class="section bg-cream2">
-      <div class="wrap">
-        <div class="panel trish-note">
-          <img src="/assets/v3/trish/trish_clipboard.png" alt="Trish with a clipboard">
-          <div class="bubble">
-            <h3 style="margin-top:0">Trish's ordering tips</h3>
-            <p><strong>Sweet or spicy?</strong> Tell me your heat level and I'll point you to the right jar. <strong>Eggs &amp; chicks</strong> are farm-pickup — reserve online and we'll set a time. Custom gift boxes &amp; bulk orders? <a href="mailto:maddhatchery@gmail.com">Just holler.</a></p>
+        <div class="bundle">
+          <div class="bundle__art">
+            <img src="/assets/v3/jars/jar_variety.png" alt="A trio of Madd Hatchery jam jars boxed as a gift set" loading="lazy">
+          </div>
+          <div class="bundle__body">
+            <span class="bundle__save">Best value</span>
+            <h2 style="font-size:clamp(1.7rem,3vw,2.5rem)">Build a three-jar box</h2>
+            <p class="lede">Pick any three — sweet, spicy, or one of each — and we'll box them with tissue and a hand-written card. The gift that solves four birthdays at once.</p>
+            <div class="hero__cta" style="margin-top:1.2rem">
+              <a class="btn btn--lg" href="/shop.html#jams">Build a box</a>
+              <a class="btn btn--ghost btn--lg" href="mailto:maddhatchery@gmail.com?subject=Custom%20gift%20box">Custom order</a>
+            </div>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- Value props -->
-    <section class="section">
-      <div class="wrap grid grid--3">
-        <div class="panel"><h3>🌿 Grown &amp; made here</h3><p class="card__desc">Fruit cooked down in small batches and a flock we actually know by name. No factory, no filler.</p></div>
-        <div class="panel"><h3>📦 Ship or pick up</h3><p class="card__desc">Jams &amp; tees ship flat-rate anywhere in the US. Eggs, chicks &amp; birds are easy farm pickup.</p></div>
-        <div class="panel"><h3>🔒 Checkout, simplified</h3><p class="card__desc">Add to your basket and pay securely with Stripe — card, Apple Pay, the works.</p></div>
+    <!-- ══ Meet Trish — founder-forward, the women-owned proof ══ -->
+    <section class="section bg-cream2 founder">
+      <div class="wrap split">
+        <div class="founder__art">
+          <img src="/assets/v3/trish/sassy_trish.png" alt="Trish, founder of Madd Hatchery" loading="lazy">
+        </div>
+        <div>
+          <span class="founder__badge">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-7.5-4.6-9.3-9A5.3 5.3 0 0 1 12 6.6 5.3 5.3 0 0 1 21.3 12c-1.8 4.4-9.3 9-9.3 9Z"/></svg>
+            Woman-owned &amp; family-run
+          </span>
+          <h2>Hi — I'm Trish</h2>
+          <p class="lede">I started Madd Hatchery with a handful of hens and a stockpot. It's still just me doing the cooking, the labelling, the packing and the answering — which is why your jar tastes like somebody made it, because somebody did.</p>
+          <blockquote>
+            Everything in this shop came out of my kitchen or out from under a hen. That's the whole business plan.
+            <cite>Trish · Founder</cite>
+          </blockquote>
+          <div class="hero__cta" style="margin-top:1.6rem">
+            <a class="btn btn--teal" href="/about.html">Read the whole story</a>
+          </div>
+        </div>
       </div>
     </section>
 
-    <!-- CTA band -->
-    <section class="section bg-cream2 center">
+    <!-- ══ Shop by category ══ -->
+    <section class="section">
       <div class="wrap">
+        <div class="sec-head sec-head--center">
+          <div>
+            <span class="eyebrow eyebrow--center">Shop by patch</span>
+            <h2>A little bit of everything</h2>
+          </div>
+        </div>
+        <div class="grid grid--4">
+          <a class="tile" href="/jams.html">
+            <img src="/assets/v3/jars/jar_strawberry.png" alt="" loading="lazy">
+            <span class="tile__label"><b>House Jams</b><span>Eight small-batch flavors</span></span>
+          </a>
+          <a class="tile" href="/shop.html#eggs">
+            <img src="/assets/img/eggs/eggs-01.jpg" alt="" loading="lazy">
+            <span class="tile__label"><b>Eggs &amp; Chicks</b><span>Farm pickup, reserve online</span></span>
+          </a>
+          <a class="tile" href="/nickel-ts.html">
+            <img src="/assets/img/merch/howdy-tee/howdy-03.jpg" alt="" loading="lazy">
+            <span class="tile__label"><b>Nickel T's</b><span>Tees, mugs &amp; stickers</span></span>
+          </a>
+          <a class="tile" href="/farm.html">
+            <img src="/assets/img/chickens/chickens-01.jpg" alt="" loading="lazy">
+            <span class="tile__label"><b>Farm &amp; Flock</b><span>Meet the birds</span></span>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══ 2026 drop teaser — hidden until drop-2026.json has designs ══ -->
+    <section class="section bg-cream2" data-drop-section hidden>
+      <div class="wrap">
+        <div class="sec-head">
+          <div>
+            <span class="eyebrow">In the works</span>
+            <h2>The 2026 drop</h2>
+            <p>Twenty new designs on the drawing board — here's a look before they land.</p>
+          </div>
+          <a class="link-arrow" href="/drop.html">See all twenty <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+        </div>
+        <div class="grid grid--4" data-drop-teaser="mix" data-limit="4"></div>
+      </div>
+    </section>
+
+    <!-- ══ Process — the craft proof, on the night band ══ -->
+    <section class="section on-dark">
+      <div class="wrap">
+        <div class="sec-head sec-head--center">
+          <div>
+            <span class="eyebrow eyebrow--center">How a jar happens</span>
+            <h2>Picked, cooked, sealed, sent</h2>
+            <p class="lede lede--center">No factory, no filler, no thickener doing the work that fruit should be doing.</p>
+          </div>
+        </div>
+        <div class="grid grid--4 steps">
+          <div class="step"><h3>Picked ripe</h3><p>Fruit goes in at its peak — strawberries, muscadines, blueberries, peppers from the garden out back.</p></div>
+          <div class="step"><h3>Cooked slow</h3><p>Small pots, low and slow, stirred by hand until it sets on its own. Nothing added to rush it.</p></div>
+          <div class="step"><h3>Sealed same day</h3><p>Hot-filled, sealed and labelled the afternoon it's cooked, so the batch date on the lid is the truth.</p></div>
+          <div class="step"><h3>Boxed &amp; sent</h3><p>Wrapped by hand, flat-rate anywhere in the US — or set aside for farm pickup if you're local.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══ Reviews — stays hidden until real, sourced quotes exist ══ -->
+    <section class="section" data-testimonials hidden>
+      <div class="wrap">
+        <div class="sec-head sec-head--center">
+          <div>
+            <span class="eyebrow eyebrow--center">From the porch</span>
+            <h2>What folks say</h2>
+          </div>
+        </div>
+        <div class="grid grid--3" data-testimonial-grid></div>
+      </div>
+    </section>
+
+    <!-- ══ Email capture — "The Hatch List" ══ -->
+    <section class="section on-dark signup">
+      <div class="wrap signup__inner">
+        <div>
+          <span class="eyebrow">The Hatch List</span>
+          <h2>Know when the good stuff lands</h2>
+          <p class="lede">Chick hatch dates, jam flavors that only run once, market days and the odd discount code. A note every few weeks — never more.</p>
+          <form data-signup novalidate>
+            <label class="visually-hidden" for="hatch-email">Email address</label>
+            <input id="hatch-email" type="email" name="email" placeholder="you@example.com" required autocomplete="email">
+            <button class="btn btn--amber btn--lg" type="submit">Join the list</button>
+          </form>
+          <p class="note" data-signup-note>No spam, no selling your address. Unsubscribe in one click.</p>
+        </div>
+        <div class="signup__art">
+          <img src="/assets/v3/trish/trish_laptop.png" alt="Trish at her laptop writing the newsletter" loading="lazy">
+        </div>
+      </div>
+    </section>
+
+    <!-- ══ Visit ══ -->
+    <section class="section center">
+      <div class="wrap wrap--narrow">
         <span class="script">come on by</span>
-        <h2 style="margin-top:-.3rem">Pull up a chair at the farm</h2>
-        <p class="lede" style="margin-inline:auto">Catch us at the market, swing by for pickup, or order from the porch — your call.</p>
-        <div class="hero__cta" style="justify-content:center;margin-top:1.2rem">
+        <h2 style="margin-top:.2rem">Pull up a chair at the farm</h2>
+        <p class="lede lede--center">Catch us at the market, swing by for pickup, or order from the porch — your call.</p>
+        <div class="hero__cta" style="justify-content:center;margin-top:1.6rem">
           <a class="btn btn--lg" href="/shop.html">Start shopping</a>
           <a class="btn btn--ghost btn--lg" href="/find-us.html">Find us</a>
         </div>
       </div>
     </section>
+
   </main>
+
   <script src="/assets/js/site.js" defer></script>
   <script src="/assets/js/commerce.js" defer></script>
+  <script src="/assets/js/content-blocks.js" defer></script>
+  <script src="/assets/js/drop.js" defer></script>
 </body>
 </html>
