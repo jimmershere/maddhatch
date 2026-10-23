@@ -4,46 +4,63 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Find Us — Madd Hatchery</title>
-  <meta name="description" content="How to get Madd Hatchery goods: order online for shipping, arrange farm pickup, or catch us at the local market. Send us a message any time.">
+  <meta name="description" content="How to get Madd Hatchery goods: order online for nationwide shipping, arrange farm pickup for eggs and chicks, or catch us at a local market.">
   <link rel="icon" href="/assets/icons/favicon-32x32.png">
   <link rel="apple-touch-icon" href="/assets/icons/apple-touch-icon.png">
   <link rel="stylesheet" href="/assets/css/site.css">
 </head>
 <body data-page="find">
   <main>
-    <section class="page-band">
+    <section class="page-band on-dark">
       <div class="wrap">
-        <span class="eyebrow" style="justify-content:center">Three easy ways</span>
+        <span class="eyebrow eyebrow--center">Three easy ways</span>
         <h1>Find us</h1>
-        <p>Order online, pick up at the farm, or catch us at the market when the season's right.</p>
+        <p class="lede lede--center">Order online, pick up at the farm, or catch us at the market when the season's right.</p>
       </div>
     </section>
 
-    <section class="section">
+    <section class="section" id="pickup">
       <div class="wrap grid grid--3">
-        <div class="panel">
-          <h3>📦 Order online</h3>
-          <p class="card__desc">Jams &amp; tees ship flat-rate anywhere in the US. Add to your basket and check out securely.</p>
+        <article class="panel">
+          <h3>Order online</h3>
+          <p class="card__desc">Jams, tees, mugs and stickers ship flat-rate anywhere in the US. Add to your basket and check out securely with Stripe.</p>
           <a class="btn" href="/shop.html">Shop now</a>
-        </div>
-        <div class="panel">
-          <h3>🚜 Farm pickup</h3>
-          <p class="card__desc">Eggs, chicks &amp; birds are pickup-only. Reserve online, then we'll find a time that works for both of us.</p>
-          <a class="btn btn--sage" href="mailto:maddhatchery@gmail.com?subject=Farm%20pickup">Arrange pickup</a>
-        </div>
-        <div class="panel">
-          <h3>🧺 At the market</h3>
-          <p class="card__desc">We pop up at local farm markets in season. Email us and we'll let you know where to find the booth.</p>
+        </article>
+        <article class="panel">
+          <h3>Farm pickup</h3>
+          <p class="card__desc">Eggs, chicks and grown birds are pickup only. Reserve online and we'll find a time that works for both of us.</p>
+          <a class="btn btn--teal" href="mailto:maddhatchery@gmail.com?subject=Farm%20pickup">Arrange pickup</a>
+        </article>
+        <article class="panel">
+          <h3>At the market</h3>
+          <p class="card__desc">We pop up at local farm markets in season. Email us and we'll tell you where the booth is this week.</p>
           <a class="btn btn--terra" href="mailto:maddhatchery@gmail.com?subject=Market%20schedule">Get the schedule</a>
+        </article>
+      </div>
+    </section>
+
+    <!-- Market schedule — hidden until real dates are entered in content.json -->
+    <section class="section bg-cream2" data-markets hidden>
+      <div class="wrap">
+        <div class="sec-head sec-head--center">
+          <div>
+            <span class="eyebrow eyebrow--center">This season</span>
+            <h2>Where to find the booth</h2>
+          </div>
         </div>
+        <div class="grid grid--3" data-market-list></div>
       </div>
     </section>
 
     <section class="section bg-cream2">
       <div class="wrap split">
-        <div class="panel trish-note" style="grid-template-columns:auto 1fr">
-          <img src="/assets/v3/trish/trish_peace.png" alt="Trish">
-          <div class="bubble"><p>I read every message myself and answer fast. Whether it's a jar, a custom box, chicks, or just a question about the farm — <strong>holler any time.</strong></p></div>
+        <div>
+          <span class="eyebrow">Straight to Trish</span>
+          <h2>Ask me anything</h2>
+          <p class="lede">I read every message myself and answer fast. Whether it's a jar, a custom box, chicks in spring, or just a question about the farm — holler any time.</p>
+          <div class="founder__art" style="max-width:320px;margin-top:1.5rem">
+            <img src="/assets/v3/trish/trish_badge.png" alt="Trish" loading="lazy">
+          </div>
         </div>
         <div class="panel">
           <h3 style="margin-top:0">Send a message</h3>
@@ -60,8 +77,8 @@
               </select>
             </div>
             <div class="field"><label for="cf-msg">Message</label><textarea id="cf-msg" name="message" rows="4" required></textarea></div>
-            <button class="btn btn--block btn--lg" type="submit">Open email →</button>
-            <p class="note center" style="margin-top:.6rem">Opens your mail app, addressed to maddhatchery@gmail.com.</p>
+            <button class="btn btn--block btn--lg" type="submit">Open email</button>
+            <p class="note center" style="margin-top:.7rem">Opens your mail app, addressed to maddhatchery@gmail.com.</p>
           </form>
         </div>
       </div>
@@ -79,5 +96,6 @@
   </script>
   <script src="/assets/js/site.js" defer></script>
   <script src="/assets/js/commerce.js" defer></script>
+  <script src="/assets/js/content-blocks.js" defer></script>
 </body>
 </html>

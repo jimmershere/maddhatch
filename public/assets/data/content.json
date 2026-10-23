@@ -1,0 +1,74 @@
+{
+  "_README": "Editable site copy. Trish/jimmer can change these without touching code. Every block self-hides when its data is empty or missing, so nothing unverified is ever published. Fields left empty below are UNVERIFIED and must be filled from real sources before launch — see docs/open-questions.md (MH-1..MH-5).",
+  "announcement": {
+    "text": "Every tee $24.81 — free US shipping",
+    "cta": "Shop the rack",
+    "href": "/nickel-ts.html",
+    "_note": "TRUE as of 2026-10-23. All Madd Hatchery / Nickel T's tees are $24.81 and apparel-only baskets ship free (server.js: APPAREL set -> shipCents 0). Jars and other shippable goods still pay SHIP_FLAT_CENTS, so do not broaden this claim to 'free shipping' generally."
+  },
+  "trust": [
+    {
+      "icon": "woman",
+      "title": "Woman-owned",
+      "sub": "Run by Trish, start to finish"
+    },
+    {
+      "icon": "pot",
+      "title": "Small-batch",
+      "sub": "Cooked and sealed by hand"
+    },
+    {
+      "icon": "egg",
+      "title": "Farm-raised",
+      "sub": "Our own flock, named and spoiled"
+    },
+    {
+      "icon": "truck",
+      "title": "Ships nationwide",
+      "sub": "Flat rate, or pick up at the farm"
+    }
+  ],
+  "socials": [
+    {
+      "key": "facebook",
+      "label": "Facebook",
+      "href": ""
+    },
+    {
+      "key": "instagram",
+      "label": "Instagram",
+      "href": ""
+    },
+    {
+      "key": "tiktok",
+      "label": "TikTok",
+      "href": ""
+    }
+  ],
+  "location": {
+    "_note": "UNVERIFIED. Internal notes (clemtock/themes/maddhatchery.json) say Hubert, NC / Crystal Coast, but no address, region or map is published on the live site today. Local pickup and market sales cannot be found by search until this is filled in. Confirm with Trish, then populate.",
+    "region": "",
+    "city": "",
+    "state": "",
+    "pickup_note": "",
+    "map_embed": ""
+  },
+  "markets": {
+    "_note": "UNVERIFIED. The live site says only 'we pop up at local farm markets in season' with no names, days or times. Fill with the real booked schedule; the section stays hidden while this list is empty.",
+    "items": []
+  },
+  "testimonials": {
+    "_note": "EMPTY ON PURPOSE. Do not write these — they must be real customer words, pasted with permission. Section stays hidden while empty. Fleet rule 6: every claim needs a source.",
+    "items": []
+  },
+  "press": {
+    "_note": "EMPTY ON PURPOSE. Real coverage only (publication name + date + link). Section stays hidden while empty.",
+    "items": []
+  },
+  "stats": {
+    "_note": "UNVERIFIED. clemtock/web/ad-script.maddhatchery.json claims 'OVER 1,000 FOLLOWERS' but that is ad-script copy, not a measured figure. Confirm from the actual platform before showing any number.",
+    "followers": null,
+    "jars_sold": null,
+    "years": null
+  }
+}

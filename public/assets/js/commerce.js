@@ -18,7 +18,7 @@
     cur.qty = Math.max(1, (cur.qty || 0) + (it.qty || 1));
     cart[k] = { ...it, qty: cur.qty };
     writeCart(cart);
-    toast(`Added ${it.name} 🧺`);
+    toast(`Added ${it.name}`);
     openCart();
   }
   function setQty(k, qty) {
@@ -39,7 +39,7 @@
     if (!wrap || !foot) return;
     const ls = items();
     if (!ls.length) {
-      wrap.innerHTML = `<div class="cart-empty"><p style="font-size:2.4rem;margin:0">🧺</p><p>Your basket's empty.<br>Go fill it with something good.</p><a class="btn btn--sage" href="/shop.html">Shop the farm</a></div>`;
+      wrap.innerHTML = `<div class="cart-empty"><p>Your basket is empty.<br>Go fill it with something good.</p><a class="btn" href="/shop.html" style="margin-top:1rem">Shop the farm</a></div>`;
       foot.innerHTML = ''; return;
     }
     wrap.innerHTML = ls.map((l) => `
@@ -59,7 +59,7 @@
       <div class="row"><span>Subtotal</span><span class="total">${money(subtotal())}</span></div>
       <p class="note">${hasShip ? 'Flat-rate shipping added at checkout.' : 'Pickup-only basket — we\'ll arrange a time.'}</p>
       <button class="btn btn--block btn--lg" data-checkout>Checkout securely →</button>
-      <p class="note center" style="margin-top:.6rem">🔒 Secure payment by Stripe</p>`;
+      <p class="note center" style="margin-top:.6rem">Secure payment by Stripe</p>`;
   }
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
   function openCart() { document.querySelector('.drawer')?.classList.add('open'); document.querySelector('.drawer-scrim')?.classList.add('open'); document.querySelector('.drawer')?.setAttribute('aria-hidden', 'false'); }
@@ -88,7 +88,7 @@
     return `<article class="card">
       <a class="card__media" href="/p.html?slug=${encodeURIComponent(p.slug)}" style="display:block">
         <img src="${p.image_url || '/assets/v3/jars/jar_variety.png'}" alt="${esc(p.name)}" loading="lazy">
-        <span class="card__tag card__tag--${p.fulfillment_type}">${p.fulfillment_type === 'pickup' ? '🚜 Farm pickup' : '📦 Ships'}</span>
+        <span class="card__tag card__tag--${p.fulfillment_type}">${p.fulfillment_type === 'pickup' ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-6-4.4-6-9a6 6 0 0 1 12 0c0 4.6-6 9-6 9Z"/><circle cx="12" cy="11.5" r="2.2"/></svg> Farm pickup` : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h11v9H3zM14 10h4l3 3v3h-7z"/><circle cx="7" cy="18" r="1.6"/><circle cx="17.5" cy="18" r="1.6"/></svg> Ships`}</span>
       </a>
       <div class="card__body">
         <h3>${esc(p.name)}</h3>
@@ -104,16 +104,16 @@
   function renderShop() {
     const grid = $('[data-shop-grid]'); if (!grid) return;
     const filterBar = $('[data-shop-filters]');
-    const LABELS = { jams: '🍯 Jams', eggs: '🥚 Eggs', chicks: '🐣 Chicks', 'hatching-eggs': '🥚 Hatching Eggs', birds: '🐓 Grown Birds', 'nickel-tee': "🦝 Nickel T's", 'madd-tee': '👕 Madd Hatchery', 'tie-dye': '🌀 Tie-Dye', mug: '☕ Mugs', sticker: '✨ Stickers', bottle: '💧 Water Bottles' };
+    const LABELS = { jams: 'Jams & Jellies', eggs: 'Eggs', chicks: 'Chicks', 'hatching-eggs': 'Hatching Eggs', birds: 'Grown Birds', 'nickel-tee': "Nickel T's", 'madd-tee': 'Madd Hatchery', 'tie-dye': 'Tie-Dye', mug: 'Mugs', sticker: 'Stickers', bottle: 'Water Bottles' };
     const scope = (grid.dataset.shopCategories || '').split(',').map((s) => s.trim()).filter(Boolean);
     const POOL = scope.length ? CATALOG.filter((p) => scope.includes(p.category)) : CATALOG;
     const cats = scope.length ? scope.filter((c) => POOL.some((p) => p.category === c)) : [...new Set(POOL.map((p) => p.category))];
     let active = (location.hash || '').replace('#', '') || 'all';
-    if (filterBar) filterBar.innerHTML = ['all', ...cats].map((c) => `<button class="btn ${c === active ? '' : 'btn--ghost'}" data-filter="${c}">${c === 'all' ? '✨ Everything' : (LABELS[c] || c)}</button>`).join('');
+    if (filterBar) filterBar.innerHTML = ['all', ...cats].map((c) => `<button data-filter="${c}" aria-pressed="${c === active}">${c === 'all' ? 'Everything' : (LABELS[c] || c)}</button>`).join('');
     const draw = () => {
       const list = active === 'all' ? POOL : POOL.filter((p) => p.category === active);
       grid.innerHTML = list.length ? list.map(productCard).join('') : '<p class="lede">Fresh designs landing soon — check back!</p>';
-      if (filterBar) filterBar.querySelectorAll('[data-filter]').forEach((b) => b.classList.toggle('btn--ghost', b.dataset.filter !== active));
+      if (filterBar) filterBar.querySelectorAll('[data-filter]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.filter === active)));
     };
     draw();
     if (filterBar) filterBar.addEventListener('click', (e) => { const b = e.target.closest('[data-filter]'); if (!b) return; active = b.dataset.filter; history.replaceState(null, '', active === 'all' ? location.pathname : `#${active}`); draw(); });
@@ -170,7 +170,7 @@
           <div style="margin:1rem 0;display:flex;align-items:center;gap:1rem"><strong>Qty</strong>
             <div class="qty"><button id="pdp-dec">−</button><span id="pdp-qty">${qty}</span><button id="pdp-inc">+</button></div></div>
           <button class="btn btn--lg btn--block" id="pdp-add" ${v ? '' : 'disabled'}>${v ? 'Add to basket' : 'Unavailable'}</button>
-          <p class="note" style="margin-top:.6rem">📦 Printed on demand & shipped from our partner. Soft, true-to-size.</p>
+          <p class="note" style="margin-top:.6rem">Printed on demand &amp; shipped from our partner. Soft, true-to-size.</p>
         </div></div>`;
       root.querySelectorAll('.pdp-th').forEach((b) => b.addEventListener('click', () => {
         const img = $('#pdp-img'); if (img) img.src = b.dataset.u;

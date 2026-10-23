@@ -78,6 +78,12 @@ CREATE TABLE IF NOT EXISTS product_variants (
 CREATE INDEX IF NOT EXISTS idx_products_category ON products(category);
 CREATE INDEX IF NOT EXISTS idx_products_active ON products(active);
 CREATE INDEX IF NOT EXISTS idx_variants_product ON product_variants(product_id);
+CREATE TABLE IF NOT EXISTS subscribers (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  email TEXT NOT NULL UNIQUE,
+  source TEXT DEFAULT '',
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
 `);
 // products.printify_product_id (added post-hoc; guard for existing DBs)
 try { db.exec("ALTER TABLE products ADD COLUMN printify_product_id TEXT DEFAULT ''"); } catch (e) {}
@@ -199,6 +205,8 @@ module.exports = {
   setOrderFulfillment: db.prepare(`UPDATE orders SET fulfillment_summary = ?, updated_at=CURRENT_TIMESTAMP WHERE id = ?`),
   insertOrderItem: db.prepare(`INSERT INTO order_items (order_id, product_id, product_name, unit_price_cents, quantity, fulfillment_type) VALUES (?, ?, ?, ?, ?, ?)`),
   recordEvent: db.prepare(`INSERT OR IGNORE INTO stripe_events (stripe_event_id, event_type) VALUES (?, ?)`),
+  addSubscriber: db.prepare(`INSERT OR IGNORE INTO subscribers (email, source) VALUES (?, ?)`),
+  listSubscribers: db.prepare(`SELECT email, source, created_at FROM subscribers ORDER BY created_at DESC`),
 };
 
 if (require.main === module) {
