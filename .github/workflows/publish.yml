@@ -76,11 +76,13 @@ jobs:
           DEPLOY_USER="${DEPLOY_USER:-deploy}"
           REMOTE_PATH="${REMOTE_PATH:-/var/www/maddhatchery}"
           ssh -i ~/.ssh/deploy_key -o IdentitiesOnly=yes "${DEPLOY_USER}@${HOST}" "mkdir -p '${REMOTE_PATH}'"
+          # '/data' is ANCHORED on purpose: an unanchored 'data' matches a
+          # directory of that name at ANY depth, which silently dropped
+          # public/assets/data/ (content.json, drop-2026.json) from every
+          # deploy while the job still reported success. Verified 2026-10-23.
+          # Comments must stay OUTSIDE the command: a '#' inside a backslash
+          # continuation comments out the rest of the rsync invocation.
           rsync -avz --delete \
-            # '/data' is ANCHORED on purpose: an unanchored 'data' matches any
-            # directory of that name at any depth, which silently dropped
-            # public/assets/data/ (content.json, drop-2026.json) from every
-            # deploy while still appearing to succeed. Verified 2026-10-23.
             --exclude '.git' --exclude 'node_modules' --exclude '/data' \
             --exclude '.env' --exclude '.claude' \
             --exclude 'public/assets/uploads' \
