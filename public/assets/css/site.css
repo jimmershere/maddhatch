@@ -77,7 +77,11 @@ body {
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
 }
-img { max-width: 100%; display: block; }
+/* height:auto is load-bearing: every <img> carries explicit width/height attributes
+   for CLS, and without it the HTML height wins over a CSS width — a 900x1350
+   portrait then renders 1350px tall inside a 440px-wide slot. More specific rules
+   (.card__media img, .cart-line img, .gallery img) still set their own height. */
+img { max-width: 100%; height: auto; display: block; }
 a { color: var(--teal-dk); text-decoration: none; transition: color .15s ease; }
 a:hover { color: var(--plum); }
 button { font: inherit; }
