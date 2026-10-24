@@ -65,7 +65,10 @@ async function getCatalog(arg) {
           image_url: v.image_url,
           front_image_url: frontByColor.get(v.color) || '',
         })),
-        null
+        // Mirror the Printify product id too. Passing null here left the local copy
+        // without it, which hides fulfilment bugs that only bite in production —
+        // exactly how the PRODUCT_COLS omission went unnoticed.
+        p.printify_product_id || null
       );
       withVariants++;
     }
