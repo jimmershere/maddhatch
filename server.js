@@ -113,6 +113,25 @@ function buildQuote(rawItems) {
 const PRINTIFY_API_KEY = process.env.PRINTIFY_API_KEY || '';
 const PRINTIFY_SHOP_ID = process.env.PRINTIFY_SHOP_ID || '';
 
+/* The shipping address a buyer typed at checkout.
+ *
+ * Stripe moved this: newer API versions return it as
+ * `collected_information.shipping_details`, while older ones put it at
+ * `session.shipping_details`. Reading only the legacy path silently falls through
+ * to `customer_details.address`, which under `billing_address_collection: 'auto'`
+ * holds just country + postal_code — so a Printify order went out with a name, a
+ * zip, and no street or city. Caught on order MH-MVMGNFEM-46D7, 2026-10-24.
+ *
+ * Order matters: current location first, legacy second, billing only as a last
+ * resort. */
+function shippingAddress(session) {
+  const ci = session.collected_information || {};
+  return (ci.shipping_details && ci.shipping_details.address)
+      || (session.shipping_details && session.shipping_details.address)
+      || (session.customer_details && session.customer_details.address)
+      || {};
+}
+
 // Create a DRAFT Printify order directly (no n8n). Printify holds API-created orders
 // until you "send to production" in the dashboard — that send IS your approval step.
 async function createPrintifyDraftOrder(order, printifyLines, session) {
@@ -125,8 +144,7 @@ async function createPrintifyDraftOrder(order, printifyLines, session) {
     if ((printifyLines || []).length) console.log(`ℹ️ ${order.order_number}: items not Printify-linked — manual fulfillment`);
     return;
   }
-  const a = (session.shipping_details && session.shipping_details.address)
-    || (session.customer_details && session.customer_details.address) || {};
+  const a = shippingAddress(session);
   const cd = session.customer_details || {};
   const parts = (order.customer_name || cd.name || 'Madd Customer').trim().split(/\s+/);
   const first = parts.shift() || 'Madd';
@@ -174,7 +192,7 @@ async function sendStripeReceipt(order, session) {
 // Hand a paid order to floor2's n8n, which stages a DRAFT Printify order for approval.
 async function notifyN8nDraftOrder(order, printifyLines, session) {
   if (!N8N_ORDER_WEBHOOK || !printifyLines.length) return;
-  const ship = (session.shipping_details && session.shipping_details.address) || (session.customer_details && session.customer_details.address) || {};
+  const ship = shippingAddress(session);
   try {
     await fetch(N8N_ORDER_WEBHOOK, {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
