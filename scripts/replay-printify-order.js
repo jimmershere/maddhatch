@@ -65,7 +65,11 @@ const SK = process.env.STRIPE_SECRET_KEY || '';
   }
   if (!lines.length) throw new Error('nothing Printify-linked in this order');
 
-  const a = (session.shipping_details && session.shipping_details.address)
+  // Same Stripe relocation the server handles: collected_information first.
+  // Falling straight through to customer_details yields country + zip only.
+  const ci = session.collected_information || {};
+  const a = (ci.shipping_details && ci.shipping_details.address)
+    || (session.shipping_details && session.shipping_details.address)
     || (session.customer_details && session.customer_details.address) || {};
   const cd = session.customer_details || {};
   const parts = (order.customer_name || cd.name || 'Madd Customer').trim().split(/\s+/);
