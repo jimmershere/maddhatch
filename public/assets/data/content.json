@@ -32,7 +32,8 @@
     {
       "key": "facebook",
       "label": "Facebook",
-      "href": ""
+      "href": "https://www.facebook.com/maddhatchery",
+      "_note": "Confirmed by the owner, 2026-10-24."
     },
     {
       "key": "instagram",
@@ -70,5 +71,6 @@
     "followers": null,
     "jars_sold": null,
     "years": null
-  }
+  },
+  "_socials_note": "Only Facebook is confirmed (owner, 2026-10-24). Instagram and TikTok hrefs stay empty on purpose: an empty href renders no icon, so the footer shows only accounts that actually exist. Fill them in if/when those accounts are confirmed — MH-4."
 }
