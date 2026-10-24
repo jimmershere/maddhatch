@@ -133,9 +133,16 @@ for (const p of seedProducts) {
   if (!existing) upsertInventory.run(row.id, p[8]);
 }
 
+// printify_product_id is load-bearing for fulfilment: finalizeOrder() reads it off the
+// product row to build the Printify draft order. It was added to the table post-hoc by
+// the ALTER above but NOT added here, so every catalog query returned it as undefined
+// and createPrintifyDraftOrder() silently logged "items not Printify-linked" and shipped
+// nothing. Broken from the day the feature landed until 2026-10-24. It is safe to select
+// here — publicProduct() whitelists its output, so this never reaches the public API.
 const PRODUCT_COLS = `
   p.id, p.slug, p.name, p.category, p.description, p.price_cents, p.image_url,
-  p.fulfillment_type, p.sort, p.active, COALESCE(i.quantity_available,0) AS quantity_available`;
+  p.fulfillment_type, p.sort, p.active, p.printify_product_id,
+  COALESCE(i.quantity_available,0) AS quantity_available`;
 
 const _upsertBySlug = db.prepare(`
   INSERT INTO products (slug, name, category, description, price_cents, image_url, fulfillment_type, sort, active)
